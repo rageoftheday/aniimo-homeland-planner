@@ -19,7 +19,7 @@ const workspace=document.getElementById('workspace'), boardOuter=document.getEle
 let mapViewport=null;
 
 for(let i=1;i<=20;i++){let o=document.createElement('option');o.value=i;o.textContent='RV '+i;rvLevel.appendChild(o)}
-rvLevel.value=11;
+rvLevel.value=1;
 
 const plotDefs=[
  {n:13,x:0,y:0},{n:14,x:20,y:0},{n:15,x:40,y:0},{n:16,x:60,y:0},
@@ -27,7 +27,7 @@ const plotDefs=[
  {n:11,x:0,y:30},{n:4,x:20,y:30},{n:3,x:40,y:30},{n:6,x:60,y:30},
  {n:10,x:0,y:45},{n:2,x:20,y:45},{n:1,x:40,y:45},{n:5,x:60,y:45}
 ];
-let openPlots = new Set([1,2,3,4,5,6,7,8,9]);
+let openPlots = new Set([1]);
 
 function isPlotOpen(n){ return openPlots.has(n); }
 
@@ -1491,7 +1491,6 @@ window.addEventListener('resize',()=>{if(autoFit.checked)fitBoard()});
 
 
 modulesToRvMaxBtn.onclick=()=>{initModuleLevelsToRvMax();render()};
-plots1to9Btn.onclick=()=>{openPlots=new Set([1,2,3,4,5,6,7,8,9]);render()};
 allPlotsBtn.onclick=()=>{openPlots=new Set(Array.from({length:16},(_,i)=>i+1));render()};
 noPlotsBtn.onclick=()=>{openPlots=new Set();render()};
 
@@ -1525,7 +1524,7 @@ function currentPlannerState(){
  };
 }
 function applyPlannerState(d){
- rvLevel.value=d.rv||11;
+ rvLevel.value=d.rv||1;
  objects=Array.isArray(d.objects)?d.objects:[];
  idCounter=d.idCounter||Math.max(1,...objects.map(o=>(Number(o.id)||0)+1));
  maxOverrides=d.maxOverrides||{};
@@ -1533,7 +1532,7 @@ function applyPlannerState(d){
  placeLevelPrefs=d.placeLevelPrefs||{};
  moduleLevels=d.moduleLevels||{};
  if(!Object.keys(moduleLevels).length)initModuleLevelsToRvMax();
- openPlots=new Set(d.openPlots||[1,2,3,4,5,6,7,8,9]);
+ openPlots=new Set(Array.isArray(d.openPlots)?d.openPlots:[1]);
  workers=Array.isArray(d.workers)?d.workers:[];
  workerIdCounter=d.workerIdCounter||Math.max(1,...workers.map(w=>(Number(w.id)||0)+1));
  aniidexImportMeta=d.aniidexImportMeta||null;
@@ -1678,8 +1677,8 @@ if(!Object.keys(moduleLevels).length) initModuleLevelsToRvMax();
 
 if(EMBEDDED_STATE){
  try{
-   const d=EMBEDDED_STATE;rvLevel.value=d.rv||11;objects=d.objects||[];idCounter=d.idCounter||1;
-   maxOverrides=d.maxOverrides||{};dimensionOverrides=d.dimensionOverrides||{};placeLevelPrefs=d.placeLevelPrefs||{};moduleLevels=d.moduleLevels||{};if(!Object.keys(moduleLevels).length)initModuleLevelsToRvMax();openPlots=new Set(d.openPlots||[1,2,3,4,5,6,7,8,9]);
+   const d=EMBEDDED_STATE;rvLevel.value=d.rv||1;objects=d.objects||[];idCounter=d.idCounter||1;
+   maxOverrides=d.maxOverrides||{};dimensionOverrides=d.dimensionOverrides||{};placeLevelPrefs=d.placeLevelPrefs||{};moduleLevels=d.moduleLevels||{};if(!Object.keys(moduleLevels).length)initModuleLevelsToRvMax();openPlots=new Set(Array.isArray(d.openPlots)?d.openPlots:[1]);
  }catch(e){}
 }
 try{
