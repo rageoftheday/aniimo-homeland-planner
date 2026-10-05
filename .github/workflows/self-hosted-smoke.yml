@@ -1,0 +1,54 @@
+name: Self-hosted runner smoke test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - work/v30.8-runner-sync
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 10
+    steps:
+      - name: Runner identity
+        run: |
+          set -euxo pipefail
+          whoami
+          hostname
+          id
+          pwd
+
+      - name: Verify toolchain
+        run: |
+          set -euxo pipefail
+          git --version
+          node --version
+          npm --version
+          python3 --version
+
+      - name: Verify NVMe workspace
+        run: |
+          set -euxo pipefail
+          test -d /mnt/nvme1/aniimo-planner-cache
+          test -w /mnt/nvme1/aniimo-planner-cache
+          df -h /mnt/nvme1/aniimo-planner-cache
+          touch /mnt/nvme1/aniimo-planner-cache/.runner-smoke
+          rm /mnt/nvme1/aniimo-planner-cache/.runner-smoke
+
+      - name: Checkout planner
+        uses: actions/checkout@v4
+
+      - name: Validate static site
+        run: |
+          set -euxo pipefail
+          test -s index.html
+          grep -q '<!doctype html>' index.html
+          grep -q 'Aniimo Homeland Offline Planner v30.8' index.html
+          grep -q 'function aniidexBookmarkletCode' index.html
+          grep -q 'async function importAniidexUid' index.html
+          printf 'index.html bytes: '
+          wc -c < index.html
