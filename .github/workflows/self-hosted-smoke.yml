@@ -64,9 +64,22 @@ jobs:
         run: |
           set -euxo pipefail
           test -s index.html
+          test -s css/app.css
+          test -s js/app.js
+          test -s data/embedded-aniidex-catalog.js
           grep -q '<!doctype html>' index.html
           grep -q 'Aniimo Homeland Offline Planner v30.8' index.html
-          grep -q 'function aniidexBookmarkletCode' index.html
-          grep -q 'async function importAniidexUid' index.html
+          grep -q 'css/app.css' index.html
+          grep -q 'data/embedded-aniidex-catalog.js' index.html
+          grep -q 'js/app.js' index.html
+          grep -q 'function aniidexBookmarkletCode' js/app.js
+          grep -q 'async function importAniidexUid' js/app.js
+          grep -q 'const EMBEDDED_ANIIDEX_CATALOG=' data/embedded-aniidex-catalog.js
+          node --check js/app.js
+          node --check data/embedded-aniidex-catalog.js
           printf 'index.html bytes: '
           wc -c < index.html
+          printf 'app.js bytes: '
+          wc -c < js/app.js
+          printf 'catalog bytes: '
+          wc -c < data/embedded-aniidex-catalog.js
