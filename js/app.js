@@ -160,6 +160,7 @@ const catalog=[
  {cat:'Future Utility',name:'Starfall Hammock',count:1,w:null,h:null,rv:12},
  {cat:'Future Utility',name:'Floral Windmill',count:1,w:null,h:null,rv:18}
 ];
+const homelandCatalogAudit=window.HomelandData?.applyCatalogFacts(catalog)||{matched:0,missing:catalog.map(x=>x.name)};
 
 const crops=[
  // FARMLAND — choices are gated by the selected Farmland facility level.
@@ -435,6 +436,7 @@ const facilityLevels={
   {lv:1,rv:1,cost:21000},{lv:2,rv:1,cost:45000},{lv:3,rv:1,cost:120000},{lv:4,rv:1,cost:340000},{lv:5,rv:1,cost:720000}
  ]
 };
+window.HomelandData?.applyFacilityLevels(facilityLevels);
 
 function maxFacilityLevel(name,rv){
  const arr=facilityLevels[name]||[];
@@ -461,7 +463,7 @@ function cumulativeUpgradeCost(name,fromLv,toLv){
 }
 function directPlacementCost(name,lv){
  const d=levelData(name,lv);
- return d ? (Number(d.cost)||0) : 0;
+ return d ? (Number(d.buyCost??d.cost)||0) : 0;
 }
 function historicalSpendFromPlacement(name,placedLv,currentLv){
  let total=directPlacementCost(name,placedLv);

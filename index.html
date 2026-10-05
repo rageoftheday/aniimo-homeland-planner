@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Aniimo Homeland Offline Planner v30.9.4</title>
-<link rel="stylesheet" href="css/app.css?v=30.9.4"/>
+<title>Aniimo Homeland Offline Planner v30.10.0</title>
+<link rel="stylesheet" href="css/app.css?v=30.10.0"/>
 </head>
 <body>
 <header>
-<div><h1>Aniimo Homeland Offline Planner v30.9.4</h1><div class="sub">Tabbed Homeland workspace • full production browser • visual per-copy Aniimo roster • personality/job-fit advisor • family locks • fuzzy autofill • profiles/autosave</div></div>
+<div><h1>Aniimo Homeland Offline Planner v30.10.0</h1><div class="sub">Tabbed Homeland workspace • full production browser • visual per-copy Aniimo roster • personality/job-fit advisor • family locks • fuzzy autofill • profiles/autosave</div></div>
 <div class="controls">
 <button class="primary" id="saveBtn">Save Local</button><button id="loadBtn">Load Local</button>
 <button id="exportBtn">Export JSON</button><button id="importBtn">Import JSON</button>
@@ -148,7 +148,7 @@
   <label class="small" style="display:flex;gap:6px;align-items:center;margin-top:6px">
     <input type="checkbox" id="wateredTwice" checked> Assume Farmland/Woodland are watered twice (growth time ×0.75)
   </label>
-  <div class="small" style="margin-top:4px">Climate plots need at least 0.5 square inside the matching 9×9 influence area for 100% speed. Heat covers Warmth +1/+2, Cooling covers Cold −1/−2, and Sunlamp covers Light. Without the preferred climate, Warm/Cool recipes run at 80%, Scorching/Freeze at 50%, and Light recipes stop at 0%. Influence areas may overlap; physical devices may not.</div>
+  <div class="small" style="margin-top:4px">Climate plots need at least 0.25 square of overlap on both axes inside the matching 9×9 influence area for 100% speed. Heat covers Warmth +1/+2, Cooling covers Cold −1/−2, and Sunlamp covers Light. Without the preferred climate, Warm/Cool recipes run at 80%, Scorching/Freeze at 50%, and Light recipes stop at 0%. Influence areas may overlap; physical devices may not.</div>
 </div>
 <div class="summaryBox">
   <div class="small">Assigned crop/tree effective raw sell value</div>
@@ -214,10 +214,12 @@
 </section>
 </main>
 
-<script src="js/dom.js?v=30.9.4"></script>
-<script src="data/embedded-aniidex-catalog.js?v=30.9.4"></script>
-<script src="js/importer.js?v=30.9.4"></script>
-<script src="js/views.js?v=30.9.4"></script>
-<script src="js/app.js?v=30.9.4"></script>
+<script src="js/dom.js?v=30.10.0"></script>
+<script src="data/homeland-reference-data.js?v=30.10.0"></script>
+<script src="js/homeland-data.js?v=30.10.0"></script>
+<script src="data/embedded-aniidex-catalog.js?v=30.10.0"></script>
+<script src="js/importer.js?v=30.10.0"></script>
+<script src="js/views.js?v=30.10.0"></script>
+<script src="js/app.js?v=30.10.0"></script>
 </body>
 </html>

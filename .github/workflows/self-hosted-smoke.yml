@@ -75,9 +75,13 @@ jobs:
           test -s js/importer.js
           test -s js/views.js
           test -s data/embedded-aniidex-catalog.js
+          test -s data/homeland-reference-data.js
+          test -s js/homeland-data.js
           grep -q '<!doctype html>' index.html
-          grep -q 'Aniimo Homeland Offline Planner v30.9.4' index.html
+          grep -q 'Aniimo Homeland Offline Planner v30.10.0' index.html
           grep -q 'css/app.css' index.html
+          grep -q 'data/homeland-reference-data.js' index.html
+          grep -q 'js/homeland-data.js' index.html
           grep -q 'data/embedded-aniidex-catalog.js' index.html
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
@@ -92,6 +96,33 @@ jobs:
           node --check js/importer.js
           node --check js/views.js
           node --check data/embedded-aniidex-catalog.js
+          node --check data/homeland-reference-data.js
+          node --check js/homeland-data.js
+          node - <<'NODE'
+          global.window=global;
+          require('./data/homeland-reference-data.js');
+          require('./js/homeland-data.js');
+          const v=global.HomelandData.validate();
+          if(!v.ok) throw new Error(v.issues.join('; '));
+          if(v.counts.facilities!==29 || v.counts.recipes!==217 || v.counts.items!==233 || v.counts.rv!==20 || v.counts.plots!==16) {
+            throw new Error('Unexpected Homeland reference counts: '+JSON.stringify(v.counts));
+          }
+          const checks={
+            'Crackle Generator':{rv:12,w:2,h:2},
+            'Crackle Power Pole':{rv:12,w:1.5,h:1.5},
+            'Starfall Hammock':{rv:12,w:5,h:5},
+            'Floral Windmill':{rv:18,w:5,h:5},
+            'Phonolfactory Table':{rv:6,w:3.5,h:3.5},
+            'Pickling Jar':{rv:8,w:2.5,h:2},
+            'Blazing Stove':{rv:8,w:2.5,h:1.75}
+          };
+          for (const [name,want] of Object.entries(checks)) {
+            const f=global.HomelandData.getFacility(name);
+            const got={rv:Math.min(...(f.levels||[{rv:f.rv||1}]).map(x=>Number(x.rv)||99)),w:Number(f.footprint[0]),h:Number(f.footprint[1])};
+            if(JSON.stringify(got)!==JSON.stringify(want)) throw new Error(name+' mismatch '+JSON.stringify(got));
+          }
+          console.log('Homeland reference validation OK',v.counts);
+          NODE
           printf 'index.html bytes: '
           wc -c < index.html
           printf 'app.js bytes: '
