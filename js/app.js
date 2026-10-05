@@ -1438,8 +1438,49 @@ deleteBtn.onclick=()=>{objects=objects.filter(x=>x.id!==selected);selected=null;
 duplicateBtn.onclick=()=>{const o=objects.find(x=>x.id===selected);if(!o)return;const item=catalog.find(i=>i.name===o.name);if(!item)return;const lim=maxCount(item,+rvLevel.value);if(objects.filter(x=>x.name===o.name).length>=lim)return;objects.push({...o,id:idCounter++,x:o.x+.5,y:o.y+.5});selected=objects.at(-1).id;render()};
 
 function nextFree(w,h){for(let y=0;y<=60-h;y+=.5)for(let x=0;x<=80-w;x+=.5){const t={id:-1,x,y,w,h};if(validArea(t)&&!collide(t))return[x,y]}return null}
-addAllBtn.onclick=()=>{for(const item of catalog.filter(isUnlocked)){const lim=maxCount(item,+rvLevel.value),d=effectiveDims(item);if(d.w<=0||d.h<=0)continue;while(objects.filter(o=>o.name===item.name).length<lim){const p=nextFree(d.w,d.h);if(!p)break;{const obj={id:idCounter++,name:item.name,w:d.w,h:d.h,x:p[0],y:p[1],cls:item.cls||'',zone:item.zone||null,label:item.name,req:'none'};if(facilityLevels[item.name]&&facilityLevels[item.name].length){obj.facilityLevel=preferredPlaceLevel(item.name);obj.targetLevel=obj.facilityLevel;obj.placedLevel=obj.facilityLevel;obj.placementCost=directPlacementCost(item.name,obj.facilityLevel)}objects.push(obj)}}}selected=null;render()};
-starterBtn.onclick=()=>{objects=[];idCounter=1;[['Heat Furnace',43,20],['Cooling Unit',48,20],['Sunlamp',56,20],['Storage Unit',42,29]].forEach(([n,x,y])=>{const i=catalog.find(a=>a.name===n);if(i&&isUnlocked(i))objects.push({id:idCounter++,name:i.name,w:i.w,h:i.h,x,y,cls:i.cls||'',zone:i.zone||null,label:i.name,req:'none'})});selected=null;render()};
+function makePlacedObject(item,x,y){
+ const d=effectiveDims(item);
+ const obj={id:idCounter++,name:item.name,w:d.w,h:d.h,x,y,cls:item.cls||'',zone:item.zone||null,label:item.name,req:'none'};
+ if(facilityLevels[item.name]&&facilityLevels[item.name].length){
+   obj.facilityLevel=preferredPlaceLevel(item.name);obj.targetLevel=obj.facilityLevel;obj.placedLevel=obj.facilityLevel;obj.placementCost=directPlacementCost(item.name,obj.facilityLevel);
+ }
+ return obj;
+}
+function updatePlacementActionState(){
+ const climateNames=['Heat Furnace','Cooling Unit','Sunlamp'];
+ const available=climateNames.map(n=>catalog.find(x=>x.name===n)).filter(i=>i&&isUnlocked(i)&&maxCount(i,+rvLevel.value)>0);
+ if(starterBtn){
+   starterBtn.disabled=available.length===0;
+   starterBtn.textContent=available.length?'Climate Starter':'Climate Starter 🔒 RV7';
+   starterBtn.title=available.length?'Add one of each currently unlocked climate device to free space. Existing layout is preserved.':'Heat/Cooling climate devices unlock at RV7.';
+ }
+}
+addAllBtn.onclick=()=>{
+ let placed=0,blocked=0;
+ for(const item of catalog.filter(isUnlocked)){
+   const lim=maxCount(item,+rvLevel.value),d=effectiveDims(item);if(d.w<=0||d.h<=0)continue;
+   while(objects.filter(o=>o.name===item.name).length<lim){
+     const p=nextFree(d.w,d.h);if(!p){blocked++;break}
+     objects.push(makePlacedObject(item,p[0],p[1]));placed++;
+   }
+ }
+ selected=null;render();
+ if(startupStatus){startupStatus.textContent=placed?('Auto-placed '+placed+' unlocked item'+(placed===1?'':'s')+(blocked?' • some items could not fit in the open plots':'')):'Nothing else can be auto-placed in the currently open plots.';startupStatus.style.color=placed?'#8fe3a7':'#ffcb6b';}
+};
+starterBtn.onclick=()=>{
+ const climateNames=['Heat Furnace','Cooling Unit','Sunlamp'];
+ let placed=0,blocked=0;
+ for(const name of climateNames){
+   const item=catalog.find(a=>a.name===name);
+   if(!item||!isUnlocked(item)||maxCount(item,+rvLevel.value)<=0)continue;
+   if(objects.filter(o=>o.name===name).length>=maxCount(item,+rvLevel.value))continue;
+   const d=effectiveDims(item),p=nextFree(d.w,d.h);
+   if(!p){blocked++;continue}
+   objects.push(makePlacedObject(item,p[0],p[1]));placed++;
+ }
+ selected=null;render();
+ if(startupStatus){startupStatus.textContent=placed?('Climate starter added '+placed+' device'+(placed===1?'':'s')+(blocked?' • some could not fit in the open plots':'')):'No additional unlocked climate devices can be placed in the currently open plots.';startupStatus.style.color=placed?'#8fe3a7':'#ffcb6b';}
+};
 
 rvLevel.onchange=()=>{
   for(const n of ['Farmland','Woodland','Mine']) delete maxOverrides[n];
@@ -1451,7 +1492,7 @@ rvLevel.onchange=()=>{
     const m=moduleMaxForRV(name,+rvLevel.value);
     moduleLevels[name]=Math.min(Number(moduleLevels[name]||0),m);
   }
-  render()
+  render();updatePlacementActionState()
 };
 futureToggle.onchange=()=>{renderCatalog();renderRecipePanel()};
 usableOnly.onchange=()=>{rebuildCropPicker();renderRecipePanel()};
@@ -1674,6 +1715,7 @@ clearBtn.onclick=()=>{if(confirm('Clear current layout?')){objects=[];selected=n
 
 // Initialize module defaults only after rvModules/moduleLevels have been declared.
 if(!Object.keys(moduleLevels).length) initModuleLevelsToRvMax();
+updatePlacementActionState();
 
 if(EMBEDDED_STATE){
  try{
