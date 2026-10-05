@@ -1677,7 +1677,7 @@ if(!Object.keys(moduleLevels).length) initModuleLevelsToRvMax();
 
 if(EMBEDDED_STATE){
  try{
-   const d=EMBEDDED_STATE;rvLevel.value=d.rv||11;objects=d.objects||[];idCounter=d.idCounter||1;
+   const d=EMBEDDED_STATE;rvLevel.value=d.rv||1;objects=d.objects||[];idCounter=d.idCounter||1;
    maxOverrides=d.maxOverrides||{};dimensionOverrides=d.dimensionOverrides||{};placeLevelPrefs=d.placeLevelPrefs||{};moduleLevels=d.moduleLevels||{};if(!Object.keys(moduleLevels).length)initModuleLevelsToRvMax();openPlots=new Set(Array.isArray(d.openPlots)?d.openPlots:[1]);
  }catch(e){}
 }
