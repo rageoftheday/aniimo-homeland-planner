@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Aniimo Homeland Offline Planner v30.7</title>
+<title>Aniimo Homeland Offline Planner v30.8</title>
 <style>
 :root{
   --u:18px; --bg:#0d141c; --panel:#16212c; --line:#2c4356; --text:#eef7ff; --muted:#9db0c2;
@@ -213,7 +213,7 @@ textarea{width:100%;height:110px}.legend{padding:9px 11px;border-top:1px solid #
 </head>
 <body>
 <header>
-<div><h1>Aniimo Homeland Offline Planner v30.7</h1><div class="sub">Tabbed Homeland workspace • full production browser • visual per-copy Aniimo roster • personality/job-fit advisor • family locks • fuzzy autofill • profiles/autosave</div></div>
+<div><h1>Aniimo Homeland Offline Planner v30.8</h1><div class="sub">Tabbed Homeland workspace • full production browser • visual per-copy Aniimo roster • personality/job-fit advisor • family locks • fuzzy autofill • profiles/autosave</div></div>
 <div class="controls">
 <button class="primary" id="saveBtn">Save Local</button><button id="loadBtn">Load Local</button>
 <button id="exportBtn">Export JSON</button><button id="importBtn">Import JSON</button>
@@ -2083,7 +2083,7 @@ function focusHomelandImporter(){setMainTab('import');setTimeout(()=>el('aniidex
 
 let importUiMessage='';
 function aniidexBookmarkletCode(){
- const code=`(async()=>{try{if(!/(^|\\.)aniidex\\.com$/i.test(location.hostname)){alert('Aniimo Homeland Sync must run on aniidex.com.\\n\\nAniidex Homeland will open now. Once it finishes loading, click the Aniimo Homeland Sync bookmark again.');location.href='https://aniidex.com/homeland/';return;}const uid=prompt('Aniimo UID to sync:');if(!uid)return;const get=async(u,o)=>{const r=await fetch(u,o);if(!r.ok)throw new Error(u+' HTTP '+r.status);return r.json()};let stage='Homeland snapshot';const homeland=await get('/api/player/home-import',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json','X-Aniidex-Request':'1'},body:JSON.stringify({uid:String(uid)})});let profile=null,warnings=[];stage='optional player profile';try{profile=await get('/api/player/'+encodeURIComponent(uid),{headers:{Accept:'application/json'}})}catch(e){warnings.push('Player profile unavailable: '+e.message)}const bundle={format:'aniimo-homeland-sync-v3',capturedAt:new Date().toISOString(),source:'aniidex.com',uid:String(uid),profile:profile||{},homeland,warnings};const b=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='Aniimo_Homeland_'+uid+'_'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);alert('Aniimo Homeland sync downloaded.\\n\\nThe planner already contains its own offline reference catalog for names, forms, abilities, facilities and recipes.'+(warnings.length?'\\n\\nOptional warning: '+warnings.join(' | '):''));}catch(e){alert('Aniimo sync failed while loading '+(typeof stage==='string'?stage:'Aniidex data')+': '+(e&&e.message||e)+'\\n\\nMake sure you are on https://aniidex.com/homeland/ and the page is fully loaded, then try again.');}})()`;
+ const code=`(async()=>{try{if(!/(^|\\.)aniidex\\.com$/i.test(location.hostname)){alert('Aniimo Homeland Sync must run on aniidex.com.\\n\\nAniidex Homeland will open now. Once it finishes loading, click the Aniimo Homeland Sync bookmark again.');location.href='https://aniidex.com/homeland/';return;}const uid=prompt('Aniimo UID to sync:');if(!uid)return;if(!/^\\d{8,16}$/.test(String(uid).trim())){alert('Please enter a numeric Aniimo UID.');return;}const get=async(u,o)=>{const r=await fetch(u,o);if(!r.ok)throw new Error(u+' HTTP '+r.status);return r.json()};const clean=String(uid).trim();let stage='player context';const profile=await get('/api/player/'+encodeURIComponent(clean),{headers:{Accept:'application/json'}});await new Promise(r=>setTimeout(r,250));stage='Homeland snapshot';const homeland=await get('/api/player/home-import',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json','X-Aniidex-Request':'1'},body:JSON.stringify({uid:clean})});const bundle={format:'aniimo-homeland-sync-v3',capturedAt:new Date().toISOString(),source:'aniidex.com',uid:clean,profile:profile||{},homeland,warnings:[]};const b=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='Aniimo_Homeland_'+clean+'_'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);alert('Aniimo Homeland sync downloaded.\\n\\nLoad that JSON in the planner Import / Sync tab.');}catch(e){alert('Aniimo sync failed while loading '+(typeof stage==='string'?stage:'Aniidex data')+': '+(e&&e.message||e)+'\\n\\nOpen https://aniidex.com/homeland/, make sure you are signed in, load that player on Aniidex if needed, then click the sync bookmark again.');}})()`;
  return 'javascript:'+code.replace(/\\n+/g,' ');
 }
 async function importAniidexSyncFile(file){
@@ -2133,23 +2133,23 @@ function renderImportTab(){
 async function importAniidexUid(){
  const inp=el('aniidexUidInput'),btn=el('aniidexImportBtn'),st=el('aniidexImportStatus');
  const uid=String(inp?.value||'').trim();if(!/^\d{8,16}$/.test(uid)){st.innerHTML='<span class="badText">Enter a numeric Aniimo UID first.</span>';return}
- btn.disabled=true;st.innerHTML='<span class="warnText">Contacting Aniիդex… testing direct browser access.</span>';
+ btn.disabled=true;st.innerHTML='<span class="warnText">Testing direct Aniidex access…</span>';
  try{
    const profileUrl=`https://aniidex.com/api/player/${encodeURIComponent(uid)}`;
    const pr=await fetch(profileUrl,{method:'GET',headers:{'Accept':'application/json'},credentials:'omit'});
    if(!pr.ok)throw new Error(`Player lookup returned HTTP ${pr.status}`);
    const profileData=await pr.json();
-   st.innerHTML='<span class="warnText">Player found. Importing Homeland snapshot…</span>';
+   st.innerHTML='<span class="warnText">Player found. Trying Homeland snapshot…</span>';
    const hr=await fetch('https://aniidex.com/api/player/home-import',{method:'POST',headers:{'Accept':'application/json','Content-Type':'application/json','X-Aniidex-Request':'1'},body:JSON.stringify({uid:String(uid)}),credentials:'omit'});
    if(!hr.ok)throw new Error(`Homeland import returned HTTP ${hr.status}`);
    const homeData=await hr.json();
    const sum=summarizeAniidexImport(profileData,homeData);
-   st.innerHTML=`<span class="okText">Direct import works ✓</span> ${esc(sum.name||uid)} • RV ${sum.rv} • ${sum.aniimo} Homeland Aniimo • ${sum.working} placed at facilities • ${sum.facilities} facility pieces • ${sum.caught||'—'} caught forms`;
+   st.innerHTML=`<span class="okText">Direct import works ✓</span> ${esc(sum.name||uid)} • RV ${sum.rv} • ${sum.aniimo} Homeland Aniimo • ${sum.working} placed • ${sum.facilities} facility pieces • ${sum.caught||'—'} caught forms`;
    const applied=applyAniidexImportedData(profileData,homeData,'Direct Aniidex UID');if(!applied)return;
-   st.innerHTML=`<span class="okText">Imported ✓</span> RV, open plots and ${workers.length} Homeland Aniimo loaded. Raw facility/collection data is saved with this profile while ID-name decoding is expanded.`;
+   st.innerHTML=`<span class="okText">Imported ✓</span> RV, open plots and ${workers.length} Homeland Aniimo loaded.`;
  }catch(err){
    console.error('Aniidex direct UID import failed',err);
-   st.innerHTML=`<span class="badText">Direct import failed:</span> ${esc(err?.message||err)}<br><span class="small">Local-file browser security is blocking the direct request. Use <b>Copied Response Import</b> below; it works fully offline.</span>`;const d=el('copiedImportDetails');if(d)d.open=true;
+   st.innerHTML=`<span class="badText">Direct UID is blocked from this page:</span> ${esc(err?.message||err)}<br><span class="small">Aniidex does not currently expose this import flow for cross-origin browser use. Use <b>Aniimo Homeland Sync</b> on aniidex.com or import a saved sync JSON; those run with your normal Aniidex session and do not require sharing cookies or tokens.</span>`;
  }finally{btn.disabled=false}
 }
 
