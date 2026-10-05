@@ -78,7 +78,7 @@ jobs:
           test -s data/homeland-reference-data.js
           test -s js/homeland-data.js
           grep -q '<!doctype html>' index.html
-          grep -q 'Aniimo Homeland Offline Planner v30.10.0' index.html
+          grep -q 'Aniimo Homeland Offline Planner v30.10.1' index.html
           grep -q 'css/app.css' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
@@ -87,6 +87,8 @@ jobs:
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
           grep -q 'js/app.js' index.html
+          grep -q 'productionBrowserHead' js/views.js
+          grep -q 'productionRecipeTable' css/app.css
           grep -q 'function aniidexBookmarkletCode' js/importer.js
           ! grep -q 'Direct UID Test' js/importer.js
           ! grep -q 'function importAniidexUid' js/importer.js
