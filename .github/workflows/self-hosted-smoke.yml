@@ -84,7 +84,8 @@ jobs:
           grep -q 'js/dom.js' index.html
           grep -q 'js/app.js' index.html
           grep -q 'function aniidexBookmarkletCode' js/importer.js
-          grep -q 'async function importAniidexUid' js/importer.js
+          ! grep -q 'Direct UID Test' js/importer.js
+          ! grep -q 'function importAniidexUid' js/importer.js
           grep -q 'const EMBEDDED_ANIIDEX_CATALOG=' data/embedded-aniidex-catalog.js
           node --check js/dom.js
           node --check js/app.js
