@@ -76,7 +76,7 @@ jobs:
           test -s js/views.js
           test -s data/embedded-aniidex-catalog.js
           grep -q '<!doctype html>' index.html
-          grep -q 'Aniimo Homeland Offline Planner v30.9.3' index.html
+          grep -q 'Aniimo Homeland Offline Planner v30.9.4' index.html
           grep -q 'css/app.css' index.html
           grep -q 'data/embedded-aniidex-catalog.js' index.html
           grep -q 'js/importer.js' index.html
