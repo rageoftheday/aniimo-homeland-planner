@@ -9,6 +9,7 @@ index.html                         UI shell
 css/app.css                       Planner styles
 js/app.js                         Core planner/map/roster/advisor UI logic
 js/importer.js                    Aniidex sync/import helpers
+js/views.js                       Dashboard, production, suggestions, progression, and database views
 data/embedded-aniidex-catalog.js  Offline reference snapshot
 .github/workflows/                Validation and runner checks
 ```
@@ -34,3 +35,8 @@ The self-hosted runner smoke test verifies:
 - expected static-site files and references
 
 The live GitHub Pages site remains on `main` until changes are merged.
+
+## v30.9 work
+
+- Tabbed dashboard/reference views are isolated in `js/views.js`.
+- Climate coverage now uses the verified quarter-square (0.25 × 0.25) overlap threshold instead of the older half-square threshold.
