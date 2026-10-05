@@ -1439,7 +1439,29 @@ duplicateBtn.onclick=()=>{const o=objects.find(x=>x.id===selected);if(!o)return;
 
 function nextFree(w,h){for(let y=0;y<=60-h;y+=.5)for(let x=0;x<=80-w;x+=.5){const t={id:-1,x,y,w,h};if(validArea(t)&&!collide(t))return[x,y]}return null}
 addAllBtn.onclick=()=>{for(const item of catalog.filter(isUnlocked)){const lim=maxCount(item,+rvLevel.value),d=effectiveDims(item);if(d.w<=0||d.h<=0)continue;while(objects.filter(o=>o.name===item.name).length<lim){const p=nextFree(d.w,d.h);if(!p)break;{const obj={id:idCounter++,name:item.name,w:d.w,h:d.h,x:p[0],y:p[1],cls:item.cls||'',zone:item.zone||null,label:item.name,req:'none'};if(facilityLevels[item.name]&&facilityLevels[item.name].length){obj.facilityLevel=preferredPlaceLevel(item.name);obj.targetLevel=obj.facilityLevel;obj.placedLevel=obj.facilityLevel;obj.placementCost=directPlacementCost(item.name,obj.facilityLevel)}objects.push(obj)}}}selected=null;render()};
-starterBtn.onclick=()=>{objects=[];idCounter=1;[['Heat Furnace',43,20],['Cooling Unit',48,20],['Sunlamp',56,20],['Storage Unit',42,29]].forEach(([n,x,y])=>{const i=catalog.find(a=>a.name===n);if(i&&isUnlocked(i))objects.push({id:idCounter++,name:i.name,w:i.w,h:i.h,x,y,cls:i.cls||'',zone:i.zone||null,label:i.name,req:'none'})});selected=null;render()};
+function updateClimateStarterState(){
+ const names=['Heat Furnace','Cooling Unit','Sunlamp'];
+ const available=names.some(n=>{const i=catalog.find(x=>x.name===n);return i&&isUnlocked(i)&&maxCount(i,+rvLevel.value)>0});
+ starterBtn.disabled=!available;
+ starterBtn.textContent=available?'Climate Starter':'Climate Starter 🔒 RV7';
+ starterBtn.title=available?'Add one of each currently unlocked climate device to the first legal free space. Existing layout is preserved.':'Climate devices are not unlocked at this RV yet.';
+}
+starterBtn.onclick=()=>{
+ const names=['Heat Furnace','Cooling Unit','Sunlamp'];
+ let placed=0;
+ for(const name of names){
+   const item=catalog.find(a=>a.name===name);
+   if(!item||!isUnlocked(item)||maxCount(item,+rvLevel.value)<=0)continue;
+   if(objects.filter(o=>o.name===name).length>=maxCount(item,+rvLevel.value))continue;
+   const d=effectiveDims(item),p=nextFree(d.w,d.h);
+   if(!p)continue;
+   const obj={id:idCounter++,name:item.name,w:d.w,h:d.h,x:p[0],y:p[1],cls:item.cls||'',zone:item.zone||null,label:item.name,req:'none'};
+   if(facilityLevels[item.name]&&facilityLevels[item.name].length){obj.facilityLevel=preferredPlaceLevel(item.name);obj.targetLevel=obj.facilityLevel;obj.placedLevel=obj.facilityLevel;obj.placementCost=directPlacementCost(item.name,obj.facilityLevel)}
+   objects.push(obj);placed++;
+ }
+ selected=null;render();updateClimateStarterState();
+ if(startupStatus){startupStatus.textContent=placed?('Climate Starter added '+placed+' climate device'+(placed===1?'':'s')+'.'):'No additional climate devices can be placed in the currently open plots.';startupStatus.style.color=placed?'#8fe3a7':'#ffcb6b';}
+};
 
 rvLevel.onchange=()=>{
   for(const n of ['Farmland','Woodland','Mine']) delete maxOverrides[n];
@@ -1451,7 +1473,7 @@ rvLevel.onchange=()=>{
     const m=moduleMaxForRV(name,+rvLevel.value);
     moduleLevels[name]=Math.min(Number(moduleLevels[name]||0),m);
   }
-  render()
+  render();updateClimateStarterState()
 };
 futureToggle.onchange=()=>{renderCatalog();renderRecipePanel()};
 usableOnly.onchange=()=>{rebuildCropPicker();renderRecipePanel()};
@@ -1674,6 +1696,7 @@ clearBtn.onclick=()=>{if(confirm('Clear current layout?')){objects=[];selected=n
 
 // Initialize module defaults only after rvModules/moduleLevels have been declared.
 if(!Object.keys(moduleLevels).length) initModuleLevelsToRvMax();
+updateClimateStarterState();
 
 if(EMBEDDED_STATE){
  try{
