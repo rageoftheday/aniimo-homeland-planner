@@ -68,7 +68,7 @@ function importAniidexPastedResponses(){
   st.innerHTML=`<span class="okText">Copied-response import complete ✓</span> ${esc(sum.name||'Player')} • RV ${sum.rv} • ${sum.aniimo} Homeland Aniimo • ${sum.facilities} facility pieces • ${sum.caught||0} caught forms`;
  }catch(err){st.innerHTML=`<span class="badText">Copied-response import failed:</span> ${esc(err?.message||err)}`}
 }
-function focusHomelandImporter(){setMainTab('import');setTimeout(()=>el('aniidexUidInput')?.focus(),50)}
+function focusHomelandImporter(){setMainTab('import');setTimeout(()=>el('aniidexSyncFile')?.focus(),50)}
 
 
 let importUiMessage='';
@@ -108,37 +108,13 @@ function renderImportTab(){
  <div class="importGrid" style="margin-top:12px">
   <div class="importMethod"><h3>1. Easy Aniիդex Sync Helper</h3><div class="small">One-time setup. This bookmark runs while you are already on Aniիդex, so its same-origin API calls are allowed. It downloads one JSON file; it does not copy cookies or passwords into the planner. v30.5 also captures Aniիդex's public Homeland catalog so numeric form IDs can resolve to names, forms and Home abilities automatically.</div><ol class="importSteps"><li>Drag the button below to your bookmarks bar, or copy it into a new bookmark's URL.</li><li>Open Aniիդex → Homeland and let the page finish loading.</li><li>Click the bookmark and enter your UID. If you accidentally run it from the planner, it will take you to Aniիդex first; click the bookmark again after Aniիդex loads.</li><li>Load the downloaded JSON using the box to the right.</li></ol><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><a id="syncBookmarklet" class="bookmarkletLink" href="#" title="Drag this to your bookmarks bar. Clicking it here will only open Aniիդex.">Drag to Bookmarks: Aniimo Homeland Sync</a><button id="openAniidexBtn">Open Aniիդex Homeland</button><button id="copyBookmarkletBtn">Copy Bookmarklet</button><button id="downloadBookmarkletBtn">Download Instructions</button></div><details style="margin-top:10px"><summary>Show bookmarklet code</summary><textarea id="bookmarkletCode" class="bookmarkletCode" readonly></textarea></details></div>
   <div class="importMethod"><h3>2. Load Sync File</h3><div class="syncDrop"><input type="file" id="aniidexSyncFile" accept="application/json,.json"><div class="small" style="margin-top:6px">Choose the <b>Aniimo_Homeland_...json</b> file downloaded by the helper. New v2 sync files include the public Homeland catalog, English labels and planner reference data so the roster can decode numeric form IDs immediately.</div></div><div class="small" style="margin-top:10px"><b>Import priority:</b> imported individual data → decoded Aniimo/form defaults → editable user overrides.</div></div>
-  <div class="importMethod"><h3>3. Direct UID Test</h3><div class="small">A local <code>file://</code> planner is normally blocked by CORS, but this remains available for hosted copies/future use.</div><div class="uidImportRow" style="margin-top:8px"><label>UID<input id="aniidexUidInput" inputmode="numeric" placeholder="Aniimo UID" value="${esc(meta?.uid||'')}"></label><button id="aniidexImportBtn">Import UID</button></div><div id="aniidexImportStatus" class="small">Direct UID import may fail in local-file mode. Use the Sync Helper above instead.</div></div>
-  <div class="importMethod"><h3>4. Advanced: Paste Network Responses</h3><div class="small">Fallback for troubleshooting. Paste the GET <b>/api/player/&lt;UID&gt;</b> response and POST <b>/api/player/home-import</b> response.</div><div class="copiedGrid" style="grid-template-columns:1fr;margin-top:8px"><label>Profile / Collection<textarea id="aniidexProfilePaste" placeholder='Paste response containing "profile" and "collection"'></textarea></label><label>Homeland<textarea id="aniidexHomePaste" placeholder='Paste response containing "home", "facilities" and "aniimo"'></textarea></label></div><div class="importActions"><button class="primary" id="aniidexPasteImportBtn">Import Copied Responses</button><button id="aniidexPasteClearBtn">Clear</button></div></div>
+  <div id="aniidexImportStatus" class="small" style="margin:10px 0"></div>
+  <div class="importMethod"><h3>3. Advanced: Paste Network Responses</h3><div class="small">Fallback for troubleshooting. Paste the GET <b>/api/player/&lt;UID&gt;</b> response and POST <b>/api/player/home-import</b> response.</div><div class="copiedGrid" style="grid-template-columns:1fr;margin-top:8px"><label>Profile / Collection<textarea id="aniidexProfilePaste" placeholder='Paste response containing "profile" and "collection"'></textarea></label><label>Homeland<textarea id="aniidexHomePaste" placeholder='Paste response containing "home", "facilities" and "aniimo"'></textarea></label></div><div class="importActions"><button class="primary" id="aniidexPasteImportBtn">Import Copied Responses</button><button id="aniidexPasteClearBtn">Clear</button></div></div>
  </div>`;
  const bm=aniidexBookmarkletCode();el('syncBookmarklet').href=bm;el('bookmarkletCode').value=bm;el('syncBookmarklet').onclick=(e)=>{e.preventDefault();importUiMessage='Opened Aniիդex Homeland. Once it finishes loading, click the Aniimo Homeland Sync bookmark from your browser bookmarks bar.';window.open('https://aniidex.com/homeland/','_blank');renderImportTab()};el('openAniidexBtn').onclick=()=>window.open('https://aniidex.com/homeland/','_blank');
  el('copyBookmarkletBtn').onclick=async()=>{try{await navigator.clipboard.writeText(bm);importUiMessage='Bookmarklet copied. Create a bookmark and paste it into the URL/location field.';}catch{importUiMessage='Clipboard permission was blocked. Open “Show bookmarklet code” and copy it manually.';}renderImportTab()};
  el('downloadBookmarkletBtn').onclick=downloadBookmarkletText;
  el('aniidexSyncFile').onchange=e=>importAniidexSyncFile(e.target.files?.[0]);
- el('aniidexImportBtn').onclick=importAniidexUid;
  el('aniidexPasteImportBtn').onclick=importAniidexPastedResponses;
  el('aniidexPasteClearBtn').onclick=()=>{el('aniidexProfilePaste').value='';el('aniidexHomePaste').value='';};
-}
-
-async function importAniidexUid(){
- const inp=el('aniidexUidInput'),btn=el('aniidexImportBtn'),st=el('aniidexImportStatus');
- const uid=String(inp?.value||'').trim();if(!/^\d{8,16}$/.test(uid)){st.innerHTML='<span class="badText">Enter a numeric Aniimo UID first.</span>';return}
- btn.disabled=true;st.innerHTML='<span class="warnText">Testing direct Aniidex access…</span>';
- try{
-   const profileUrl=`https://aniidex.com/api/player/${encodeURIComponent(uid)}`;
-   const pr=await fetch(profileUrl,{method:'GET',headers:{'Accept':'application/json'},credentials:'omit'});
-   if(!pr.ok)throw new Error(`Player lookup returned HTTP ${pr.status}`);
-   const profileData=await pr.json();
-   st.innerHTML='<span class="warnText">Player found. Trying Homeland snapshot…</span>';
-   const hr=await fetch('https://aniidex.com/api/player/home-import',{method:'POST',headers:{'Accept':'application/json','Content-Type':'application/json','X-Aniidex-Request':'1'},body:JSON.stringify({uid:String(uid)}),credentials:'omit'});
-   if(!hr.ok)throw new Error(`Homeland import returned HTTP ${hr.status}`);
-   const homeData=await hr.json();
-   const sum=summarizeAniidexImport(profileData,homeData);
-   st.innerHTML=`<span class="okText">Direct import works ✓</span> ${esc(sum.name||uid)} • RV ${sum.rv} • ${sum.aniimo} Homeland Aniimo • ${sum.working} placed • ${sum.facilities} facility pieces • ${sum.caught||'—'} caught forms`;
-   const applied=applyAniidexImportedData(profileData,homeData,'Direct Aniidex UID');if(!applied)return;
-   st.innerHTML=`<span class="okText">Imported ✓</span> RV, open plots and ${workers.length} Homeland Aniimo loaded.`;
- }catch(err){
-   console.error('Aniidex direct UID import failed',err);
-   st.innerHTML=`<span class="badText">Direct UID is blocked from this page:</span> ${esc(err?.message||err)}<br><span class="small">Aniidex does not currently expose this import flow for cross-origin browser use. Use <b>Aniimo Homeland Sync</b> on aniidex.com or import a saved sync JSON; those run with your normal Aniidex session and do not require sharing cookies or tokens.</span>`;
- }finally{btn.disabled=false}
 }
