@@ -17,7 +17,6 @@ var rvNote=document.getElementById('rvNote');
 var startupStatus=document.getElementById('startupStatus');
 var modulesToRvMaxBtn=document.getElementById('modulesToRvMaxBtn');
 var moduleGrid=document.getElementById('moduleGrid');
-var plots1to9Btn=document.getElementById('plots1to9Btn');
 var allPlotsBtn=document.getElementById('allPlotsBtn');
 var noPlotsBtn=document.getElementById('noPlotsBtn');
 var plotAccessGrid=document.getElementById('plotAccessGrid');
