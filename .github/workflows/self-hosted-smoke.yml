@@ -4,7 +4,12 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - work/v30.8-runner-sync
+      - main
+      - 'work/**'
+      - 'hotfix/**'
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -70,7 +75,7 @@ jobs:
           test -s js/views.js
           test -s data/embedded-aniidex-catalog.js
           grep -q '<!doctype html>' index.html
-          grep -q 'Aniimo Homeland Offline Planner v30.9' index.html
+          grep -q 'Aniimo Homeland Offline Planner v30.9.1' index.html
           grep -q 'css/app.css' index.html
           grep -q 'data/embedded-aniidex-catalog.js' index.html
           grep -q 'js/importer.js' index.html
