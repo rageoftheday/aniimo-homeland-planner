@@ -71,19 +71,22 @@ jobs:
           test -s index.html
           test -s css/app.css
           test -s js/app.js
+          test -s js/dom.js
           test -s js/importer.js
           test -s js/views.js
           test -s data/embedded-aniidex-catalog.js
           grep -q '<!doctype html>' index.html
-          grep -q 'Aniimo Homeland Offline Planner v30.9.1' index.html
+          grep -q 'Aniimo Homeland Offline Planner v30.9.2' index.html
           grep -q 'css/app.css' index.html
           grep -q 'data/embedded-aniidex-catalog.js' index.html
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
+          grep -q 'js/dom.js' index.html
           grep -q 'js/app.js' index.html
           grep -q 'function aniidexBookmarkletCode' js/importer.js
           grep -q 'async function importAniidexUid' js/importer.js
           grep -q 'const EMBEDDED_ANIIDEX_CATALOG=' data/embedded-aniidex-catalog.js
+          node --check js/dom.js
           node --check js/app.js
           node --check js/importer.js
           node --check js/views.js
