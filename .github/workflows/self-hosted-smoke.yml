@@ -32,12 +32,30 @@ jobs:
 
       - name: Verify NVMe workspace
         run: |
-          set -euxo pipefail
-          test -d /mnt/nvme1/aniimo-planner-cache
-          test -w /mnt/nvme1/aniimo-planner-cache
-          df -h /mnt/nvme1/aniimo-planner-cache
+          set -uxo pipefail
+          echo "=== identity ==="
+          whoami
+          id
+          echo "=== path inspection ==="
+          ls -ld /mnt || true
+          ls -ld /mnt/nvme1 || true
+          ls -ld /mnt/nvme1/aniimo-planner-cache || true
+          namei -l /mnt/nvme1/aniimo-planner-cache || true
+          echo "=== mounts ==="
+          mount | grep -E ' /mnt/nvme1( |/)' || true
+          df -h /mnt /mnt/nvme1 2>&1 || true
+          echo "=== existence/write checks ==="
+          if [ ! -d /mnt/nvme1/aniimo-planner-cache ]; then
+            echo "::error::Runner cannot see /mnt/nvme1/aniimo-planner-cache"
+            exit 21
+          fi
+          if [ ! -w /mnt/nvme1/aniimo-planner-cache ]; then
+            echo "::error::Runner can see the cache directory but cannot write to it"
+            exit 22
+          fi
           touch /mnt/nvme1/aniimo-planner-cache/.runner-smoke
           rm /mnt/nvme1/aniimo-planner-cache/.runner-smoke
+          echo "NVMe workspace OK"
 
       - name: Checkout planner
         uses: actions/checkout@v4
