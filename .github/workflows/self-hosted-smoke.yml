@@ -125,6 +125,8 @@ jobs:
           if(!global.AniimoAssets.portraitCandidates('Emberpup','Basic Form','Sparkling','Variant VI')[0].endsWith('Emberpup__1005100__ThreeQuarter__Sparkling-06.webp')) throw new Error('Stage Sparkling VI path missing');
           if(global.AniimoAssets.stageAppearanceLabel('Dazzling Sparkling','')!=='Sparkling-11') throw new Error('Dazzling mapping missing');
           if(global.AniimoAssets.stageAppearanceLabel('Shadow Sparkling','')!=='Sparkling-12') throw new Error('Shadow mapping missing');
+          if(global.AniimoAssets.form('Stellarys','Prismana Form')?.id!=='1001202') throw new Error('Prismana Form alias did not resolve');
+          console.log('Prismana alias resolution OK');
           console.log('Appearance asset model OK',id,c[0]);
           NODE
           grep -q 'databaseBrowserHead' js/views.js

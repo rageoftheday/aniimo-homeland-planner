@@ -9,8 +9,15 @@
     byNameForm.set(normalize((f.name||'')+'|'+(f.form||'')),{id,...f});
     if((f.form||'').toLowerCase()==='basic form')byNameForm.set(normalize((f.name||'')+'|'),{id,...f});
   }
+  function canonicalFormName(formName=''){
+    const raw=String(formName||'').trim();
+    if(!raw||/^(base|basic|basic form)$/i.test(raw))return '';
+    if(/^prismana form$/i.test(raw))return 'Prismana';
+    return raw;
+  }
   function form(name,formName=''){
-    return byNameForm.get(normalize(String(name||'')+'|'+String(formName||'')))||
+    const wanted=canonicalFormName(formName);
+    return byNameForm.get(normalize(String(name||'')+'|'+wanted))||
       byNameForm.get(normalize(String(name||'')+'|'))||null;
   }
   function appearanceKey(v){
@@ -75,5 +82,5 @@
   }
   function item(id){return (m.items||{})[String(id)]||null}
   function ability(name){return (m.abilities||{})[name]||null}
-  window.AniimoAssets={manifest:m,form,appearanceKey,stageAppearanceLabel,stagePortrait,portraitCandidates,localFormPortrait,localFormArt,facility,item,ability};
+  window.AniimoAssets={manifest:m,canonicalFormName,form,appearanceKey,stageAppearanceLabel,stagePortrait,portraitCandidates,localFormPortrait,localFormArt,facility,item,ability};
 })();
