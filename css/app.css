@@ -242,20 +242,20 @@ textarea{width:100%;height:110px}.legend{padding:9px 11px;border-top:1px solid #
 
 
 /* v30.11 Database fixed summary + scrolling tables */
-#databasePane{overflow:hidden;padding:0}
-.databaseBrowser{height:100%;min-height:0;display:flex;flex-direction:column}
-.databaseBrowserHead{flex:0 0 auto;padding:12px 12px 10px;background:#091019;border-bottom:1px solid #263a4b}
-.databaseScroll{flex:1 1 0;min-height:0;overflow:hidden;padding:10px 12px 12px;display:flex;flex-direction:column;gap:10px}
-.databaseSection{min-height:0;display:flex;flex-direction:column}
-.databaseAniimoSection{flex:2 1 0}
-.databaseFamilySection{flex:1 1 0}
+#databasePane{overflow:auto;padding:0}
+.databaseBrowser{min-height:100%;display:block}
+.databaseBrowserHead{padding:12px 12px 10px;background:#091019;border-bottom:1px solid #263a4b}
+.databaseScroll{overflow:visible;padding:10px 12px 18px;display:block}
+.databaseSection{display:flex;flex-direction:column;margin-bottom:14px}
+.databaseAniimoSection,.databaseFamilySection{min-height:0}
 .databaseAniimoFixed,.databaseFamilyFixed{flex:0 0 auto;background:#091019}
 .databaseAniimoFixed .sectionTitle,.databaseFamilyFixed .sectionTitle{margin:0;padding:0 0 8px}
 .databaseHeaderWrap{border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:0}
 .databaseHeaderTable{table-layout:fixed}
 .databaseHeaderTable th{position:static!important;background:#182a38}
-.databaseBodyScroll,.databaseFamilyBodyScroll{flex:1 1 auto;min-height:0;overflow:auto;border-left:1px solid #30495d;border-right:1px solid #30495d;border-bottom:1px solid #30495d;border-radius:0 0 9px 9px}
+.databaseBodyScroll,.databaseFamilyBodyScroll{overflow:auto;border-left:1px solid #30495d;border-right:1px solid #30495d;border-bottom:1px solid #30495d;border-radius:0 0 9px 9px}
+.databaseBodyScroll{height:clamp(300px,42vh,560px)}
+.databaseFamilyBodyScroll{height:clamp(190px,28vh,360px)}
 .databaseBodyTable{table-layout:fixed}
 .databaseBodyTable td{border-bottom:1px solid #243a4c}
-.databaseBrowserHead{max-height:42%;overflow:auto}
 .catalogPortrait img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
