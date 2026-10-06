@@ -88,7 +88,7 @@ jobs:
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
           grep -q 'css/app.css?v=30.14.0' index.html
           grep -q 'js/views.js?v=30.14.0' index.html
-          grep -q 'js/importer.js?v=30.14.5' index.html
+          grep -q 'js/importer.js?v=30.14.6' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
@@ -155,6 +155,35 @@ jobs:
           grep -q 'function aniidexSparklingAppearance' js/importer.js
           grep -q "w.formId=String(decoded.variant" js/importer.js
           grep -q "appearance:'Sparkling'" js/importer.js
+          grep -q 'function aniidexFormIndexes' js/importer.js
+          grep -q 'function decodeAniidexFormPreferred' js/importer.js
+          grep -q 'function aniidexBundleCatalog' js/importer.js
+          grep -q "/api/homeland/planner" extension/aniidex-main.js
+          node - <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const embeddedSrc=fs.readFileSync('data/embedded-aniidex-catalog.js','utf8');
+          const importerSrc=fs.readFileSync('js/importer.js','utf8').split('function aniimoZipCrc32')[0];
+          const ctx={console,WeakMap,Map,window:{},defaultWorker:()=>({abilities:[]}),catalogEntries:()=>[]};
+          vm.createContext(ctx);
+          vm.runInContext(embeddedSrc+'\n'+importerSrc,ctx);
+          const livePlanner={
+            facts:{
+              forms:{'live-key':{pet:9900000,variant:9900000,skills:{Fire:4}}},
+              abilities:{Fire:{id:1000}}
+            },
+            text:{forms:{'9900000':{name:'Live Test Aniimo',form:'Current Form'}},abilities:{'1000':'Fire'}}
+          };
+          const live=vm.runInContext("decodeAniidexFormPreferred(9900000,__live)",Object.assign(ctx,{__live:livePlanner}));
+          if(live?.name!=='Live Test Aniimo'||live?.catalogSource!=='aniidex-live') throw new Error('Live planner decoder priority failed');
+          const fallback=vm.runInContext("decodeAniidexFormPreferred(1004300,null)",ctx);
+          if(fallback?.name!=='Glacy'||fallback?.catalogSource!=='aniidex-embedded') throw new Error('Embedded fallback without planner failed');
+          const known=[1004300,1019400,1028300,1035100,1043300,1004500,1021200,1032300];
+          for(const id of known){
+            const got=vm.runInContext("decodeAniidexFormPreferred("+id+",null)",ctx);
+            if(!got||/^Form /.test(got.name)) throw new Error('Known form unresolved: '+id);
+          }
+          console.log('Aniidx live decoder and embedded fallback OK');
+          NODE
           test -s extension/manifest.json
           test -s extension/background.js
           test -s extension/planner-bridge.js
