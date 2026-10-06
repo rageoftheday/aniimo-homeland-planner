@@ -289,7 +289,7 @@ function renderAniimosTab(){
      const apps=local?.apps||[];
      const appearance=apps.includes('Normal')?'Normal':(apps[0]||'');
      const src=local?imagePath(local.assetName,local.id,appearance):'';
-     const wikiSpecies=window.WikiHomeland?.speciesByName?.(row.name);
+     const wikiSpecies=(window.WikiHomeland?.speciesList?.()||[]).find(ws=>String(ws.dex)===String(row.dex))||window.WikiHomeland?.speciesByName?.(row.name);
      const bestFull=wikiSpecies?.bestAbilities?.find(a=>a.type===row.type&&Number(a.level)===Number(row.level));
      const formLabels=(bestFull?.forms||row.forms||[]).map(f=>f.label).join(' • ')||'Unknown form';
      const habitatSet=new Set();
