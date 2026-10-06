@@ -83,6 +83,8 @@ jobs:
           test -s js/assets.js
           grep -q '<!doctype html>' index.html
           grep -q '<title>Aniimo Homeland Planner</title>' index.html
+          test -s assets/favicon.svg
+          grep -q 'rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=1"' index.html
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
