@@ -71,6 +71,95 @@ function importAniidexPastedResponses(){
 function focusHomelandImporter(){setMainTab('import');setTimeout(()=>el('aniidexSyncFile')?.focus(),50)}
 
 
+function aniimoZipCrc32(bytes){
+ let c=0xffffffff;
+ for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0);}
+ return (c^0xffffffff)>>>0;
+}
+function aniimoZipU16(n){return new Uint8Array([n&255,(n>>>8)&255])}
+function aniimoZipU32(n){return new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255])}
+function aniimoZipJoin(parts){
+ const len=parts.reduce((n,p)=>n+p.length,0),out=new Uint8Array(len);let at=0;
+ for(const p of parts){out.set(p,at);at+=p.length}
+ return out;
+}
+function aniimoZipDosTime(date=new Date()){
+ const year=Math.max(1980,date.getFullYear());
+ return {
+   time:((date.getHours()&31)<<11)|((date.getMinutes()&63)<<5)|((Math.floor(date.getSeconds()/2))&31),
+   date:(((year-1980)&127)<<9)|(((date.getMonth()+1)&15)<<5)|(date.getDate()&31)
+ };
+}
+function aniimoBuildStoreZip(fileMap){
+ const enc=new TextEncoder(),locals=[],centrals=[];let offset=0;
+ const stamp=aniimoZipDosTime();
+ for(const [name,text] of Object.entries(fileMap)){
+   const n=enc.encode(name),data=enc.encode(text),crc=aniimoZipCrc32(data);
+   const local=aniimoZipJoin([
+     aniimoZipU32(0x04034b50),aniimoZipU16(20),aniimoZipU16(0),aniimoZipU16(0),
+     aniimoZipU16(stamp.time),aniimoZipU16(stamp.date),aniimoZipU32(crc),
+     aniimoZipU32(data.length),aniimoZipU32(data.length),aniimoZipU16(n.length),aniimoZipU16(0),n,data
+   ]);
+   locals.push(local);
+   const central=aniimoZipJoin([
+     aniimoZipU32(0x02014b50),aniimoZipU16(20),aniimoZipU16(20),aniimoZipU16(0),aniimoZipU16(0),
+     aniimoZipU16(stamp.time),aniimoZipU16(stamp.date),aniimoZipU32(crc),
+     aniimoZipU32(data.length),aniimoZipU32(data.length),aniimoZipU16(n.length),aniimoZipU16(0),
+     aniimoZipU16(0),aniimoZipU16(0),aniimoZipU16(0),aniimoZipU32(0),aniimoZipU32(offset),n
+   ]);
+   centrals.push(central);offset+=local.length;
+ }
+ const centralData=aniimoZipJoin(centrals);
+ const end=aniimoZipJoin([
+   aniimoZipU32(0x06054b50),aniimoZipU16(0),aniimoZipU16(0),
+   aniimoZipU16(centrals.length),aniimoZipU16(centrals.length),
+   aniimoZipU32(centralData.length),aniimoZipU32(offset),aniimoZipU16(0)
+ ]);
+ return new Blob([...locals,centralData,end],{type:'application/zip'});
+}
+async function downloadAniimoCompanionExtension(){
+ const btn=el('downloadCompanionBtn');
+ const old=btn?.textContent;
+ try{
+   if(btn){btn.disabled=true;btn.textContent='Building extension ZIP…';}
+   const names=['manifest.json','background.js','planner-bridge.js','aniidex-isolated.js','aniidex-main.js'];
+   const files={};
+   for(const name of names){
+     const r=await fetch('extension/'+name,{cache:'no-store'});
+     if(!r.ok)throw new Error(name+' HTTP '+r.status);
+     files['Aniimo_Homeland_Companion/'+name]=await r.text();
+   }
+   files['Aniimo_Homeland_Companion/INSTALL.txt']=
+`ANIIMO HOMELAND COMPANION — INSTALL
+
+1. Extract Aniimo_Homeland_Companion.zip.
+2. Keep the extracted Aniimo_Homeland_Companion folder somewhere permanent.
+3. Chrome: open chrome://extensions
+   Edge:   open edge://extensions
+4. Turn ON Developer mode.
+5. Click "Load unpacked".
+6. Select the extracted Aniimo_Homeland_Companion folder — the folder containing manifest.json.
+7. Return to Aniimo Homeland Planner and refresh the page.
+8. Open Import / Sync.
+9. Confirm it says "Companion detected ✓".
+10. Enter an Aniimo UID and click "Import from Aniidx".
+
+If Aniidx requires Cloudflare verification, its tab may be brought forward. Complete the normal verification and the import will continue automatically.
+
+The companion does not export your Aniidx cookies or Turnstile token to the planner.
+`;
+   const blob=aniimoBuildStoreZip(files),url=URL.createObjectURL(blob),a=document.createElement('a');
+   a.href=url;a.download='Aniimo_Homeland_Companion.zip';document.body.appendChild(a);a.click();a.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),1500);
+   setAniidexCompanionMessage('Companion extension ZIP downloaded. Extract it, load the extracted folder with Load unpacked, then refresh this planner.');
+ }catch(err){
+   setAniidexCompanionMessage('Could not build companion download: '+(err?.message||err),true);
+ }finally{
+   if(btn){btn.disabled=false;btn.textContent=old||'Download Companion Extension';}
+ }
+}
+
+
 let importUiMessage='';
 let aniidexCompanionDetected=false;
 let aniidexCompanionTimer=null;
@@ -177,7 +266,7 @@ function renderImportTab(){
  <div class="importSummary">${meta?`<span class="importChip">Last source: ${esc(meta.source||'Aniidx')}</span><span class="importChip">${esc(sum.name||'Player')} • RV ${sum.rv||'?'}</span><span class="importChip">${sum.aniimo||0} Homeland Aniimo</span><span class="importChip">${sum.caught||0} caught forms</span>`:'<span class="importChip">No Aniidx sync imported into this profile yet</span>'}</div>
  ${importUiMessage?`<div class="${/failed|not detected|invalid/i.test(importUiMessage)?'rightAlert':'rightGood'}" style="margin-top:10px">${esc(importUiMessage)}</div>`:''}
  <div class="importGrid" style="margin-top:12px">
-  <div class="importMethod"><h3>1. Direct Aniidx Sync (Companion)</h3><div class="small">Enter a UID here. The companion asks Aniidx to authorize the lookup, completes the normal <b>/api/player/pass</b> verification when required, then returns the player profile and Homeland snapshot directly to this planner. If Cloudflare requires interaction, the Aniidx tab is brought forward only for that verification.</div><div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-top:10px"><label style="min-width:230px">Aniimo UID<input id="aniidexCompanionUid" inputmode="numeric" autocomplete="off" value="${directUid}" placeholder="302000117964"></label><button class="primary" id="aniidexCompanionBtn">Import from Aniidx</button><span id="aniidexCompanionState" class="small">${aniidexCompanionDetected?'Companion detected ✓':'Companion extension required'}</span></div><div class="small" style="margin-top:8px">Need the companion? <a class="bookmarkletLink" href="https://github.com/rageoftheday/aniimo-homeland-planner/archive/refs/heads/main.zip" download>Download Companion Extension</a> — extract the ZIP, then in Chrome/Edge choose <b>Load unpacked</b> and select the extracted <b>aniimo-homeland-planner-main/extension</b> folder. Refresh this planner afterward.</div></div>
+  <div class="importMethod"><h3>1. Direct Aniidx Sync (Companion)</h3><div class="small">Enter a UID here. The companion asks Aniidx to authorize the lookup, completes the normal <b>/api/player/pass</b> verification when required, then returns the player profile and Homeland snapshot directly to this planner. If Cloudflare requires interaction, the Aniidx tab is brought forward only for that verification.</div><div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-top:10px"><label style="min-width:230px">Aniimo UID<input id="aniidexCompanionUid" inputmode="numeric" autocomplete="off" value="${directUid}" placeholder="302000117964"></label><button class="primary" id="aniidexCompanionBtn">Import from Aniidx</button><span id="aniidexCompanionState" class="small">${aniidexCompanionDetected?'Companion detected ✓':'Companion extension required'}</span></div><div style="margin-top:12px;padding:10px;border:1px solid #31495d;border-radius:10px"><b>Install the Companion Extension</b><div class="small" style="margin-top:6px">1. Click <b>Download Companion Extension</b> below. This downloads <b>only the extension</b>, not the whole GitHub repository.<br>2. Extract <b>Aniimo_Homeland_Companion.zip</b> somewhere permanent.<br>3. Open <b>chrome://extensions</b> or <b>edge://extensions</b>.<br>4. Turn on <b>Developer mode</b>.<br>5. Click <b>Load unpacked</b>.<br>6. Select the extracted <b>Aniimo_Homeland_Companion</b> folder — the folder containing <b>manifest.json</b>.<br>7. Return here and refresh the planner. This box should change to <b>Companion detected ✓</b>.</div><div style="margin-top:10px"><button id="downloadCompanionBtn">Download Companion Extension</button></div></div></div>
   <div class="importMethod"><h3>2. Bookmarklet Fallback</h3><div class="small">The existing same-origin helper remains available if you do not want to install the companion. It runs on Aniidx and downloads one JSON sync file without copying cookies or passwords into the planner.</div><ol class="importSteps"><li>Drag the button below to your bookmarks bar, or copy it into a new bookmark's URL.</li><li>Open Aniidx → Homeland and let the page finish loading.</li><li>Click the bookmark and enter your UID.</li><li>Load the downloaded JSON using the sync-file box.</li></ol><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><a id="syncBookmarklet" class="bookmarkletLink" href="#" title="Drag this to your bookmarks bar. Clicking it here will only open Aniidx.">Drag to Bookmarks: Aniimo Homeland Sync</a><button id="openAniidexBtn">Open Aniidx Homeland</button><button id="copyBookmarkletBtn">Copy Bookmarklet</button><button id="downloadBookmarkletBtn">Download Instructions</button></div><details style="margin-top:10px"><summary>Show bookmarklet code</summary><textarea id="bookmarkletCode" class="bookmarkletCode" readonly></textarea></details></div>
   <div class="importMethod"><h3>3. Load Sync File</h3><div class="syncDrop"><input type="file" id="aniidexSyncFile" accept="application/json,.json"><div class="small" style="margin-top:6px">Choose an <b>Aniimo_Homeland_...json</b> file downloaded by the fallback helper.</div></div><div class="small" style="margin-top:10px"><b>Import priority:</b> imported individual data → decoded Aniimo/form defaults → editable user overrides.</div></div>
   <div id="aniidexImportStatus" class="small" style="margin:10px 0"></div>
@@ -185,6 +274,7 @@ function renderImportTab(){
  </div>`;
  const bm=aniidexBookmarkletCode();el('syncBookmarklet').href=bm;el('bookmarkletCode').value=bm;el('syncBookmarklet').onclick=(e)=>{e.preventDefault();importUiMessage='Opened Aniidx Homeland. Once it finishes loading, click the Aniimo Homeland Sync bookmark from your browser bookmarks bar.';window.open('https://aniidex.com/homeland/','_blank');renderImportTab()};el('openAniidexBtn').onclick=()=>window.open('https://aniidex.com/homeland/','_blank');
  el('aniidexCompanionBtn').onclick=requestAniidexCompanionSync;
+ el('downloadCompanionBtn').onclick=downloadAniimoCompanionExtension;
  el('aniidexCompanionUid').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();requestAniidexCompanionSync();}});
  el('copyBookmarkletBtn').onclick=async()=>{try{await navigator.clipboard.writeText(bm);importUiMessage='Bookmarklet copied. Create a bookmark and paste it into the URL/location field.';}catch{importUiMessage='Clipboard permission was blocked. Open “Show bookmarklet code” and copy it manually.';}renderImportTab()};
  el('downloadBookmarkletBtn').onclick=downloadBookmarkletText;
