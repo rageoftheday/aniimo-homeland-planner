@@ -688,7 +688,7 @@ function wikiCatalogEntries(){
  return rows;
 }
 function aniidexReferenceCatalogEntries(){
- const src=window.EMBEDDED_ANIIDEX_CATALOG||{};
+ const src=(typeof EMBEDDED_ANIIDEX_CATALOG!=='undefined'&&EMBEDDED_ANIIDEX_CATALOG)||window.EMBEDDED_ANIIDEX_CATALOG||{};
  const facts=src?.hub?.facts||src?.facts||{};
  const forms=facts?.forms||{};
  const labels=src?.text?.forms||{};
@@ -736,7 +736,12 @@ function catalogPortraitHTML(c){
 function renderAniimoCatalog(){
  const result=el('catalogResults');if(!result)return;const q=normalizeSearch(el('aniimoSearch')?.value||''),ab=el('abilityFilter')?.value||'',min=Number(el('levelFilter')?.value||1),fam=el('familyFilter')?.value||'';
  let rows=catalogEntries();
- if(catalogMode==='ability'||ab)rows=rows.filter(c=>(c.abilities||[]).some(a=>a[0]===ab&&Number(a[1])>=min));
+ if(catalogMode==='ability'||ab||min>1){
+   rows=rows.filter(c=>(c.abilities||[]).some(a=>{
+     const level=Number(a[1])||0;
+     return level>=min && (!ab||a[0]===ab);
+   }));
+ }
  if(catalogMode==='family'||fam)rows=rows.filter(c=>familyIdForCatalog(c)===fam);
  if(q){const alias=ANIIMO_ALIASES[q];rows=rows.map(c=>{const text=normalizeSearch(c.name+' '+(c.form||''));let score=text.includes(q)?0:Math.min(levenshtein(q,normalizeSearch(c.name)),levenshtein(q,text));if(alias&&normalizeSearch(c.name)===normalizeSearch(alias))score=-1;return {c,score}}).filter(x=>x.score<=Math.max(2,Math.floor(q.length*.45))||normalizeSearch(x.c.name+' '+(x.c.form||'')).includes(q)).sort((a,b)=>a.score-b.score||a.c.name.localeCompare(b.c.name)).map(x=>x.c);}
  else rows.sort((a,b)=>a.name.localeCompare(b.name)||(a.form||'').localeCompare(b.form||''));
