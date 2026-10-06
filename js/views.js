@@ -189,6 +189,63 @@ function renderAniimosTab(){
    }));
  };
 
+ if(aniimosViewMode==='details'){
+   const wikiSpecies=window.WikiHomeland?.speciesList?.()||[];
+   let selected=window.WikiHomeland?.speciesByName?.(aniimosSelectedName)||wikiSpecies[0]||null;
+   if(selected&&selected.name!==aniimosSelectedName){
+     aniimosSelectedName=selected.name;
+     localStorage.setItem('aniimosSelectedName',aniimosSelectedName);
+   }
+   if(!selected){
+     root.innerHTML=`<div class="aniimosBrowser">${aniimoSubnav}<div class="fullCard">Official Wiki Aniimo reference is not loaded.</div></div>`;
+     bindAniimoSubnav();return;
+   }
+   const state=wikiSpeciesState(selected),copies=rosterCopiesFor(selected.name);
+   const options=wikiSpecies.map(ws=>`<option value="${esc(ws.name)}"${ws.name===selected.name?' selected':''}>#${esc(ws.dex)} · ${esc(ws.name)}</option>`).join('');
+   const formCards=state.forms.map(fs=>{
+     const wf=fs.wiki,local=fs.local,apps=local?.apps||[];
+     const appearance=apps.includes('Normal')?'Normal':(apps[0]||'');
+     const src=local?imagePath(local.assetName,local.id,appearance):'';
+     const abilities=(wf.homelandAbilities||[]).map(a=>`<span class="aniimoDetailAbility">${esc(a.type)} Lv${Number(a.level)||'?'}</span>`).join('');
+     const habitats=(wf.habitats||[]).length?(wf.habitats||[]).map(h=>esc(h)).join(' • '):'Not listed';
+     const status=!collectionLoaded?'<span class="collectionBadge neutral">Sync to check</span>':!fs.known?'<span class="collectionBadge neutral">ID not matched</span>':fs.caught?'<span class="collectionBadge caught">Caught ✓</span>':'<span class="collectionBadge missing">Missing</span>';
+     return `<article class="aniimoDetailFormCard">
+       <div class="aniimoDetailFormImage">${src?`<img src="${esc(src)}" alt="${esc(selected.name+' '+wf.label)}" loading="lazy" decoding="async">`:`<span>${esc(String(selected.name).slice(0,2).toUpperCase())}</span>`}</div>
+       <div class="aniimoDetailFormBody">
+         <div class="aniimoDetailFormHead"><div><b>${esc(wf.label)}</b>${fs.id?`<div class="small">Form ID ${esc(fs.id)}</div>`:''}</div>${status}</div>
+         <div class="aniimoDetailAbilities">${abilities||'<span class="small">No Homeland abilities listed.</span>'}</div>
+         <div class="small"><b>Habitat:</b> ${habitats}</div>
+         <a class="aniimoWikiLink" href="${esc(wf.url)}" target="_blank" rel="noopener">Official Wiki ↗</a>
+       </div>
+     </article>`;
+   }).join('');
+   const best=(selected.bestAbilities||[]).map(a=>`<div class="aniimoBestAbility"><b>${esc(a.type)} Lv${a.level}</b><span>${esc((a.forms||[]).map(x=>x.label).join(' • '))}</span></div>`).join('');
+   const caughtSummary=collectionLoaded?`${state.caught}/${state.known} matched forms caught`:'Sync Aniidx to show caught / missing forms';
+   const copiesHtml=copies.length?copies.map(w=>`<div class="aniimoOwnedCopy"><b>${esc(w.name||selected.name)} — ${esc(w.form||'Base')}</b><span>${esc((w.abilities||[]).filter(a=>a.type).map(a=>a.type+' Lv'+(Number(a.level)||1)).join(' • ')||'No abilities entered')}</span></div>`).join(''):'<div class="small">No copies of this Aniimo are currently in Imported Roster.</div>';
+   root.innerHTML=`<div class="aniimosBrowser">${aniimoSubnav}
+     <div class="aniimosBrowserHead">
+       <div><div class="v30Title">Aniimo Details</div><div class="v30Sub">Official Wiki forms, Homeland abilities and habitats combined with this profile's caught forms and Imported Roster.</div></div>
+       <div class="aniimosBrowseStats">${esc(caughtSummary)}</div>
+     </div>
+     <div class="aniimosDetailPicker"><label>Aniimo<select id="aniimoDetailSpecies">${options}</select></label></div>
+     <div class="aniimoDetailHero">
+       <div><div class="aniimoDetailName">#${esc(selected.dex)} · ${esc(selected.name)}</div><div class="small">${selected.forms.length} official form${selected.forms.length===1?'':'s'} · ${copies.length} Imported Roster cop${copies.length===1?'y':'ies'}</div></div>
+       <button type="button" data-aniimo-mode="collection">Back to Collection</button>
+     </div>
+     <div class="sectionTitle">Best Homeland abilities</div>
+     <div class="aniimoBestAbilityGrid">${best||'<div class="small">No ability data loaded.</div>'}</div>
+     <div class="sectionTitle">Forms</div>
+     <div class="aniimoDetailForms">${formCards}</div>
+     <div class="sectionTitle">Imported Roster copies</div>
+     <div class="aniimoOwnedCopies">${copiesHtml}</div>
+     ${copies.length?'<button type="button" id="aniimoDetailsOpenRoster">Open Imported Roster</button>':''}
+   </div>`;
+   bindAniimoSubnav();
+   root.querySelector('#aniimoDetailSpecies')?.addEventListener('change',e=>{aniimosSelectedName=e.target.value;localStorage.setItem('aniimosSelectedName',aniimosSelectedName);renderAniimosTab();});
+   root.querySelector('#aniimoDetailsOpenRoster')?.addEventListener('click',()=>setMainTab('roster'));
+   return;
+ }
+
  if(aniimosViewMode==='abilities'){
    const rankRows=window.WikiHomeland?.rankAbility?.(aniimosRankAbility,aniimosRankMin)||[];
    const rankCard=row=>{
