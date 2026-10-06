@@ -88,7 +88,7 @@ jobs:
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
           grep -q 'css/app.css?v=30.17.0' index.html
           grep -q 'js/views.js?v=30.19.0' index.html
-          grep -q 'js/importer.js?v=30.15.0' index.html
+          grep -q 'js/importer.js?v=30.15.1' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
@@ -260,6 +260,18 @@ jobs:
           grep -q 'function aniidexFormIndexes' js/importer.js
           grep -q 'function decodeAniidexFormPreferred' js/importer.js
           grep -q 'function aniidexBundleCatalog' js/importer.js
+          grep -q 'function aniidexRvModuleLevels' js/importer.js
+          grep -q "2:'Rest Module'" js/importer.js
+          grep -q "3:'Ecological Module'" js/importer.js
+          grep -q "4:'Kitchen Module'" js/importer.js
+          grep -q "5:'Resource Detector'" js/importer.js
+          grep -q "6:'Crafting Module'" js/importer.js
+          grep -q "7:'Power Module'" js/importer.js
+          grep -q "8:'Plant Research Module'" js/importer.js
+          grep -q "9:'Incubation Reaction Module'" js/importer.js
+          grep -q "10:'Signal Transmitter'" js/importer.js
+          grep -q 'moduleLevels={...importedModules.levels}' js/importer.js
+          grep -q 'installed RV modules' js/importer.js
           grep -q "/api/homeland/planner" extension/aniidex-main.js
           node - <<'NODE'
           const fs=require('fs'),vm=require('vm');
