@@ -81,7 +81,7 @@ jobs:
           test -s data/aniimo-stage-images.csv
           test -s js/assets.js
           grep -q '<!doctype html>' index.html
-          grep -q 'Aniimo Homeland Offline Planner v30.12.2' index.html
+          grep -q 'Aniimo Homeland Offline Planner v30.12.4' index.html
           grep -q 'css/app.css' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
@@ -100,6 +100,11 @@ jobs:
           ! grep -q 'function importAniidexUid' js/importer.js
           grep -q 'const EMBEDDED_ANIIDEX_CATALOG=' data/embedded-aniidex-catalog.js
           node --check js/dom.js
+          grep -q 'function catalogPortraitHTML' js/app.js
+          grep -q 'function appearancePreviewChoices' js/app.js
+          grep -q 'data-appearance-choice' js/app.js
+          grep -q 'appearancePreviewStrip' css/app.css
+          grep -q 'catalogPortraitHTML(c)' js/app.js
           node --check js/app.js
           node --check js/importer.js
           node --check js/views.js
@@ -120,7 +125,7 @@ jobs:
           if(!prism) throw new Error('Expected at least one Prismana form');
           const [id,f]=prism;
           const c=global.AniimoAssets.portraitCandidates(f.name,f.form,'Sparkling','Variant VI');
-          if(!c[0].includes('/sparkling/variant-vi.webp')) throw new Error('Sparkling Prismana hue path missing: '+c[0]);
+          if(!c[0].endsWith('__ThreeQuarter__Sparkling-06.webp')) throw new Error('Stage Sparkling Prismana VI path missing: '+c[0]);
           if(!global.AniimoAssets.portraitCandidates(f.name,f.form,'Umbral','')[0].includes('__ThreeQuarter__Umbral.webp')) throw new Error('Stage Umbral path missing');
           if(!global.AniimoAssets.portraitCandidates('Emberpup','Basic Form','Sparkling','Variant VI')[0].endsWith('Emberpup__1005100__ThreeQuarter__Sparkling-06.webp')) throw new Error('Stage Sparkling VI path missing');
           if(global.AniimoAssets.stageAppearanceLabel('Dazzling Sparkling','')!=='Sparkling-11') throw new Error('Dazzling mapping missing');
