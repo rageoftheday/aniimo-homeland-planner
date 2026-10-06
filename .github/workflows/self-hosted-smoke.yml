@@ -101,6 +101,14 @@ jobs:
           grep -q 'const EMBEDDED_ANIIDEX_CATALOG=' data/embedded-aniidex-catalog.js
           node --check js/dom.js
           node --check js/app.js
+          node - <<'NODE'
+          global.window=global;
+          require('./data/aniimo-species.js');
+          const src=require('fs').readFileSync('./js/app.js','utf8');
+          if(!src.includes("window.ANIIMO_SPECIES_DATA?.species")) throw new Error('Full species roster is not feeding catalog');
+          if(!(global.ANIIMO_SPECIES_DATA?.species||[]).some(x=>x.name==='Somniwing')) throw new Error('Somniwing missing from species data');
+          console.log('Somniwing catalog entry OK');
+          NODE
           node --check js/importer.js
           node --check js/views.js
           node --check data/embedded-aniidex-catalog.js
