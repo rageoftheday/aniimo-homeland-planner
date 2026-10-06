@@ -92,6 +92,14 @@
       headers:{Accept:'application/json','Content-Type':'application/json','X-Aniidex-Request':'1'},
       body:JSON.stringify({uid})
     });
+    let planner=null;
+    const warnings=[];
+    emit('ANIIMO_PAGE_STATUS',{requestId,message:'Loading current Aniidx Homeland reference data…'});
+    try{
+      planner=await jsonFetch('/api/homeland/planner',{headers:{Accept:'application/json'},cache:'no-store'});
+    }catch(err){
+      warnings.push('Live planner reference unavailable; embedded decoder fallback will be used: '+(err?.message||err));
+    }
     return {
       format:'aniimo-homeland-sync-v4',
       capturedAt:new Date().toISOString(),
@@ -99,7 +107,8 @@
       uid,
       profile,
       homeland,
-      warnings:[]
+      planner,
+      warnings
     };
   }
 
