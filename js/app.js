@@ -660,7 +660,7 @@ function normalizeSearch(v){return String(v||'').toLowerCase().replace(/[^a-z0-9
 function levenshtein(a,b){a=normalizeSearch(a);b=normalizeSearch(b);const m=a.length,n=b.length,d=Array.from({length:m+1},()=>Array(n+1).fill(0));for(let i=0;i<=m;i++)d[i][0]=i;for(let j=0;j<=n;j++)d[0][j]=j;for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][n]}
 function catalogKey(c){return c.name+'|'+(c.form||'')}
 function catalogEntries(){const seen=new Set(),out=[];for(const c of ANIIMO_CATALOG){const k=catalogKey(c);if(seen.has(k))continue;seen.add(k);out.push(c)}return out}
-function addCatalogWorker(c){const w=defaultWorker();w.name=c.name;w.form=c.form||'';w.family=c.family||'';w.catalogSource=c.source||'';w.appearance='Normal';w.abilities=(c.abilities||[]).map(a=>({type:a[0],level:a[1]}));while(w.abilities.length<3)w.abilities.push({type:'',level:1});const af=window.AniimoAssets?.form?.(w.name,w.form);if(af){w.formId=af.id;w.localPortrait=af.head||'';}workers.push(w);render();}
+function addCatalogWorker(c){const w=defaultWorker();w.name=c.name;w.form=c.form||'';w.family=c.family||'';w.catalogSource=c.source||'';w.appearance='Normal';w.abilities=(c.abilities||[]).map(a=>({type:a[0],level:a[1]}));while(w.abilities.length<3)w.abilities.push({type:'',level:1});const af=window.AniimoAssets?.form?.(w.name,w.form);if(af){w.formId=af.id;w.localPortrait='';}workers.push(w);render();}
 function familyIdForCatalog(c){if(c.family)return c.family;const n=(c.name||'').toLowerCase();for(const [id,f] of Object.entries(WORKER_FAMILIES))if(f.members.some(m=>m.toLowerCase()===n))return id;return ''}
 function renderAniimoCatalog(){
  const result=el('catalogResults');if(!result)return;const q=normalizeSearch(el('aniimoSearch')?.value||''),ab=el('abilityFilter')?.value||'',min=Number(el('levelFilter')?.value||1),fam=el('familyFilter')?.value||'';
@@ -700,7 +700,7 @@ function workerIsProtected(w){
  const fam=familyForWorker(w);if(!fam)return false;
  return activeFamilyRequirements().some(x=>x.rule.family===fam && workers.filter(q=>q.active!==false&&familyForWorker(q)===fam).length===1);
 }
-function defaultWorker(){return {id:workerIdCounter++,name:'',form:'',appearance:'Normal',family:'',personality:'',portrait:'',active:true,abilities:[{type:'',level:1},{type:'',level:1},{type:'',level:1}]}}
+function defaultWorker(){return {id:workerIdCounter++,name:'',form:'',appearance:'Normal',sparklingHue:'',family:'',personality:'',portrait:'',active:true,abilities:[{type:'',level:1},{type:'',level:1},{type:'',level:1}]}}
 
 function recipeRequiredLevel(stationName,recipe){
  const arr=facilityLevels[stationName]||[];
@@ -959,10 +959,10 @@ function initialsFor(name){const p=String(name||'?').trim().split(/\s+/).filter(
 function catalogFormsForName(name){return catalogEntries().filter(c=>c.name===name).sort((a,b)=>(a.form||'').localeCompare(b.form||''))}
 function catalogPresetForWorker(w){return catalogEntries().find(c=>c.name===w.name&&(c.form||'')===(w.form||''))||null}
 function applyWorkerCatalogPreset(id,form){const w=workers.find(x=>x.id===id);if(!w)return;const c=catalogEntries().find(x=>x.name===w.name&&(x.form||'')===form);w.form=form;if(c){w.family=c.family||w.family;w.catalogSource=c.source||w.catalogSource;if((c.abilities||[]).length){const custom=confirm('Apply the known '+(c.form||'Base')+' Home Ability defaults?\n\nChoose Cancel to keep this individual copy\'s current ability values.');if(custom){w.abilities=(c.abilities||[]).map(a=>({type:a[0],level:a[1]}));while(w.abilities.length<3)w.abilities.push({type:'',level:1})}}}render()}
-function appearanceOptions(selected){const vals=['Normal','Sparkling / Shiny','Umbral / Dark','Special / Other'];return vals.map(v=>`<option value="${v}"${v===selected?' selected':''}>${v}</option>`).join('')}
+function appearanceOptions(selected){const vals=['Normal','Sparkling','Dazzling Sparkling','Shadow Sparkling','Umbral','Special / Other'];return vals.map(v=>`<option value="${v}"${v===selected?' selected':''}>${v}</option>`).join('')}
 function formOptionsForWorker(w){const forms=catalogFormsForName(w.name);const vals=[...new Set(forms.map(x=>x.form||'Base'))];if(w.form&&!vals.includes(w.form))vals.unshift(w.form);if(!vals.length)vals.push(w.form||'Base');return vals.map(v=>{const raw=v==='Base'?'':v;return `<option value="${esc(raw)}"${raw===(w.form||'')?' selected':''}>${esc(v)}</option>`}).join('')}
 function workerAbilityPills(w){const arr=(w.abilities||[]).filter(a=>a.type);return arr.length?arr.map((a,i)=>`<span class="abilityPill${i===0?' primary':''}">${esc(a.type)} Lv${Number(a.level)||1}</span>`).join(''):'<span class="small">No Home abilities entered</span>'}
-function workerPortraitHTML(w){const af=window.AniimoAssets?.form?.(w.name,w.form);const local=w.localPortrait||af?.head||'';const remote=w.portrait||'';if(local||remote){const first=local||remote,backup=local&&remote&&remote!==local?remote:'';const fallback=backup?`this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='block'};this.src='${esc(backup)}'`:`this.style.display='none';this.nextElementSibling.style.display='block'`;return `<img src="${esc(first)}" alt="${esc(w.name||'Aniimo')}" onerror="${fallback}"><span class="initials" style="display:none">${esc(initialsFor(w.name))}</span><span class="portraitTag">${esc(w.appearance||'Normal')}</span>`}return `<span class="initials">${esc(initialsFor(w.name))}</span><span class="portraitTag">${esc(w.appearance||'Normal')}</span>`}
+function workerPortraitHTML(w){const af=window.AniimoAssets?.form?.(w.name,w.form);const candidates=window.AniimoAssets?.portraitCandidates?.(w.name,w.form,w.appearance,w.sparklingHue)||[];const local=w.localPortrait||candidates[0]||af?.head||'';const remote=w.portrait||'';if(local||remote){const first=local||remote,backup=local&&remote&&remote!==local?remote:'';const fallback=backup?`this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='block'};this.src='${esc(backup)}'`:`this.style.display='none';this.nextElementSibling.style.display='block'`;return `<img src="${esc(first)}" alt="${esc(w.name||'Aniimo')}" onerror="${fallback}"><span class="initials" style="display:none">${esc(initialsFor(w.name))}</span><span class="portraitTag">${esc(w.appearance||'Normal')}</span>`}return `<span class="initials">${esc(initialsFor(w.name))}</span><span class="portraitTag">${esc(w.appearance||'Normal')}</span>`}
 
 function renderRoster(){
  const root=el('rosterList'),count=el('rosterCount');if(!root)return;
@@ -975,6 +975,7 @@ function renderRoster(){
    card.innerHTML=`<div class="workerVisualRow"><div class="workerPortrait">${workerPortraitHTML(w)}</div><div class="workerIdentity">
       <input data-k="name" value="${esc(w.name||'')}" placeholder="Aniimo name">
       <div class="variantRow"><select data-form>${formOptionsForWorker(w)}</select><select data-k="appearance">${appearanceOptions(w.appearance||'Normal')}</select></div>
+      <input data-k="sparklingHue" value="${esc(w.sparklingHue||'')}" placeholder="Sparkling hue/style (optional)" ${String(w.appearance||'').toLowerCase().includes('sparkling')?'':'style="display:none"'}>
       <select data-k="personality">${personalityOptions(w.personality||'')}</select>
       <div class="abilityPills">${workerAbilityPills(w)}</div>
       <div class="portraitHelp">Form changes can offer known defaults. Appearance is tracked separately; your in-game copy always wins.</div>

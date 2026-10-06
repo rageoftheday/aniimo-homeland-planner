@@ -80,7 +80,7 @@ jobs:
           test -s data/asset-manifest.js
           test -s js/assets.js
           grep -q '<!doctype html>' index.html
-          grep -q 'Aniimo Homeland Offline Planner v30.11.2' index.html
+          grep -q 'Aniimo Homeland Offline Planner v30.12.0' index.html
           grep -q 'css/app.css' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
@@ -106,11 +106,25 @@ jobs:
           node --check js/homeland-data.js
           node --check data/asset-manifest.js
           node --check js/assets.js
+          node - <<'NODE'
+          global.window=global;
+          require('./data/asset-manifest.js');
+          require('./js/assets.js');
+          const prism=Object.entries(global.ANIIMO_ASSET_MANIFEST.aniimoForms||{}).find(([,x])=>/prismana/i.test(x.form||''));
+          if(!prism) throw new Error('Expected at least one Prismana form');
+          const [id,f]=prism;
+          const c=global.AniimoAssets.portraitCandidates(f.name,f.form,'Sparkling','Variant VI');
+          if(!c[0].includes('/sparkling/variant-vi.webp')) throw new Error('Sparkling Prismana hue path missing: '+c[0]);
+          if(!global.AniimoAssets.portraitCandidates(f.name,f.form,'Umbral','')[0].includes('/umbral.webp')) throw new Error('Umbral path missing');
+          console.log('Appearance asset model OK',id,c[0]);
+          NODE
           grep -q 'databaseBrowserHead' js/views.js
           grep -q 'databaseScroll' css/app.css
           grep -q 'databaseAniimoFixed' css/app.css
           grep -q 'databaseHeaderTable' js/views.js
           grep -q 'databaseBodyScroll' js/views.js
+          grep -q 'databaseFamilySection' js/views.js
+          grep -q 'databaseFamilyBodyScroll' js/views.js
           node - <<'NODE'
           global.window=global;
           require('./data/homeland-reference-data.js');
