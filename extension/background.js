@@ -20,6 +20,21 @@ async function getAniidexTab(){
   return await chrome.tabs.create({url:'https://aniidex.com/homeland/',active:false});
 }
 
+async function sendToAniidex(tab,message){
+  await waitForComplete(tab.id);
+  try{
+    return await chrome.tabs.sendMessage(tab.id,message);
+  }catch(err){
+    const text=String(err?.message||err||'');
+    if(!/Receiving end does not exist|Could not establish connection/i.test(text))throw err;
+    // A tab that was already open when the unpacked extension was installed
+    // will not have our content scripts yet. Reload it once so Chrome injects them.
+    await chrome.tabs.reload(tab.id);
+    await waitForComplete(tab.id);
+    return await chrome.tabs.sendMessage(tab.id,message);
+  }
+}
+
 chrome.runtime.onMessage.addListener((msg,sender,sendResponse)=>{
   if(!msg||typeof msg!=='object')return;
   if(msg.type==='ANIIMO_SYNC_REQUEST'){
@@ -31,8 +46,7 @@ chrome.runtime.onMessage.addListener((msg,sender,sendResponse)=>{
     (async()=>{
       try{
         const tab=await getAniidexTab();
-        await waitForComplete(tab.id);
-        await chrome.tabs.sendMessage(tab.id,{type:'ANIIMO_SYNC_UID',uid,requestId});
+        await sendToAniidex(tab,{type:'ANIIMO_SYNC_UID',uid,requestId});
       }catch(err){
         sendPlanner(plannerTabId,{type:'ANIIMO_SYNC_RESULT',ok:false,error:err?.message||String(err)});
         pending.delete(requestId);
