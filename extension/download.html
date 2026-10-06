@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aniimo Homeland Companion Download</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0f1720;color:#e7eef5;margin:0;padding:32px}
+.card{max-width:760px;margin:auto;background:#17232e;border:1px solid #31495d;border-radius:14px;padding:24px}
+h1{margin-top:0}.muted{color:#a9bac8}.ok{color:#8fe3a7}.bad{color:#ff8b93}
+button{font:inherit;padding:10px 16px;border:0;border-radius:8px;cursor:pointer;font-weight:700}
+ol{line-height:1.7}code{background:#0d141b;padding:2px 5px;border-radius:5px}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>Aniimo Homeland Companion</h1>
+<p class="muted">This page downloads only the browser extension files — not the full GitHub repository.</p>
+<button id="downloadBtn">Download Companion ZIP</button>
+<p id="status" class="muted">Ready.</p>
+<h2>Install</h2>
+<ol>
+<li>Download <code>Aniimo_Homeland_Companion.zip</code>.</li>
+<li>Extract the ZIP somewhere permanent.</li>
+<li>Open <code>chrome://extensions</code> or <code>edge://extensions</code>.</li>
+<li>Turn on <b>Developer mode</b>.</li>
+<li>Click <b>Load unpacked</b>.</li>
+<li>Select the extracted <code>Aniimo_Homeland_Companion</code> folder — the folder containing <code>manifest.json</code>.</li>
+<li>Return to Aniimo Homeland Planner and refresh the page.</li>
+<li>Open <b>Import / Sync</b>. It should say <b>Companion detected ✓</b>.</li>
+</ol>
+</div>
+<script>
+function crc32(bytes){let c=0xffffffff;for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return(c^0xffffffff)>>>0}
+const u16=n=>new Uint8Array([n&255,(n>>>8)&255]);
+const u32=n=>new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]);
+function join(parts){const len=parts.reduce((n,p)=>n+p.length,0),out=new Uint8Array(len);let at=0;for(const p of parts){out.set(p,at);at+=p.length}return out}
+function dosTime(d=new Date()){const y=Math.max(1980,d.getFullYear());return{time:((d.getHours()&31)<<11)|((d.getMinutes()&63)<<5)|(Math.floor(d.getSeconds()/2)&31),date:(((y-1980)&127)<<9)|(((d.getMonth()+1)&15)<<5)|(d.getDate()&31)}}
+function makeZip(fileMap){
+ const enc=new TextEncoder(),locals=[],centrals=[];let offset=0;const stamp=dosTime();
+ for(const [name,text] of Object.entries(fileMap)){
+  const n=enc.encode(name),data=enc.encode(text),crc=crc32(data);
+  const local=join([u32(0x04034b50),u16(20),u16(0),u16(0),u16(stamp.time),u16(stamp.date),u32(crc),u32(data.length),u32(data.length),u16(n.length),u16(0),n,data]);
+  locals.push(local);
+  centrals.push(join([u32(0x02014b50),u16(20),u16(20),u16(0),u16(0),u16(stamp.time),u16(stamp.date),u32(crc),u32(data.length),u32(data.length),u16(n.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset),n]));
+  offset+=local.length;
+ }
+ const central=join(centrals);
+ return new Blob([...locals,central,join([u32(0x06054b50),u16(0),u16(0),u16(centrals.length),u16(centrals.length),u32(central.length),u32(offset),u16(0)])],{type:'application/zip'});
+}
+async function download(){
+ const btn=document.getElementById('downloadBtn'),status=document.getElementById('status');
+ btn.disabled=true;status.className='muted';status.textContent='Building extension ZIP…';
+ try{
+  const names=['manifest.json','background.js','planner-bridge.js','aniidex-isolated.js','aniidex-main.js'],files={};
+  for(const name of names){
+   const r=await fetch(name,{cache:'no-store'});if(!r.ok)throw new Error(name+' HTTP '+r.status);
+   files['Aniimo_Homeland_Companion/'+name]=await r.text();
+  }
+  files['Aniimo_Homeland_Companion/INSTALL.txt']=document.querySelector('ol').innerText;
+  const url=URL.createObjectURL(makeZip(files)),a=document.createElement('a');
+  a.href=url;a.download='Aniimo_Homeland_Companion.zip';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  status.className='ok';status.textContent='Downloaded only the companion extension.';
+ }catch(e){status.className='bad';status.textContent='Download failed: '+(e?.message||e)}
+ finally{btn.disabled=false}
+}
+document.getElementById('downloadBtn').addEventListener('click',download);
+</script>
+</body>
+</html>
