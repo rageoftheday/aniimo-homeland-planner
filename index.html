@@ -4,17 +4,23 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Aniimo Homeland Planner</title>
-<link rel="stylesheet" href="css/app.css?v=30.13.4"/>
+<link rel="stylesheet" href="css/app.css?v=30.14.0"/>
 </head>
 <body>
 <header>
-<div><h1>Aniimo Homeland Planner</h1><div class="sub">Tabbed Homeland workspace • full production browser • visual per-copy Aniimo roster • personality/job-fit advisor • family locks • fuzzy autofill • profiles/autosave</div></div>
-<div class="controls">
-<button class="primary" id="saveBtn">Save Local</button><button id="loadBtn">Load Local</button>
-<button id="exportBtn">Export JSON</button><button id="importBtn">Import JSON</button>
-<button id="saveJsonFileBtn">Save JSON File</button><button id="loadJsonFileBtn">Load JSON File</button>
+<div><h1>Aniimo Homeland Planner</h1></div>
+<div class="headerActions">
+<button class="primary" id="homelandImportTopBtn">Import / Sync</button>
+<details class="headerMenu"><summary>Backup ▾</summary><div class="headerMenuPanel">
+<button id="saveJsonFileBtn">Save Backup File</button>
+<button id="loadJsonFileBtn">Load Backup File</button>
+<button id="loadBtn">Legacy Local Recovery</button>
+</div></details>
+<details class="headerMenu"><summary>Tools ▾</summary><div class="headerMenuPanel">
+<button id="downloadHtmlBtn">Download Customized HTML</button>
+<button class="danger" id="clearBtn">Clear / Reset Layout</button>
+</div></details>
 <input id="jsonFileInput" type="file" accept=".json,application/json" style="display:none">
-<button id="homelandImportTopBtn">Import / Sync</button><button id="downloadHtmlBtn">Download Customized HTML</button><button class="danger" id="clearBtn">Clear</button>
 </div>
 </header>
 
@@ -52,7 +58,7 @@
 
 <section id="workspaceWrap" class="panel workspaceShell">
 <div id="mainTabs" class="mainTabs">
-  <button data-tab="dashboard">Dashboard</button><button data-tab="map" class="active">Map</button><button data-tab="production">Production</button><button data-tab="aniimos">Aniimos</button><button data-tab="roster">Roster</button><button data-tab="advisor">Advisor</button><button data-tab="suggestions">Suggestions</button><button data-tab="progression">Progression</button><button data-tab="database">Database</button><button data-tab="import">Import / Sync</button>
+  <button data-tab="dashboard">Dashboard</button><button data-tab="map" class="active">Map</button><button data-tab="production">Production</button><button data-tab="progression">Progression</button><button data-tab="advisor">Advisor</button><button data-tab="suggestions">Suggestions</button><button data-tab="roster">Roster</button><button data-tab="aniimos">Aniimos</button><button data-tab="database">Database</button><button data-tab="import">Import / Sync</button>
 </div>
 <div id="tabStage" class="tabStage">
   <div id="dashboardPane" class="tabPane"></div>
@@ -197,9 +203,12 @@
   <div id="rosterList" class="rosterList"></div>
 </div>
 <div class="rosterBox">
-  <div class="rosterHead"><div><b>Advisor</b><div class="small">Ranks the best owned worker for each active facility/recipe, protects required families, and checks personality-letter bonuses.</div></div><button id="refreshAdvisorBtn">Refresh</button></div>
+  <div class="rosterHead"><div><b>Advisor</b><div class="small">Current jobs use your owned Aniimo, personality match, family locks, and reassignment cost. The rank guide below shows every loaded Aniimo option by Home Ability.</div></div><button id="refreshAdvisorBtn">Refresh</button></div>
   <div id="advisorHeadline" class="small" style="margin-top:6px"></div>
   <div id="advisorList" class="advisorList"></div>
+  <div class="sectionTitle">Aniimo rank guide by Home Ability</div>
+  <div class="small advisorRankNote"><b>Rank 1–4</b> = that exact in-game Home Ability level. <b>Rank 5</b> is a planner tier for Prismana/best-in-slot forms that reach Lv4 — it does not mean the game has a Lv5 skill.</div>
+  <div id="advisorRankMatrix" class="advisorRankMatrix"></div>
 </div>
 <h3 style="font-size:12px;margin-top:18px">Unlock filtering</h3>
 <div class="small">The RV selector controls item availability and automatic placement caps. Items with unknown footprints show editable Width × Height boxes and cannot be placed until both are entered. Dimensions use 0.5-square increments. Farmland, Woodland, Mines, and other entries with RV cap data recalculate when RV changes. An item marked <b>AUTO RV#</b> is using that cap; editing Max Placeable changes it to <b>MANUAL</b>. Press <b>Auto</b> to restore the RV value. Plot access is controlled separately with Plot 1–16 checkboxes.</div>
@@ -208,9 +217,8 @@
 <h3 style="font-size:12px;margin-top:18px">Production values</h3>
 <div class="small">Crop/tree values are raw per-plot Home Coin/hour. The Supply / Demand Audit below now caps assigned processing by available upstream ingredients. It uses current crop formula quantities/work times plus the assigned Mine/Well and processor recipes. Recipe chains not yet present in the planner database are flagged instead of being guessed.</div>
 <div class="small" style="margin-top:5px">v30 worker rules use independently implemented game facts: station Home Ability, preferred personality letter, and known family-only recipe eligibility. Family locks currently include Susuta, Shelly, Nimbi, Iris, Dewy, Celestis and Flutternym evolution families. The v29 offline catalog is intentionally editable: verified presets autofill abilities, while not-yet-verified names remain blank rather than being guessed.</div>
-<h3 style="font-size:12px;margin-top:18px">Save / Load</h3>
-<div class="small">Profiles autosave locally and can be switched, duplicated, renamed, or deleted. Browser Save still keeps one compatibility save slot across planner versions. Load also searches older v7–v18 save slots and migrates them automatically. For the safest portable backup, use <b>Save JSON File</b> / <b>Load JSON File</b>.</div>
-<h3 style="font-size:12px;margin-top:18px">JSON</h3><textarea id="jsonBox"></textarea>
+<h3 style="font-size:12px;margin-top:18px">Backups</h3>
+<div class="small">Profiles autosave in this browser. Use the <b>Backup</b> menu at the top for a portable backup file or legacy local recovery.</div>
 </div>
 </section>
 </main>
@@ -224,7 +232,7 @@
 <script src="js/homeland-data.js?v=30.12.4"></script>
 <script src="data/embedded-aniidex-catalog.js?v=30.12.4"></script>
 <script src="js/importer.js?v=30.14.4"></script>
-<script src="js/views.js?v=30.13.6"></script>
-<script src="js/app.js?v=30.12.4"></script>
+<script src="js/views.js?v=30.14.0"></script>
+<script src="js/app.js?v=30.14.0"></script>
 </body>
 </html>

@@ -333,3 +333,29 @@ body.aniimoModalOpen{overflow:hidden}
  .aniimoModalControls{padding:4px}
  .aniimoModalImageWrap{min-height:45vh}
 }
+
+
+/* v30.14 header cleanup + advisor rank guide */
+header{align-items:center}
+.headerActions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.headerMenu{position:relative}
+.headerMenu summary{list-style:none;cursor:pointer;padding:7px 10px;border:1px solid #35546b;border-radius:8px;background:#1a2a38;color:#e7eef5;font-size:12px;user-select:none}
+.headerMenu summary::-webkit-details-marker{display:none}
+.headerMenu[open] summary{background:#234866;border-color:#5d8baa}
+.headerMenuPanel{position:absolute;right:0;top:calc(100% + 6px);z-index:500;min-width:210px;padding:8px;display:grid;gap:6px;background:#111e28;border:1px solid #35546b;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.headerMenuPanel button{width:100%;text-align:left}
+.advisorRankNote{margin:0 0 9px;color:#b7cee1}
+.advisorRankMatrix{display:grid;gap:10px}
+.advisorAbilityCard{border:1px solid #30495d;background:#101c26;border-radius:10px;padding:10px}
+.advisorAbilityHead{margin-bottom:8px}
+.advisorAbilityHead b{font-size:14px}
+.advisorRankGrid{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:7px;overflow-x:auto}
+.advisorRankTier{min-width:150px;border:1px solid #2d4658;background:#13222d;border-radius:8px;padding:7px}
+.advisorRankTier.bestTier{border-color:#8a70c7;background:#201a32}
+.advisorRankTierHead{display:flex;justify-content:space-between;gap:6px;align-items:center;margin-bottom:6px}
+.advisorRankTierHead span{font-size:9px;color:#a9c0d1}
+.advisorRankNames{display:flex;flex-wrap:wrap;gap:4px}
+.advisorAniimoPill{font-size:9px;padding:3px 6px;border-radius:999px;border:1px solid #3b5a70;background:#1a3040;color:#d8edf9}
+.advisorAniimoPill.prismana{border-color:#8a70c7;background:#2a2141;color:#e3d7ff}
+.advisorEmpty{font-size:10px;color:#738999}
+@media(max-width:1100px){.advisorRankGrid{grid-template-columns:repeat(5,170px)}}
