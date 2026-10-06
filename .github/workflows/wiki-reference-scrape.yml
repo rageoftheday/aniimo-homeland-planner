@@ -48,7 +48,7 @@ jobs:
 
       - name: Commit refreshed reference
         run: |
-          if git diff --quiet -- data/official-wiki-homeland.json data/official-wiki-homeland.js; then
+          if [ -z "$(git status --porcelain -- data/official-wiki-homeland.json data/official-wiki-homeland.js)" ]; then
             echo "Reference data unchanged."
             exit 0
           fi
