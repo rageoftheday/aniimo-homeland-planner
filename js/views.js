@@ -513,7 +513,8 @@ function renderDatabaseTab(){
  const ref=window.HomelandData?.validate?.()||{ok:false,issues:['Reference data not loaded'],counts:{}},hc=ref.counts||{};
  const speciesData=window.ANIIMO_SPECIES_DATA||{species:[],evolutionFamilies:[],temporaryTransforms:[]};
  const wiki=window.WikiHomeland?.summary?.()||{counts:{species:0,forms:0,formsWithAbilities:0},warnings:[]};
- const wikiNames=new Set((window.WikiHomeland?.speciesList?.()||[]).map(x=>x.name));
+ const releasedByDex=new Map((speciesData.species||[]).map(x=>[String(x.dex),x.name]));
+ const wikiNames=new Set((window.WikiHomeland?.speciesList?.()||[]).map(x=>releasedByDex.get(String(x.dex))||x.name));
  const gatedStations=new Set(locks.map(([k])=>k.split('|')[0]));
  const familyLabelFor=name=>{
    const known=familyIdForCatalog({name});
