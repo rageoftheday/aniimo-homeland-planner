@@ -86,8 +86,8 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.13.4' index.html
-          grep -q 'js/views.js?v=30.13.6' index.html
+          grep -q 'css/app.css?v=30.14.0' index.html
+          grep -q 'js/views.js?v=30.14.0' index.html
           grep -q 'js/importer.js?v=30.14.4' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
@@ -101,9 +101,18 @@ jobs:
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
-          grep -q 'js/app.js' index.html
+          grep -q 'js/app.js?v=30.14.0' index.html
           grep -q 'data-tab="aniimos"' index.html
           grep -q 'id="aniimosPane"' index.html
+          grep -q 'Backup ▾' index.html
+          grep -q 'Save Backup File' index.html
+          grep -q 'Legacy Local Recovery' index.html
+          ! grep -q 'Tabbed Homeland workspace' index.html
+          ! grep -q 'id="saveBtn"' index.html
+          ! grep -q 'id="exportBtn"' index.html
+          ! grep -q 'id="importBtn"' index.html
+          grep -q 'data-tab="progression">Progression</button><button data-tab="advisor">Advisor' index.html
+          grep -q 'id="advisorRankMatrix"' index.html
           grep -q 'productionBrowserHead' js/views.js
           grep -q 'productionRecipeTable' css/app.css
           grep -q 'function aniidexBookmarkletCode' js/importer.js
@@ -129,6 +138,9 @@ jobs:
           grep -q 'appearancePreviewStrip' css/app.css
           grep -q 'catalogPortraitHTML(c)' js/app.js
           node --check js/app.js
+          grep -q 'function renderAdvisorRankMatrix' js/app.js
+          grep -q "Rank 5" js/app.js
+          grep -q 'prismanaOnly' js/app.js
           node - <<'NODE'
           global.window=global;
           require('./data/aniimo-species.js');
@@ -153,6 +165,8 @@ jobs:
           grep -q 'async function sendToAniidex' extension/background.js
           grep -q 'chrome.tabs.reload(tab.id)' extension/background.js
           node --check js/views.js
+          ! grep -q 'Not fully loaded yet' js/views.js
+          ! grep -q 'Next-RV resource requirements' js/views.js
           node - <<'NODE'
           global.window=global;
           require('./data/aniimo-stage-index.js');
