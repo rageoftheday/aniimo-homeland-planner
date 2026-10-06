@@ -80,7 +80,7 @@ jobs:
           test -s data/asset-manifest.js
           test -s js/assets.js
           grep -q '<!doctype html>' index.html
-          grep -q 'Aniimo Homeland Offline Planner v30.12.0' index.html
+          grep -q 'Aniimo Homeland Offline Planner v30.12.1' index.html
           grep -q 'css/app.css' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
@@ -125,6 +125,8 @@ jobs:
           grep -q 'databaseBodyScroll' js/views.js
           grep -q 'databaseFamilySection' js/views.js
           grep -q 'databaseFamilyBodyScroll' js/views.js
+          grep -q '#databasePane{overflow:auto' css/app.css
+          grep -q 'databaseBodyScroll{height:clamp' css/app.css
           node - <<'NODE'
           global.window=global;
           require('./data/homeland-reference-data.js');
