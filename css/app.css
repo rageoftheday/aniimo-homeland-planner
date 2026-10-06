@@ -388,3 +388,41 @@ header{align-items:center}
 .aniimoAbilityRankImage img{width:100%;height:100%;object-fit:contain;display:block}
 .aniimoAbilityRankInfo{min-width:0;display:grid;gap:4px}
 .aniimoAbilityRankName{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+
+/* v30.17 Aniimo Collection + Details */
+.collectionSyncNotice{border:1px solid #715d32;background:#2b2517;color:#f3d992;border-radius:9px;padding:9px 11px;font-size:11px;margin-bottom:9px}
+.aniimoCollectionCardStatus{min-height:24px;display:flex;align-items:center;margin:2px 0 5px}
+.collectionBadge{display:inline-flex;align-items:center;width:max-content;padding:3px 7px;border-radius:999px;border:1px solid #4b6170;background:#172630;color:#c9d9e4;font-size:9px;font-weight:800;white-space:nowrap}
+.collectionBadge.caught{border-color:#3f7e5a;background:#163425;color:#9fe0b8}
+.collectionBadge.partial{border-color:#776832;background:#322b16;color:#f0d783}
+.collectionBadge.missing{border-color:#7a4448;background:#341c20;color:#f0a3aa}
+.collectionBadge.neutral{border-color:#4b6170;background:#172630;color:#b9cad5}
+.aniimoCollectionActions{display:flex;gap:6px;flex-wrap:wrap}
+.aniimosDetailPicker{display:flex;gap:8px;align-items:end;margin-bottom:10px}
+.aniimosDetailPicker label{min-width:260px}
+.aniimoDetailHero{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid #30495d;background:#111e28;border-radius:11px;padding:12px}
+.aniimoDetailName{font-size:20px;font-weight:850}
+.aniimoBestAbilityGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:7px}
+.aniimoBestAbility{border:1px solid #30495d;background:#12222d;border-radius:8px;padding:8px;display:grid;gap:3px}
+.aniimoBestAbility span{font-size:9px;color:#a9c4d6}
+.aniimoDetailForms{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px}
+.aniimoDetailFormCard{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px;border:1px solid #30495d;background:#111e28;border-radius:11px;padding:9px;min-width:0}
+.aniimoDetailFormImage{width:110px;height:110px;border-radius:9px;border:1px solid #35546b;background:#0e1a23;display:flex;align-items:center;justify-content:center;overflow:hidden;font-weight:800}
+.aniimoDetailFormImage img{width:100%;height:100%;object-fit:contain;display:block}
+.aniimoDetailFormBody{display:grid;gap:7px;align-content:start;min-width:0}
+.aniimoDetailFormHead{display:flex;justify-content:space-between;gap:8px;align-items:start}
+.aniimoDetailAbilities{display:flex;gap:5px;flex-wrap:wrap}
+.aniimoDetailAbility{display:inline-block;padding:3px 6px;border-radius:999px;background:#183244;border:1px solid #365d76;font-size:9px;font-weight:750}
+.aniimoWikiLink{font-size:10px;color:#8fd2ff;text-decoration:none;width:max-content}
+.aniimoWikiLink:hover{text-decoration:underline}
+.aniimoOwnedCopies{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:7px;margin-bottom:8px}
+.aniimoOwnedCopy{display:grid;gap:3px;border:1px solid #30495d;background:#101d27;border-radius:8px;padding:8px}
+.aniimoOwnedCopy span{font-size:9px;color:#aac3d4}
+.aniimoAbilityRankActions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:2px}
+.aniimoAbilityRankActions button{padding:4px 7px;font-size:9px}
+@media(max-width:700px){
+ .aniimoDetailFormCard{grid-template-columns:86px minmax(0,1fr)}
+ .aniimoDetailFormImage{width:86px;height:86px}
+ .aniimoDetailHero{align-items:flex-start;flex-direction:column}
+}
