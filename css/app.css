@@ -373,3 +373,18 @@ header{align-items:center}
 .abilityContributor{display:flex;justify-content:space-between;gap:8px;text-align:left;align-items:center;padding:6px 8px;font-size:10px;background:#162a38;border:1px solid #304f64;border-radius:7px}
 .abilityContributor:hover{border-color:#72bfe9;background:#1b3547}
 .abilityContributor span{color:#a9c6da;white-space:nowrap}
+
+
+/* v30.16 official Wiki Homeland rankings */
+.aniimosSubnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.aniimosSubnav button{padding:7px 11px;font-size:11px}
+.aniimosSubnav button.active{background:#315f88;border-color:#72bfe9;box-shadow:0 0 0 1px rgba(114,191,233,.2) inset}
+.wikiReferenceStatus{font-size:10px;color:var(--muted);align-self:end;padding:0 0 7px}
+.aniimoAbilityRankSummary{font-size:11px;color:#bcd1df;margin:2px 0 9px}
+.aniimoAbilityRankGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:9px}
+.aniimoAbilityRankCard{display:grid;grid-template-columns:48px 76px minmax(0,1fr);gap:9px;align-items:center;border:1px solid #30495d;background:#13222d;border-radius:10px;padding:8px;min-width:0}
+.aniimoAbilityRankNum{font-size:18px;font-weight:900;text-align:center;color:#9fe5ff}
+.aniimoAbilityRankImage{width:76px;height:76px;border-radius:9px;overflow:hidden;background:#0f1b24;border:1px solid #35546b;display:flex;align-items:center;justify-content:center;font-weight:800;color:#d9efff}
+.aniimoAbilityRankImage img{width:100%;height:100%;object-fit:contain;display:block}
+.aniimoAbilityRankInfo{min-width:0;display:grid;gap:4px}
+.aniimoAbilityRankName{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
