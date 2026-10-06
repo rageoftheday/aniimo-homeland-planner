@@ -7,9 +7,26 @@ function aniidexCatalogParts(catalogData){
  const planner=src?.planner||src?.homelandPlanner||EMBEDDED_ANIIDEX_CATALOG.planner;
  return {hub,facts,text,planner};
 }
+function aniidexFormFactById(forms,formId){
+ if(!forms)return null;
+ const direct=forms[String(formId)]??forms[formId];if(direct)return direct;
+ const id=String(formId??'');
+ const rows=Array.isArray(forms)?forms:Object.values(forms);
+ return rows.find(fr=>String(fr?.variant??'')===id)||rows.find(fr=>String(fr?.pet??'')===id)||null;
+}
+function aniidexSparklingAppearance(code){
+ const n=Number(code)||0;
+ if(n>=1&&n<=10){
+   const roman=['I','II','III','IV','V','VI','VII','VIII','IX','X'][n-1];
+   return {appearance:'Sparkling',sparklingHue:'Variant '+roman};
+ }
+ if(n===11)return {appearance:'Dazzling Sparkling',sparklingHue:''};
+ if(n===12)return {appearance:'Shadow Sparkling',sparklingHue:''};
+ return {appearance:'Normal',sparklingHue:''};
+}
 function decodeAniidexForm(formId,catalogData){
  const {facts,text}=aniidexCatalogParts(catalogData||{});if(!facts?.forms)return null;
- const fr=facts.forms[String(formId)]??facts.forms[formId];if(!fr)return null;
+ const fr=aniidexFormFactById(facts.forms,formId);if(!fr)return null;
  const vr=text?.forms?.[String(fr.variant)]??text?.forms?.[fr.variant]??{};
  const skills=[];
  for(const [skillKey,levelRaw] of Object.entries(fr.skills||{})){
@@ -26,9 +43,11 @@ function importedWorkerFromAniidex(a,catalogData=null){
  const preset=catalogEntries().find(c=>String(c.formId||'')===String(a.form));
  if(decoded){
    w.name=decoded.name;w.form=decoded.form||'';w.catalogSource='aniidex-catalog';
+   w.formId=String(decoded.variant||a.form||'');
    w.abilities=decoded.skills.map(x=>({type:x.type,level:x.level}));while(w.abilities.length<3)w.abilities.push({type:'',level:1});
-   w.portrait=`https://aniidex.com/images/aniimo/UI_PetHead_${a.form}.webp`;
-   if(decoded.prismana)w.appearance='Prismana';
+   w.portrait=`https://aniidex.com/images/aniimo/UI_PetHead_${decoded.variant||a.form}.webp`;
+   const appearance=aniidexSparklingAppearance(a.sparkling);
+   w.appearance=appearance.appearance;w.sparklingHue=appearance.sparklingHue;
  } else if(preset){w.name=preset.name;w.form=preset.form||'';w.family=preset.family||'';w.catalogSource=preset.source||'';w.abilities=(preset.abilities||[]).map(x=>({type:x[0],level:x[1]}));while(w.abilities.length<3)w.abilities.push({type:'',level:1})}
  else {w.name=`Form ${a.form}`;w.form=`Aniidex #${a.form}`;w.catalogSource='aniidex-raw'}
  if(preset&&!w.family)w.family=preset.family||'';
