@@ -88,8 +88,8 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.17.0' index.html
-          grep -q 'js/views.js?v=30.19.0' index.html
+          grep -q 'css/app.css?v=30.22.0' index.html
+          grep -q 'js/views.js?v=30.22.0' index.html
           grep -q 'js/importer.js?v=30.15.1' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
@@ -150,6 +150,12 @@ jobs:
           grep -q 'id="advisorRankMatrix"' index.html
           grep -q 'productionBrowserHead' js/views.js
           grep -q 'Homeland Ability Rankings' js/views.js
+          grep -q 'HOMELAND_PLOT_UNLOCKS' js/views.js
+          grep -q 'function renderHomelandPlannerV2' js/views.js
+          grep -q "setHomelandPlannerMode('overview')" js/views.js
+          grep -q 'hpv2PlotGrid' css/app.css
+          grep -q 'hpv2FocusGrid' css/app.css
+          grep -q 'Legacy Board' js/views.js
           grep -q 'Official Wiki Aniimo' js/views.js
           grep -q 'Family-gated stations' js/views.js
           grep -q 'Family Requirements by Station & Recipe' js/views.js
