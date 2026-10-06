@@ -651,6 +651,8 @@ const ANIIMO_CATALOG=[
  {name:'Pawney',form:'Base',family:'helmut',abilities:[['Dark',3],['Hauling',3]],source:'verified'},
  {name:'Pawney',form:'Snowfield Form',family:'helmut',abilities:[['Ice',2],['Dark',3],['Hauling',3]],source:'verified'},
  {name:'Pawney',form:'Prismana Form',family:'helmut',abilities:[['Dark',4],['Hauling',4]],source:'verified'},
+ // Full species roster stays browsable even when Homeland/Home Ability data is not loaded yet.
+ ...(window.ANIIMO_SPECIES_DATA?.species||[]).map(s=>({name:s.name,form:'',family:'',abilities:[],source:'name-only'})),
  // Family-lock names available even when Home ability data is not yet verified in this offline catalog.
  ...Object.entries(WORKER_FAMILIES).flatMap(([family,f])=>f.members.map(name=>({name,form:'',family,abilities:[],source:'name-only'})))
 ];
