@@ -1019,6 +1019,36 @@ function esc(v){return String(v??'').replace(/[&<>\"]/g,ch=>({'&':'&amp;','<':'&
 function abilityOptions(selected){return '<option value="">— none —</option>'+HOME_ABILITIES.map(a=>`<option value="${a}"${a===selected?' selected':''}>${a}</option>`).join('')}
 function levelOptions(selected){return [1,2,3,4].map(n=>`<option value="${n}"${Number(selected)===n?' selected':''}>Lv ${n}</option>`).join('')}
 function personalityOptions(selected){return '<option value=""'+(!selected?' selected':'')+'>Unknown</option>'+PERSONALITY_CODES.map(c=>`<option value="${c}"${c===selected?' selected':''}>${c}</option>`).join('')}
+function aniimoNameOptions(){
+ const seen=new Map();
+ for(const c of catalogEntries()){
+   const key=normalizeSearch(c.name);
+   if(key&&!seen.has(key))seen.set(key,c.name);
+ }
+ return [...seen.values()].sort((a,b)=>a.localeCompare(b));
+}
+function applyWorkerNamePreset(id,value){
+ const w=workers.find(x=>x.id===id);if(!w)return;
+ const typed=String(value||'').trim();
+ const names=aniimoNameOptions();
+ const exact=names.find(n=>normalizeSearch(n)===normalizeSearch(typed));
+ if(!exact){w.name=typed;renderRoster();renderAdvisor();refreshWorkerSelectors();return}
+ const forms=catalogFormsForName(exact);
+ const base=forms.find(c=>canonicalCatalogForm(c.form)==='base')||forms[0]||null;
+ w.name=exact;
+ if(base){
+   w.form=base.form==='Base'?'':(base.form||'');
+   w.family=base.family||w.family;
+   w.catalogSource=base.source||w.catalogSource;
+   if((base.abilities||[]).length){
+     w.abilities=base.abilities.map(a=>({type:a[0],level:a[1]}));
+     while(w.abilities.length<3)w.abilities.push({type:'',level:1});
+   }
+   const af=window.AniimoAssets?.form?.(w.name,w.form);
+   if(af)w.formId=af.id;
+ }
+ render();
+}
 function setWorkerField(id,field,value){const w=workers.find(x=>x.id===id);if(!w)return;w[field]=value;renderRoster();renderAdvisor();refreshWorkerSelectors()}
 function setWorkerAbility(id,idx,field,value){const w=workers.find(x=>x.id===id);if(!w)return;while(w.abilities.length<3)w.abilities.push({type:'',level:1});w.abilities[idx][field]=field==='level'?Number(value):value;renderRoster();renderAdvisor();refreshWorkerSelectors()}
 function removeWorker(id){
@@ -1108,7 +1138,8 @@ function renderRoster(){
    const card=document.createElement('div');const prot=workerIsProtected(w);card.className='workerCard'+(prot?' lockedWorker':'');
    const fam=familyForWorker(w);const assigned=assignedObjectForWorker(w.id);const preset=catalogPresetForWorker(w);
    card.innerHTML=`<div class="workerVisualRow"><button type="button" class="workerPortrait aniimoPreviewOpen" data-worker-preview title="View ${esc(w.name||'Aniimo')} larger">${workerPortraitHTML(w)}<span class="aniimoPreviewBadge">↗</span></button><div class="workerIdentity">
-      <input data-k="name" value="${esc(w.name||'')}" placeholder="Aniimo name">
+      <input data-worker-name value="${esc(w.name||'')}" placeholder="Aniimo name" list="aniimoNameList-${w.id}" autocomplete="off">
+      <datalist id="aniimoNameList-${w.id}">${aniimoNameOptions().map(n=>`<option value="${esc(n)}"></option>`).join('')}</datalist>
       <div class="variantRow"><select data-form>${formOptionsForWorker(w)}</select><select data-k="appearance">${appearanceOptions(w.appearance||'Normal')}</select></div>
       <input data-k="sparklingHue" value="${esc(w.sparklingHue||'')}" placeholder="Sparkling hue/style (optional)" ${String(w.appearance||'').toLowerCase().includes('sparkling')?'':'style="display:none"'}>
       <select data-k="personality">${personalityOptions(w.personality||'')}</select>
@@ -1124,6 +1155,7 @@ function renderRoster(){
    const extra=document.createElement('div');extra.className='abilityRow';extra.innerHTML=`<input data-k="portrait" value="${esc(w.portrait||'')}" placeholder="Optional portrait image URL / data URI"><span class="small">optional</span>`;card.appendChild(extra);
    const flags=document.createElement('div');flags.className='workerFlags';flags.innerHTML=`<label><input type="checkbox" data-active ${w.active!==false?'checked':''}> Production Zone</label><button data-remove class="danger">Archive / Remove</button>`;card.appendChild(flags);
    card.querySelector('[data-worker-preview]')?.addEventListener('click',e=>openWorkerLargePreview(w,e.currentTarget));
+   card.querySelector('[data-worker-name]')?.addEventListener('change',e=>applyWorkerNamePreset(w.id,e.target.value));
    card.querySelectorAll('[data-k]').forEach(inp=>inp.addEventListener('change',()=>setWorkerField(w.id,inp.dataset.k,inp.value)));
    card.querySelector('[data-form]')?.addEventListener('change',e=>applyWorkerCatalogPreset(w.id,e.target.value));
    card.querySelectorAll('[data-appearance-choice]').forEach(btn=>btn.addEventListener('click',()=>{
