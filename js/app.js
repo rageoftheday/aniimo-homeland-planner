@@ -969,6 +969,35 @@ function catalogFormsForName(name){return catalogEntries().filter(c=>c.name===na
 function catalogPresetForWorker(w){return catalogEntries().find(c=>c.name===w.name&&(c.form||'')===(w.form||''))||null}
 function applyWorkerCatalogPreset(id,form){const w=workers.find(x=>x.id===id);if(!w)return;const c=catalogEntries().find(x=>x.name===w.name&&(x.form||'')===form);w.form=form;if(c){w.family=c.family||w.family;w.catalogSource=c.source||w.catalogSource;if((c.abilities||[]).length){const custom=confirm('Apply the known '+(c.form||'Base')+' Home Ability defaults?\n\nChoose Cancel to keep this individual copy\'s current ability values.');if(custom){w.abilities=(c.abilities||[]).map(a=>({type:a[0],level:a[1]}));while(w.abilities.length<3)w.abilities.push({type:'',level:1})}}}render()}
 function appearanceOptions(selected){const vals=['Normal','Sparkling','Dazzling Sparkling','Shadow Sparkling','Umbral','Special / Other'];return vals.map(v=>`<option value="${v}"${v===selected?' selected':''}>${v}</option>`).join('')}
+function appearancePreviewChoices(){
+ const out=[{key:'normal',label:'Normal',appearance:'Normal',hue:''}];
+ for(let i=1;i<=10;i++)out.push({key:'sparkling-'+i,label:'Type '+['I','II','III','IV','V','VI','VII','VIII','IX','X'][i-1],appearance:'Sparkling',hue:'Variant '+['I','II','III','IV','V','VI','VII','VIII','IX','X'][i-1]});
+ out.push({key:'dazzling',label:'Dazzling',appearance:'Dazzling Sparkling',hue:''});
+ out.push({key:'shadow',label:'Shadow',appearance:'Shadow Sparkling',hue:''});
+ out.push({key:'umbral',label:'Umbral',appearance:'Umbral',hue:''});
+ return out;
+}
+function currentAppearancePreviewKey(w){
+ const a=String(w.appearance||'Normal').toLowerCase();
+ if(a.includes('dazzling'))return'dazzling';
+ if(a.includes('shadow'))return'shadow';
+ if(a.includes('umbral'))return'umbral';
+ if(a.includes('sparkling')){
+   const label=window.AniimoAssets?.stageAppearanceLabel?.(w.appearance,w.sparklingHue)||'Sparkling-01';
+   const m=label.match(/Sparkling-(\d+)/);if(m)return'sparkling-'+Number(m[1]);
+   return'sparkling-1';
+ }
+ return'normal';
+}
+function appearancePreviewHTML(w){
+ if(!w?.name)return'';
+ const active=currentAppearancePreviewKey(w);
+ return `<div class="appearancePreviewWrap"><div class="appearancePreviewTitle">Appearance preview</div><div class="appearancePreviewStrip">${appearancePreviewChoices().map(ch=>{
+   const src=(window.AniimoAssets?.portraitCandidates?.(w.name,w.form,ch.appearance,ch.hue)||[])[0]||'';
+   if(!src)return'';
+   return `<button type="button" class="appearancePreview ${active===ch.key?'active':''}" data-appearance-choice="${esc(ch.key)}" data-appearance-value="${esc(ch.appearance)}" data-appearance-hue="${esc(ch.hue)}" title="${esc(ch.label)}"><img src="${esc(src)}" alt="${esc(ch.label)}" loading="lazy" decoding="async" onerror="this.closest('button').style.display='none'"><span>${esc(ch.label)}</span></button>`;
+ }).join('')}</div></div>`;
+}
 function formOptionsForWorker(w){const forms=catalogFormsForName(w.name);const vals=[...new Set(forms.map(x=>x.form||'Base'))];if(w.form&&!vals.includes(w.form))vals.unshift(w.form);if(!vals.length)vals.push(w.form||'Base');return vals.map(v=>{const raw=v==='Base'?'':v;return `<option value="${esc(raw)}"${raw===(w.form||'')?' selected':''}>${esc(v)}</option>`}).join('')}
 function workerAbilityPills(w){const arr=(w.abilities||[]).filter(a=>a.type);return arr.length?arr.map((a,i)=>`<span class="abilityPill${i===0?' primary':''}">${esc(a.type)} Lv${Number(a.level)||1}</span>`).join(''):'<span class="small">No Home abilities entered</span>'}
 function workerPortraitHTML(w){const af=window.AniimoAssets?.form?.(w.name,w.form);const candidates=window.AniimoAssets?.portraitCandidates?.(w.name,w.form,w.appearance,w.sparklingHue)||[];const local=w.localPortrait||candidates[0]||af?.head||'';const remote=w.portrait||'';if(local||remote){const first=local||remote,backup=local&&remote&&remote!==local?remote:'';const fallback=backup?`this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='block'};this.src='${esc(backup)}'`:`this.style.display='none';this.nextElementSibling.style.display='block'`;return `<img src="${esc(first)}" alt="${esc(w.name||'Aniimo')}" onerror="${fallback}"><span class="initials" style="display:none">${esc(initialsFor(w.name))}</span><span class="portraitTag">${esc(w.appearance||'Normal')}</span>`}return `<span class="initials">${esc(initialsFor(w.name))}</span><span class="portraitTag">${esc(w.appearance||'Normal')}</span>`}
@@ -988,6 +1017,7 @@ function renderRoster(){
       <select data-k="personality">${personalityOptions(w.personality||'')}</select>
       <div class="abilityPills">${workerAbilityPills(w)}</div>
       <div class="portraitHelp">Form changes can offer known defaults. Appearance is tracked separately; your in-game copy always wins.</div>
+      ${appearancePreviewHTML(w)}
    </div></div>
    <div class="workerMeta">${fam?`<span class="badge lock">${esc((ANIIMO_FAMILIES[fam]||WORKER_FAMILIES[fam]||{}).label||fam)}</span>`:''}${prot?'<span class="badge lock">🔒 Locked-In</span>':''}${assigned?`<span class="badge ok">Assigned: ${esc(assigned.name)}${assigned.recipeName?' — '+esc(assigned.recipeName):''}</span>`:''}${w.catalogSource?`<span class="badge ${w.catalogSource==='official'||w.catalogSource==='verified'?'ok':'warn'}">${w.catalogSource==='official'?'Official preset':w.catalogSource==='verified'?'Verified preset':'Editable preset'}</span>`:''}<span class="personalityCode">${esc(w.personality||'')}</span></div>`;
    const ps=document.createElement('div');ps.className='personalityStrip';const code=String(w.personality||'');for(const letter of ['E','I','S','N','T','F','J','P']){const sp=document.createElement('span');sp.className='personalityLetter'+(code.includes(letter)?' on':'');sp.textContent=letter;sp.title=PERSONALITY_NAMES[letter];ps.appendChild(sp)}card.appendChild(ps);
@@ -998,6 +1028,11 @@ function renderRoster(){
    const flags=document.createElement('div');flags.className='workerFlags';flags.innerHTML=`<label><input type="checkbox" data-active ${w.active!==false?'checked':''}> Production Zone</label><button data-remove class="danger">Archive / Remove</button>`;card.appendChild(flags);
    card.querySelectorAll('[data-k]').forEach(inp=>inp.addEventListener('change',()=>setWorkerField(w.id,inp.dataset.k,inp.value)));
    card.querySelector('[data-form]')?.addEventListener('change',e=>applyWorkerCatalogPreset(w.id,e.target.value));
+   card.querySelectorAll('[data-appearance-choice]').forEach(btn=>btn.addEventListener('click',()=>{
+     w.appearance=btn.dataset.appearanceValue||'Normal';
+     w.sparklingHue=btn.dataset.appearanceHue||'';
+     render();
+   }));
    card.querySelectorAll('[data-ai]').forEach(inp=>inp.addEventListener('change',()=>setWorkerAbility(w.id,Number(inp.dataset.ai),inp.dataset.af,inp.value)));
    card.querySelector('[data-active]').addEventListener('change',e=>{w.active=e.target.checked;render()});
    card.querySelector('[data-remove]').addEventListener('click',()=>removeWorker(w.id));
