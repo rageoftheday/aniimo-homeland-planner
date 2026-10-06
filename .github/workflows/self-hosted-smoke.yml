@@ -78,13 +78,15 @@ jobs:
           test -s data/homeland-reference-data.js
           test -s js/homeland-data.js
           test -s data/asset-manifest.js
+          test -s data/aniimo-species.js
           test -s js/assets.js
           grep -q '<!doctype html>' index.html
-          grep -q 'Aniimo Homeland Offline Planner v30.12.1' index.html
+          grep -q 'Aniimo Homeland Offline Planner v30.13.0' index.html
           grep -q 'css/app.css' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
           grep -q 'data/asset-manifest.js' index.html
+          grep -q 'data/aniimo-species.js' index.html
           grep -q 'js/assets.js' index.html
           grep -q 'data/embedded-aniidex-catalog.js' index.html
           grep -q 'js/importer.js' index.html
@@ -105,6 +107,7 @@ jobs:
           node --check data/homeland-reference-data.js
           node --check js/homeland-data.js
           node --check data/asset-manifest.js
+          node --check data/aniimo-species.js
           node --check js/assets.js
           node - <<'NODE'
           global.window=global;
