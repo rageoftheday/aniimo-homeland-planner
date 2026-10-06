@@ -50,6 +50,7 @@ function renderAniimosTab(){
  const unavailableDex=new Set(['084','085','086','087','088','089','090','091','092','093']);
  const stageNameFor=n=>({Hexxin:'Witchin'}[n]||n);
  const hiddenImageOnly=new Set(['Jabster','Morphling','Fennelun','Soleon']);
+ const noVariantSpecies=new Set(['Lunara','Helion']);
  const abilityImageForms={
    Lunara:[{assetName:'Fennelun',id:'1037300',label:'Ability Form — Fennelun'}],
    Helion:[{assetName:'Soleon',id:'1036300',label:'Ability Form — Soleon'}]
@@ -68,10 +69,13 @@ function renderAniimosTab(){
  const formEntriesFor=name=>{
    const baseAsset=stageNameFor(name);
    const entries=Object.entries(stageIndex[baseAsset]||{}).map(([id,apps])=>({
-     key:baseAsset+'|'+id,assetName:baseAsset,id,apps,label:formLabel(name,id)
+     key:baseAsset+'|'+id,assetName:baseAsset,id,
+     apps:noVariantSpecies.has(name)?apps.filter(a=>a==='Normal'):apps,
+     label:formLabel(name,id)
    }));
    for(const extra of abilityImageForms[name]||[]){
-     const apps=stageIndex[extra.assetName]?.[extra.id]||[];
+     const rawApps=stageIndex[extra.assetName]?.[extra.id]||[];
+     const apps=noVariantSpecies.has(name)?rawApps.filter(a=>a==='Normal'):rawApps;
      if(apps.length)entries.push({key:extra.assetName+'|'+extra.id,assetName:extra.assetName,id:extra.id,apps,label:extra.label});
    }
    return entries;
