@@ -93,6 +93,8 @@ jobs:
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
           grep -q 'js/app.js' index.html
+          grep -q 'data-tab="aniimos"' index.html
+          grep -q 'id="aniimosPane"' index.html
           grep -q 'productionBrowserHead' js/views.js
           grep -q 'productionRecipeTable' css/app.css
           grep -q 'function aniidexBookmarkletCode' js/importer.js
@@ -106,6 +108,15 @@ jobs:
           grep -q 'appearancePreviewStrip' css/app.css
           grep -q 'catalogPortraitHTML(c)' js/app.js
           node --check js/app.js
+          node - <<'NODE'
+          global.window=global;
+          require('./data/aniimo-species.js');
+          const src=require('fs').readFileSync('./js/app.js','utf8');
+          if(!src.includes("window.ANIIMO_SPECIES_DATA?.species")) throw new Error('Full species roster is not feeding catalog');
+          if(src.includes("rows.slice(0,120)")) throw new Error('Aniimo catalog is still truncated to 120 rows');
+          if(!(global.ANIIMO_SPECIES_DATA?.species||[]).some(x=>x.name==='Somniwing')) throw new Error('Somniwing missing from species data');
+          console.log('Somniwing catalog entry OK');
+          NODE
           node --check js/importer.js
           node --check js/views.js
           node --check data/embedded-aniidex-catalog.js
@@ -134,6 +145,9 @@ jobs:
           console.log('Prismana alias resolution OK');
           console.log('Appearance asset model OK',id,c[0]);
           NODE
+          grep -q 'function renderAniimosTab' js/views.js
+          grep -q 'aniimoFormSelect' js/views.js
+          grep -q 'aniimosGrid' css/app.css
           grep -q 'databaseBrowserHead' js/views.js
           grep -q 'databaseScroll' css/app.css
           grep -q 'databaseAniimoFixed' css/app.css

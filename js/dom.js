@@ -27,6 +27,7 @@ var mainTabs=document.getElementById('mainTabs');
 var dashboardPane=document.getElementById('dashboardPane');
 var mapPane=document.getElementById('mapPane');
 var productionPane=document.getElementById('productionPane');
+var aniimosPane=document.getElementById('aniimosPane');
 var rosterPane=document.getElementById('rosterPane');
 var advisorPane=document.getElementById('advisorPane');
 var suggestionsPane=document.getElementById('suggestionsPane');

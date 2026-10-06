@@ -270,3 +270,18 @@ textarea{width:100%;height:110px}.legend{padding:9px 11px;border-top:1px solid #
 .appearancePreview img{width:45px;height:45px;object-fit:cover;border-radius:5px;background:#0d1820}
 .appearancePreview span{font-size:8px;line-height:1.05;color:#cfe9f8;white-space:nowrap;max-width:48px;overflow:hidden;text-overflow:ellipsis}
 .catalogResult .catalogPortrait img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+
+/* v30.13.1 Aniimo browser */
+.aniimosBrowser{padding:12px;min-height:100%;overflow:auto}
+.aniimosBrowserHead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:10px}
+.aniimosBrowseStats{font-size:11px;color:var(--muted)}
+.aniimosBrowseTools{margin-bottom:10px}
+.aniimosBrowseTools input{width:min(420px,100%)}
+.aniimosGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.aniimoBrowseCard{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;align-items:center;border:1px solid #30495d;background:#13222d;border-radius:10px;padding:8px;min-width:0}
+.aniimoBrowseImage{width:96px;height:96px;border-radius:9px;overflow:hidden;background:#0f1b24;border:1px solid #35546b;display:flex;align-items:center;justify-content:center}
+.aniimoBrowseImage img{width:100%;height:100%;object-fit:cover}
+.aniimoBrowseFallback{width:100%;height:100%;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#d9efff}
+.aniimoBrowseInfo{min-width:0;display:grid;gap:5px}
+.aniimoBrowseName{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aniimoFormSelect{width:100%;min-width:0}

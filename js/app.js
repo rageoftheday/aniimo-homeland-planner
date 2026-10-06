@@ -651,6 +651,8 @@ const ANIIMO_CATALOG=[
  {name:'Pawney',form:'Base',family:'helmut',abilities:[['Dark',3],['Hauling',3]],source:'verified'},
  {name:'Pawney',form:'Snowfield Form',family:'helmut',abilities:[['Ice',2],['Dark',3],['Hauling',3]],source:'verified'},
  {name:'Pawney',form:'Prismana Form',family:'helmut',abilities:[['Dark',4],['Hauling',4]],source:'verified'},
+ // Full species roster stays browsable even when Homeland/Home Ability data is not loaded yet.
+ ...(window.ANIIMO_SPECIES_DATA?.species||[]).map(s=>({name:s.name,form:'',family:'',abilities:[],source:'name-only'})),
  // Family-lock names available even when Home ability data is not yet verified in this offline catalog.
  ...Object.entries(WORKER_FAMILIES).flatMap(([family,f])=>f.members.map(name=>({name,form:'',family,abilities:[],source:'name-only'})))
 ];
@@ -680,7 +682,7 @@ function renderAniimoCatalog(){
  else rows.sort((a,b)=>a.name.localeCompare(b.name)||(a.form||'').localeCompare(b.form||''));
  result.innerHTML='';
  if(!rows.length){result.innerHTML='<div class="small">No catalog match. Try a shorter spelling or use + Custom / Unknown.</div>';return}
- for(const c of rows.slice(0,120)){const d=document.createElement('div');d.className='catalogResult';const abs=(c.abilities||[]).length?(c.abilities||[]).map(a=>`${a[0]} Lv${a[1]}`).join(' • '):'Abilities not yet verified in offline catalog — editable after adding';const f=familyIdForCatalog(c);d.innerHTML=`<div class="catalogPortrait">${catalogPortraitHTML(c)}</div><div class="catalogName">${esc(c.name)}${c.form?' — '+esc(c.form):''}</div><div class="catalogAbilities">${esc(abs)}</div><div class="catalogHint">${f&&ANIIMO_FAMILIES[f]?esc(ANIIMO_FAMILIES[f].label):f?'Family: '+esc(f):''}${(c.source==='official'?' • Official preset':c.source==='verified'?' • Verified preset':' • Name preset only')}</div>`;d.onclick=()=>addCatalogWorker(c);result.appendChild(d)}
+ for(const c of rows){const d=document.createElement('div');d.className='catalogResult';const abs=(c.abilities||[]).length?(c.abilities||[]).map(a=>`${a[0]} Lv${a[1]}`).join(' • '):'Abilities not yet verified in offline catalog — editable after adding';const f=familyIdForCatalog(c);d.innerHTML=`<div class="catalogPortrait">${catalogPortraitHTML(c)}</div><div class="catalogName">${esc(c.name)}${c.form?' — '+esc(c.form):''}</div><div class="catalogAbilities">${esc(abs)}</div><div class="catalogHint">${f&&ANIIMO_FAMILIES[f]?esc(ANIIMO_FAMILIES[f].label):f?'Family: '+esc(f):''}${(c.source==='official'?' • Official preset':c.source==='verified'?' • Verified preset':' • Name preset only')}</div>`;d.onclick=()=>addCatalogWorker(c);result.appendChild(d)}
 }
 
 let workers=[]; let workerIdCounter=1;

@@ -1,3 +1,4 @@
+let aniimosBrowseQuery='';
 // v30 tab shell and full-screen views
 let activeMainTab='map';
 function setMainTab(tab){
@@ -39,6 +40,43 @@ function renderProductionTab(){const root=el('productionPane');if(!root)return;l
 function rankLabel(f){if(!f||!f.eligible)return'Not eligible';if(f.trait&&f.lvl>=4)return'Best';if(f.lvl>=3&&f.trait)return'High';if(f.lvl>=2)return'Medium';return'Low End'}
 function renderSuggestionsTab(){const root=el('suggestionsPane');if(!root)return;const jobs=activeJobs(),cov=abilityCoverage(),blocked=blockedFamilyJobs();const demand={};for(const j of jobs)demand[j.ability]=(demand[j.ability]||0)+(j.rec||1);let suggestions=[];for(const a of HOME_ABILITIES){const need=demand[a]||0,have=cov[a]||0;if(need&&have<=need)suggestions.push({pri:have<need?0:1,title:`${a} coverage is ${have<need?'short':'tight'}`,body:`Current active-job demand is about ${need} ability levels; your active roster totals ${have}. Use Roster → By Ability to find ${a} candidates, then compare secondary abilities and personality fit.`})}for(const j of blocked)suggestions.unshift({pri:-1,title:`🔒 ${j.station}${j.recipe?' — '+j.recipe:''} production blocked`,body:`Missing ${WORKER_FAMILIES[j.family]?.label||j.family}. Add one accepted family member to the Production Zone. Preferred personality: ${j.personality?j.personality+' — '+PERSONALITY_NAMES[j.personality]:'none'}.`});for(const j of jobs){const fits=workers.map(w=>({w,f:workerFitForJob(w,j)})).filter(x=>x.f.eligible).sort((a,b)=>b.f.score-a.f.score);if(fits[0]&&!fits[0].f.trait&&j.personality)suggestions.push({pri:2,title:`${j.station}: personality improvement available`,body:`Best current fit is ${fits[0].w.name||'unnamed worker'}, but it does not have ${j.personality} — ${PERSONALITY_NAMES[j.personality]}. The job still works; a matching personality would add the station bonus.`})}suggestions.sort((a,b)=>a.pri-b.pri);root.innerHTML=`<div class="v30Title">Suggestions</div><div class="v30Sub">Actionable coaching based on this profile: blocked production first, then ability shortages, personality opportunities, and roster fit.</div><div class="suggestGrid">${suggestions.length?suggestions.slice(0,24).map((x,i)=>`<div class="fullCard"><h3>${esc(x.title)}</h3><div class="small">${x.body}</div></div>`).join(''):'<div class="fullCard"><h3>No urgent suggestion yet</h3><div class="small">Enter your roster and assign recipes to let the planner find shortages, family locks and personality opportunities.</div></div>'}</div>`}
 function renderProgressionTab(){const root=el('progressionPane');if(!root)return;const rv=+rvLevel.value,next=rv+1;const upcoming=catalog.filter(x=>(x.rv||1)===next);root.innerHTML=`<div class="v30Title">Progression</div><div class="v30Sub">RV, module, plot and facility progression. Exact next-RV stock requirements are shown only when loaded into the database; this view will not invent missing costs.</div><div class="progressGrid"><div class="fullCard"><h3>Current RV</h3><div class="metric">RV ${rv}</div><div class="small">Next: RV ${next}</div></div><div class="fullCard"><h3>Open plots</h3><div class="metric">${openPlots.size}</div><div class="small">Manual plot access follows what is actually open in your game.</div></div><div class="fullCard"><h3>Next-RV unlocks</h3><div class="small">${upcoming.length?upcoming.map(x=>esc(x.name)).join(' • '):'No facility unlock entries loaded specifically for RV '+next+'.'}</div></div><div class="fullCard"><h3>Next-RV resource requirements</h3><div class="small fitWarn">Not fully loaded yet — intentionally not guessed.</div></div></div><div class="sectionTitle">RV Module Levels</div><div class="tableWrap"><table class="dataTable"><thead><tr><th>Module</th><th>Current</th></tr></thead><tbody>${Object.keys(rvModules).map(k=>`<tr><td>${esc(k)}</td><td>Lv ${Number(moduleLevels[k]||0)}</td></tr>`).join('')}</tbody></table></div>`}
+function renderAniimosTab(){
+ const root=el('aniimosPane');if(!root)return;
+ const speciesData=window.ANIIMO_SPECIES_DATA||{species:[]};
+ const manifest=window.ANIIMO_ASSET_MANIFEST||{aniimoForms:{}};
+ const allForms=Object.entries(manifest.aniimoForms||{}).map(([id,f])=>({id,...f}));
+ const q=String(aniimosBrowseQuery||'').trim().toLowerCase();
+ const species=(speciesData.species||[]).filter(s=>!q||String(s.name||'').toLowerCase().includes(q)||String(s.dex||'').includes(q));
+ root.innerHTML=`<div class="aniimosBrowser">
+   <div class="aniimosBrowserHead">
+     <div><div class="v30Title">All Aniimos</div><div class="v30Sub">Browse the complete roster and switch between every locally known form.</div></div>
+     <div class="aniimosBrowseStats">${species.length} shown / ${(speciesData.species||[]).length} total</div>
+   </div>
+   <div class="aniimosBrowseTools"><input id="aniimosBrowseSearch" value="${esc(aniimosBrowseQuery)}" placeholder="Search Aniimo name or Dex #"></div>
+   <div class="aniimosGrid">${species.map(s=>{
+     const forms=allForms.filter(f=>f.name===s.name).sort((a,b)=>(a.form||'').localeCompare(b.form||''));
+     const first=forms[0]||null;
+     const src=first?(window.AniimoAssets?.portraitCandidates?.(s.name,first.form||'','Normal','')||[])[0]||first.head||'':'';
+     const opts=forms.length?forms.map((f,i)=>`<option value="${esc(f.id)}"${i===0?' selected':''}>${esc(f.form||'Basic Form')}</option>`).join(''):'<option value="">No captured forms</option>';
+     return `<div class="aniimoBrowseCard" data-aniimo-name="${esc(s.name)}">
+       <div class="aniimoBrowseImage">${src?`<img src="${esc(src)}" alt="${esc(s.name)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="aniimoBrowseFallback" style="display:none">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`:`<span class="aniimoBrowseFallback">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`}</div>
+       <div class="aniimoBrowseInfo"><div class="aniimoBrowseName">#${esc(s.dex||'—')} · ${esc(s.name)}</div><div class="small">${esc(s.stage||'')}</div>
+       <select class="aniimoFormSelect" data-aniimo-form-select="${esc(s.name)}" ${forms.length?'':'disabled'}>${opts}</select></div>
+     </div>`;
+   }).join('')}</div>
+ </div>`;
+ const search=root.querySelector('#aniimosBrowseSearch');
+ if(search)search.addEventListener('input',e=>{aniimosBrowseQuery=e.target.value;renderAniimosTab();});
+ root.querySelectorAll('[data-aniimo-form-select]').forEach(sel=>sel.addEventListener('change',()=>{
+   const name=sel.dataset.aniimoFormSelect;
+   const f=(manifest.aniimoForms||{})[sel.value];
+   const card=sel.closest('.aniimoBrowseCard');
+   const img=card?.querySelector('.aniimoBrowseImage img');
+   if(!f||!card)return;
+   const src=(window.AniimoAssets?.portraitCandidates?.(name,f.form||'','Normal','')||[])[0]||f.head||'';
+   if(img&&src){img.style.display='';img.src=src;}
+ }));
+}
 function renderDatabaseTab(){const root=el('databasePane');if(!root)return;const ani=catalogEntries();const forms=ani.filter(x=>(x.abilities||[]).length);const locks=Object.entries(FAMILY_RECIPE_RULES);const ref=window.HomelandData?.validate?.()||{ok:false,issues:['Reference data not loaded'],counts:{}};const hc=ref.counts||{};const speciesData=window.ANIIMO_SPECIES_DATA||{species:[],evolutionFamilies:[],temporaryTransforms:[]};const capturedNames=new Set((window.HomelandData?.raw?.forms||[]).map(x=>x.name));const capturedSpecies=speciesData.species.filter(x=>capturedNames.has(x.name)).length;root.innerHTML=`<div class="databaseBrowser"><div class="databaseBrowserHead"><div class="v30Title">Database / Reference</div><div class="v30Sub">Offline facts currently loaded into this planner. User-entered copy data overrides catalog defaults.</div><div class="dashboardGrid"><div class="metricCard"><div class="label">Reference data</div><div class="metric">${ref.ok?'✓':'!'}</div><div class="small">${ref.ok?'Offline v1 loaded':esc((ref.issues||[]).join(' • '))}</div></div><div class="metricCard"><div class="label">Facilities / recipes</div><div class="metric">${hc.facilities||0} / ${hc.recipes||0}</div><div class="small">${hc.items||0} items • ${hc.plots||0} plots • ${hc.rv||0} RV levels</div></div><div class="metricCard"><div class="label">Released Aniimo</div><div class="metric">${speciesData.species.length}</div><div class="small">${capturedSpecies} with captured Homeland data • ${hc.forms||210} captured forms</div></div><div class="metricCard"><div class="label">Recipe records</div><div class="metric">${Object.values(recipeDB).reduce((n,a)=>n+a.length,0)}</div></div><div class="metricCard"><div class="label">Family-locked recipes</div><div class="metric">${locks.length}</div></div><div class="metricCard"><div class="label">Station work rules</div><div class="metric">${Object.keys(STATION_RULES).length}</div></div></div></div><div class="databaseScroll">
 <div class="databaseSection">
   <div class="sectionTitle">Complete Aniimo evolution roster</div>
@@ -56,4 +94,4 @@ function renderDatabaseTab(){const root=el('databasePane');if(!root)return;const
   <div class="databaseFamilyBodyScroll"><table class="dataTable databaseBodyTable"><colgroup><col style="width:38%"><col style="width:24%"><col style="width:38%"></colgroup><tbody>${locks.map(([k,v])=>`<tr><td>${esc(k.replace('|',' — '))}</td><td>${esc(WORKER_FAMILIES[v.family]?.label||v.family)}</td><td>${esc((WORKER_FAMILIES[v.family]?.members||[]).join(' / '))}</td></tr>`).join('')}</tbody></table></div>
 </div>
 </div></div>`}
-function renderV30Views(){renderRightQuickStats();if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='suggestions')renderSuggestionsTab();else if(activeMainTab==='progression')renderProgressionTab();else if(activeMainTab==='database')renderDatabaseTab();else if(activeMainTab==='import')renderImportTab();}
+function renderV30Views(){renderRightQuickStats();if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='suggestions')renderSuggestionsTab();else if(activeMainTab==='progression')renderProgressionTab();else if(activeMainTab==='database')renderDatabaseTab();else if(activeMainTab==='import')renderImportTab();}
