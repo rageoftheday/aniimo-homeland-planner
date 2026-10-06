@@ -63,9 +63,7 @@ function renderAniimosTab(){
  const roster=(speciesData.species||[]).map(s=>({...s,releaseStatus:unavailableDex.has(String(s.dex))?'unavailable':'released'}));
  const rosterNames=new Set(roster.map(s=>stageNameFor(s.name)));
  for(const imageName of Object.keys(stageIndex)){
-   if(!rosterNames.has(imageName)){
-     roster.push({dex:'',name:imageName,stage:'',releaseStatus:'image-only'});
-   }
+   if(!rosterNames.has(imageName))roster.push({dex:'',name:imageName,stage:'',releaseStatus:'image-only'});
  }
  const visible=roster.filter(s=>s.releaseStatus!=='unavailable'||!!actualStageFor(s.name));
  const q=String(aniimosBrowseQuery||'').trim().toLowerCase();
@@ -81,6 +79,7 @@ function renderAniimosTab(){
    }
    return humanize(a);
  };
+ const imagePath=(stageName,id,appearance)=>stageName&&id&&appearance?`assets/aniimo/stage/${stageName}__${id}__ThreeQuarter__${appearance}.webp`:'';
  root.dataset.imageFit=aniimosImageFit;
  root.dataset.imageSize=aniimosImageSize;
  root.innerHTML=`<div class="aniimosBrowser">
@@ -111,41 +110,133 @@ function renderAniimosTab(){
      const firstId=ids[0]||'';
      const firstApps=firstId?stageForms[firstId]:[];
      const firstAppearance=firstApps.includes('Normal')?'Normal':(firstApps[0]||'');
-     const firstSrc=firstId&&firstAppearance?`assets/aniimo/stage/${stageName}__${firstId}__ThreeQuarter__${firstAppearance}.webp`:'';
+     const firstSrc=imagePath(stageName,firstId,firstAppearance);
      const formOpts=ids.length?ids.map((id,i)=>`<option value="${esc(id)}"${i===0?' selected':''}>${esc(formLabel(s.name,id))}</option>`).join(''):'<option value="">No local images</option>';
-     const appOpts=firstApps.map((a,i)=>`<option value="${esc(a)}"${a===firstAppearance?' selected':''}>${esc(appearanceLabel(a))}</option>`).join('');
+     const appOpts=firstApps.map(a=>`<option value="${esc(a)}"${a===firstAppearance?' selected':''}>${esc(appearanceLabel(a))}</option>`).join('');
      const status=s.releaseStatus==='unavailable'?'<span class="sourceBadge user">Unreleased · image available</span>':s.releaseStatus==='image-only'?'<span class="sourceBadge user">Image-only / special</span>':'';
-     return `<div class="aniimoBrowseCard" data-aniimo-name="${esc(s.name)}" data-stage-name="${esc(stageName)}">
-       <div class="aniimoBrowseImage">${firstSrc?`<img src="${esc(firstSrc)}" alt="${esc(s.name)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="aniimoBrowseFallback" style="display:none">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`:`<span class="aniimoBrowseFallback">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`}</div>
+     return `<div class="aniimoBrowseCard" data-aniimo-name="${esc(s.name)}" data-stage-name="${esc(stageName)}" data-model-id="${esc(firstId)}" data-dex="${esc(s.dex||'')}" data-stage="${esc(s.stage||'')}">
+       <button type="button" class="aniimoBrowseImage aniimoPreviewOpen" data-preview-open title="View ${esc(s.name)} larger">${firstSrc?`<img src="${esc(firstSrc)}" alt="${esc(s.name)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="aniimoBrowseFallback" style="display:none">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`:`<span class="aniimoBrowseFallback">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`}<span class="aniimoPreviewBadge">↗</span></button>
        <div class="aniimoBrowseInfo"><div class="aniimoBrowseName">${s.dex?'#'+esc(s.dex)+' · ':''}${esc(s.name)}</div><div class="small">${esc(s.stage||'')}${status?' · '+status:''}</div>
-       <label class="aniimoSelectLabel">Form<select class="aniimoFormSelect" data-aniimo-form-select ${ids.length?'':'disabled'}>${formOpts}</select></label>
+       ${ids.length>1?`<label class="aniimoSelectLabel">Form<select class="aniimoFormSelect" data-aniimo-form-select>${formOpts}</select></label>`:''}
        <label class="aniimoSelectLabel">Appearance<select class="aniimoAppearanceSelect" data-aniimo-appearance-select ${firstApps.length?'':'disabled'}>${appOpts}</select></label>
-       <div class="small aniimoImageCount">${ids.length} image form${ids.length===1?'':'s'}${firstApps.length?' · '+firstApps.length+' looks on selected form':''}</div></div>
+       <button type="button" class="aniimoPreviewButton" data-preview-open>View Larger</button>
+       <div class="small aniimoImageCount">${ids.length>1?ids.length+' image forms · ':''}${firstApps.length?firstApps.length+' looks on selected form':''}</div></div>
      </div>`;
    }).join('')}</div>
+ </div>
+ <div class="aniimoModal" id="aniimoPreviewModal" aria-hidden="true" tabindex="-1">
+   <div class="aniimoModalBackdrop" data-modal-close></div>
+   <div class="aniimoModalPanel" role="dialog" aria-modal="true" aria-labelledby="aniimoModalTitle">
+     <button type="button" class="aniimoModalClose" data-modal-close aria-label="Close">×</button>
+     <div class="aniimoModalImageWrap"><img id="aniimoModalImage" alt=""></div>
+     <div class="aniimoModalControls">
+       <div class="aniimoModalTitle" id="aniimoModalTitle"></div>
+       <div class="small" id="aniimoModalMeta"></div>
+       <label class="aniimoSelectLabel" id="aniimoModalFormWrap">Form<select id="aniimoModalForm"></select></label>
+       <label class="aniimoSelectLabel">Appearance<select id="aniimoModalAppearance"></select></label>
+       <div class="aniimoModalNav"><button type="button" id="aniimoModalPrev">← Previous</button><span class="small" id="aniimoModalCounter"></span><button type="button" id="aniimoModalNext">Next →</button></div>
+       <label class="aniimoSelectLabel">Large image fit<select id="aniimoModalFit"><option value="contain">Fit whole image</option><option value="cover">Fill frame</option></select></label>
+       <a class="aniimoOpenOriginal" id="aniimoOpenOriginal" target="_blank" rel="noopener">Open Original Image</a>
+     </div>
+   </div>
  </div>`;
  const search=root.querySelector('#aniimosBrowseSearch');
  if(search)search.addEventListener('input',e=>{aniimosBrowseQuery=e.target.value;renderAniimosTab();});
  root.querySelector('#aniimosImageFit')?.addEventListener('change',e=>{aniimosImageFit=e.target.value;localStorage.setItem('aniimosImageFit',aniimosImageFit);root.dataset.imageFit=aniimosImageFit;});
  root.querySelector('#aniimosImageSize')?.addEventListener('change',e=>{aniimosImageSize=e.target.value;localStorage.setItem('aniimosImageSize',aniimosImageSize);root.dataset.imageSize=aniimosImageSize;});
+
+ const modal=root.querySelector('#aniimoPreviewModal');
+ const modalImg=root.querySelector('#aniimoModalImage');
+ const modalTitle=root.querySelector('#aniimoModalTitle');
+ const modalMeta=root.querySelector('#aniimoModalMeta');
+ const modalForm=root.querySelector('#aniimoModalForm');
+ const modalFormWrap=root.querySelector('#aniimoModalFormWrap');
+ const modalAppearance=root.querySelector('#aniimoModalAppearance');
+ const modalCounter=root.querySelector('#aniimoModalCounter');
+ const modalOriginal=root.querySelector('#aniimoOpenOriginal');
+ const modalFit=root.querySelector('#aniimoModalFit');
+ let modalCard=null;
+
+ const cardState=card=>{
+   const stageName=card.dataset.stageName;
+   const data=stageIndex[stageName]||{};
+   const formSel=card.querySelector('[data-aniimo-form-select]');
+   const appSel=card.querySelector('[data-aniimo-appearance-select]');
+   const id=formSel?.value||card.dataset.modelId||Object.keys(data)[0]||'';
+   const apps=data[id]||[];
+   const appearance=appSel?.value||apps[0]||'';
+   return {stageName,data,formSel,appSel,id,apps,appearance};
+ };
+ const syncCardImage=card=>{
+   const st=cardState(card);
+   card.dataset.modelId=st.id;
+   const img=card.querySelector('.aniimoBrowseImage img');
+   const src=imagePath(st.stageName,st.id,st.appearance);
+   if(img&&src){img.style.display='';img.src=src;}
+   const count=card.querySelector('.aniimoImageCount');
+   if(count){const totalForms=Object.keys(st.data).length;count.textContent=`${totalForms>1?totalForms+' image forms · ':''}${st.apps.length} looks on selected form`;}
+ };
+ const syncModal=()=>{
+   if(!modalCard)return;
+   const st=cardState(modalCard);
+   const src=imagePath(st.stageName,st.id,st.appearance);
+   modalImg.src=src;modalImg.alt=modalCard.dataset.aniimoName||'Aniimo';
+   modalTitle.textContent=(modalCard.dataset.dex?'#'+modalCard.dataset.dex+' · ':'')+(modalCard.dataset.aniimoName||'Aniimo');
+   modalMeta.textContent=modalCard.dataset.stage||'';
+   modalFormWrap.style.display=Object.keys(st.data).length>1?'grid':'none';
+   modalForm.innerHTML=Object.keys(st.data).map(id=>`<option value="${esc(id)}"${id===st.id?' selected':''}>${esc(formLabel(modalCard.dataset.aniimoName,id))}</option>`).join('');
+   modalAppearance.innerHTML=st.apps.map(a=>`<option value="${esc(a)}"${a===st.appearance?' selected':''}>${esc(appearanceLabel(a))}</option>`).join('');
+   const ai=Math.max(0,st.apps.indexOf(st.appearance));
+   modalCounter.textContent=st.apps.length?`${ai+1} / ${st.apps.length}`:'0 / 0';
+   modalOriginal.href=src||'#';
+   modalOriginal.classList.toggle('disabled',!src);
+ };
+ const openModal=card=>{
+   if(!card)return;modalCard=card;syncModal();
+   modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.classList.add('aniimoModalOpen');modal.focus();
+ };
+ const closeModal=()=>{modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('aniimoModalOpen');modalCard=null;};
+ root.querySelectorAll('[data-modal-close]').forEach(b=>b.addEventListener('click',closeModal));
+ modal?.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+ modalFit?.addEventListener('change',()=>{modal.dataset.fit=modalFit.value;});
+ modal.dataset.fit='contain';
+ root.querySelector('#aniimoModalPrev')?.addEventListener('click',()=>{
+   if(!modalCard)return;const st=cardState(modalCard);if(!st.apps.length)return;
+   const i=(Math.max(0,st.apps.indexOf(st.appearance))-1+st.apps.length)%st.apps.length;
+   st.appSel.value=st.apps[i];syncCardImage(modalCard);syncModal();
+ });
+ root.querySelector('#aniimoModalNext')?.addEventListener('click',()=>{
+   if(!modalCard)return;const st=cardState(modalCard);if(!st.apps.length)return;
+   const i=(Math.max(0,st.apps.indexOf(st.appearance))+1)%st.apps.length;
+   st.appSel.value=st.apps[i];syncCardImage(modalCard);syncModal();
+ });
+ modalForm?.addEventListener('change',()=>{
+   if(!modalCard)return;const st=cardState(modalCard);
+   modalCard.dataset.modelId=modalForm.value;
+   if(st.formSel)st.formSel.value=modalForm.value;
+   const apps=st.data[modalForm.value]||[];
+   st.appSel.innerHTML=apps.map(a=>`<option value="${esc(a)}">${esc(appearanceLabel(a))}</option>`).join('');
+   st.appSel.disabled=!apps.length;
+   syncCardImage(modalCard);syncModal();
+ });
+ modalAppearance?.addEventListener('change',()=>{
+   if(!modalCard)return;const st=cardState(modalCard);
+   st.appSel.value=modalAppearance.value;syncCardImage(modalCard);syncModal();
+ });
+
  root.querySelectorAll('.aniimoBrowseCard').forEach(card=>{
    const formSel=card.querySelector('[data-aniimo-form-select]');
    const appSel=card.querySelector('[data-aniimo-appearance-select]');
-   const img=card.querySelector('.aniimoBrowseImage img');
-   const count=card.querySelector('.aniimoImageCount');
    const stageName=card.dataset.stageName;
    const data=stageIndex[stageName]||{};
-   const updateImage=()=>{
-     const id=formSel?.value||'',a=appSel?.value||'';
-     if(img&&id&&a){img.style.display='';img.src=`assets/aniimo/stage/${stageName}__${id}__ThreeQuarter__${a}.webp`;}
-     if(count&&id){const apps=data[id]||[];count.textContent=`${Object.keys(data).length} image form${Object.keys(data).length===1?'':'s'} · ${apps.length} looks on selected form`;}
-   };
    formSel?.addEventListener('change',()=>{
+     card.dataset.modelId=formSel.value;
      const apps=data[formSel.value]||[];
      appSel.innerHTML=apps.map(a=>`<option value="${esc(a)}">${esc(appearanceLabel(a))}</option>`).join('');
-     appSel.disabled=!apps.length;updateImage();
+     appSel.disabled=!apps.length;syncCardImage(card);
    });
-   appSel?.addEventListener('change',updateImage);
+   appSel?.addEventListener('change',()=>syncCardImage(card));
+   card.querySelectorAll('[data-preview-open]').forEach(btn=>btn.addEventListener('click',()=>openModal(card)));
  });
 }
 function renderDatabaseTab(){const root=el('databasePane');if(!root)return;const ani=catalogEntries();const forms=ani.filter(x=>(x.abilities||[]).length);const locks=Object.entries(FAMILY_RECIPE_RULES);const ref=window.HomelandData?.validate?.()||{ok:false,issues:['Reference data not loaded'],counts:{}};const hc=ref.counts||{};const speciesData=window.ANIIMO_SPECIES_DATA||{species:[],evolutionFamilies:[],temporaryTransforms:[]};const capturedNames=new Set((window.HomelandData?.raw?.forms||[]).map(x=>x.name));const capturedSpecies=speciesData.species.filter(x=>capturedNames.has(x.name)).length;root.innerHTML=`<div class="databaseBrowser"><div class="databaseBrowserHead"><div class="v30Title">Database / Reference</div><div class="v30Sub">Offline facts currently loaded into this planner. User-entered copy data overrides catalog defaults.</div><div class="dashboardGrid"><div class="metricCard"><div class="label">Reference data</div><div class="metric">${ref.ok?'✓':'!'}</div><div class="small">${ref.ok?'Offline v1 loaded':esc((ref.issues||[]).join(' • '))}</div></div><div class="metricCard"><div class="label">Facilities / recipes</div><div class="metric">${hc.facilities||0} / ${hc.recipes||0}</div><div class="small">${hc.items||0} items • ${hc.plots||0} plots • ${hc.rv||0} RV levels</div></div><div class="metricCard"><div class="label">Released Aniimo</div><div class="metric">${speciesData.species.length}</div><div class="small">${capturedSpecies} with captured Homeland data • ${hc.forms||210} captured forms</div></div><div class="metricCard"><div class="label">Recipe records</div><div class="metric">${Object.values(recipeDB).reduce((n,a)=>n+a.length,0)}</div></div><div class="metricCard"><div class="label">Family-locked recipes</div><div class="metric">${locks.length}</div></div><div class="metricCard"><div class="label">Station work rules</div><div class="metric">${Object.keys(STATION_RULES).length}</div></div></div></div><div class="databaseScroll">

@@ -86,8 +86,8 @@ jobs:
           grep -q '<h1>Aniimo Homeland Offline Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Offline Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Offline Planner v' index.html
-          grep -q 'css/app.css?v=30.13.3' index.html
-          grep -q 'js/views.js?v=30.13.3' index.html
+          grep -q 'css/app.css?v=30.13.4' index.html
+          grep -q 'js/views.js?v=30.13.4' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
@@ -171,7 +171,13 @@ jobs:
           grep -q 'aniimosImageFit' js/views.js
           grep -q 'aniimosImageSize' js/views.js
           grep -q 'Image fit' js/views.js
+          grep -q 'aniimoPreviewModal' js/views.js
+          grep -q 'data-preview-open' js/views.js
+          grep -q 'aniimoModalAppearance' js/views.js
+          grep -q 'aniimoModalForm' js/views.js
+          grep -q 'aniimoModalNav' css/app.css
           grep -q 'Appearance' js/views.js
+          grep -q "ids.length>1" js/views.js
           grep -q "unavailableDex=new Set" js/views.js
           grep -q 'aniimosGrid' css/app.css
           grep -q 'databaseBrowserHead' js/views.js
