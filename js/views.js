@@ -247,7 +247,18 @@ function renderAniimosTab(){
  }
 
  if(aniimosViewMode==='abilities'){
-   const rankRows=window.WikiHomeland?.rankAbility?.(aniimosRankAbility,aniimosRankMin)||[];
+   const bestRankRows=window.WikiHomeland?.rankAbility?.(aniimosRankAbility,aniimosRankMin)||[];
+   const caughtRankRows=collectionLoaded?(window.WikiHomeland?.speciesList?.()||[]).map(ws=>{
+     const matching=(ws.forms||[]).map(wf=>({wf,state:wikiFormState(ws.name,wf)}))
+       .filter(x=>x.state.caught)
+       .map(x=>({wf:x.wf,ability:(x.wf.homelandAbilities||[]).find(a=>a.type===aniimosRankAbility)}))
+       .filter(x=>x.ability&&Number(x.ability.level)>=aniimosRankMin);
+     if(!matching.length)return null;
+     const level=Math.max(...matching.map(x=>Number(x.ability.level)||0));
+     const best=matching.filter(x=>Number(x.ability.level)===level);
+     return {dex:ws.dex,name:ws.name,type:aniimosRankAbility,level,forms:best.map(x=>({slug:x.wf.slug,label:x.wf.label,url:x.wf.url}))};
+   }).filter(Boolean).sort((a,b)=>b.level-a.level||a.name.localeCompare(b.name)):[];
+   const rankRows=aniimosRankScope==='caught'?caughtRankRows:bestRankRows;
    const rankCard=row=>{
      const bestForm=row.forms?.[0]||null;
      const localForms=formEntriesFor(row.name);
@@ -265,14 +276,20 @@ function renderAniimosTab(){
        for(const h of (wf?.habitats||[]))habitatSet.add(h);
      }
      const habitats=[...habitatSet].join(' • ');
+     const bestCaught=collectionLoaded&&(bestFull?.forms||row.forms||[]).some(fref=>{
+       const wf=wikiSpecies?.forms?.find(f=>f.slug===fref.slug);
+       return wf?wikiFormState(row.name,wf).caught:false;
+     });
+     const caughtBadge=!collectionLoaded?'<span class="collectionBadge neutral">Sync to check</span>':bestCaught?'<span class="collectionBadge caught">Caught ✓</span>':'<span class="collectionBadge missing">Best form missing</span>';
      return `<div class="aniimoAbilityRankCard">
        <div class="aniimoAbilityRankNum">Lv${row.level}</div>
        <div class="aniimoAbilityRankImage">${src?`<img src="${esc(src)}" alt="${esc(row.name)}" loading="lazy" decoding="async">`:`<span>${esc(String(row.name||'?').slice(0,2).toUpperCase())}</span>`}</div>
        <div class="aniimoAbilityRankInfo">
          <div class="aniimoAbilityRankName">${row.dex?'#'+esc(row.dex)+' · ':''}${esc(row.name)}</div>
          <div><b>${esc(row.type)} Lv${row.level}</b></div>
-         <div class="small">Best form${(bestFull?.forms?.length||row.forms?.length||0)>1?'s':''}: ${esc(formLabels)}</div>
+         <div class="small">${aniimosRankScope==='caught'?'Best caught form':'Best form'}${(bestFull?.forms?.length||row.forms?.length||0)>1?'s':''}: ${esc(formLabels)}</div>
          ${habitats?`<div class="small">Habitats: ${esc(habitats)}</div>`:''}
+         <div class="aniimoAbilityRankActions">${caughtBadge}<button type="button" data-aniimo-details="${esc(row.name)}">Details</button></div>
        </div>
      </div>`;
    };
@@ -286,14 +303,19 @@ function renderAniimosTab(){
        <label class="aniimosToolLabel">Minimum level<select id="aniimosRankMin">
          ${[1,2,3,4].map(n=>`<option value="${n}"${n===aniimosRankMin?' selected':''}>Lv${n}+</option>`).join('')}
        </select></label>
+       <label class="aniimosToolLabel">Ranking<select id="aniimosRankScope">
+         <option value="all"${aniimosRankScope==='all'?' selected':''}>Best Possible</option>
+         <option value="caught"${aniimosRankScope==='caught'?' selected':''}>My Caught Forms</option>
+       </select></label>
        <div class="wikiReferenceStatus">${wikiSummary.scrapedAt?`Official Wiki snapshot: ${esc(new Date(wikiSummary.scrapedAt).toLocaleDateString())}`:'Official Wiki reference unavailable'}${wikiSummary.warnings?.length?` · ${wikiSummary.warnings.length} warning(s)`:''}</div>
      </div>
-     <div class="aniimoAbilityRankSummary"><b>${rankRows.length}</b> Aniimo reach ${esc(aniimosRankAbility)} Lv${aniimosRankMin}+</div>
+     <div class="aniimoAbilityRankSummary"><b>${rankRows.length}</b> Aniimo reach ${esc(aniimosRankAbility)} Lv${aniimosRankMin}+ ${aniimosRankScope==='caught'?'using forms you have caught':'across all official forms'}${aniimosRankScope==='caught'&&!collectionLoaded?' — sync Aniidx to populate this view':''}</div>
      <div class="aniimoAbilityRankGrid">${rankRows.length?rankRows.map(rankCard).join(''):'<div class="fullCard">No official Wiki matches for this filter.</div>'}</div>
    </div>`;
    bindAniimoSubnav();
    root.querySelector('#aniimosRankAbility')?.addEventListener('change',e=>{aniimosRankAbility=e.target.value;localStorage.setItem('aniimosRankAbility',aniimosRankAbility);renderAniimosTab();});
    root.querySelector('#aniimosRankMin')?.addEventListener('change',e=>{aniimosRankMin=Number(e.target.value)||1;localStorage.setItem('aniimosRankMin',String(aniimosRankMin));renderAniimosTab();});
+   root.querySelector('#aniimosRankScope')?.addEventListener('change',e=>{aniimosRankScope=e.target.value;localStorage.setItem('aniimosRankScope',aniimosRankScope);renderAniimosTab();});
    return;
  }
  root.dataset.imageFit=aniimosImageFit;
