@@ -18,9 +18,19 @@ The site is intentionally static so it can run from GitHub Pages without a backe
 
 ## Aniidex sync
 
-The planner supports JSON sync files captured from Aniidex. The bookmarklet/helper runs on `aniidex.com` so it can use the user's normal signed-in browser session. The planner does not need cookies, authorization headers, Cloudflare tokens, or other account secrets.
+The preferred direct-sync path uses the optional Chrome/Edge companion in `extension/`. From the planner, enter an Aniimo UID and press **Import from Aniidx**. The companion performs requests in the normal `aniidex.com` browser context, uses Aniidx's own `/api/player/pass` + Cloudflare Turnstile verification when required, then returns the player profile and Homeland snapshot directly to the planner.
 
-Direct UID import from the GitHub Pages origin is retained as a capability check, but it may be blocked by Aniidex cross-origin/session requirements. The same-origin sync helper is the preferred path.
+The planner and companion never read, export, persist, or replay Aniidx cookies, authorization headers, or Turnstile tokens. If Turnstile requires interaction, the Aniidx tab is brought forward for the user to complete the legitimate challenge.
+
+The bookmarklet + JSON sync-file workflow remains available as a fallback.
+
+### Load the companion
+
+1. Open `chrome://extensions` (Chrome) or `edge://extensions` (Edge).
+2. Enable **Developer mode**.
+3. Choose **Load unpacked** and select this repository's `extension/` folder.
+4. Refresh **Aniimo Homeland Planner**.
+5. Open **Import / Sync**, enter a UID, and press **Import from Aniidx**.
 
 ## Development
 
