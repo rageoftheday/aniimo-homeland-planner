@@ -170,12 +170,20 @@ function renderAniimosTab(){
  const wikiTypes=window.WikiHomeland?.allAbilityTypes?.()||[];
  if(!wikiTypes.some(x=>x.type===aniimosRankAbility)&&wikiTypes.length)aniimosRankAbility=wikiTypes[0].type;
  const aniimoSubnav=`<div class="aniimosSubnav">
-   <button type="button" data-aniimo-mode="browse" class="${aniimosViewMode==='browse'?'active':''}">All Aniimos</button>
+   <button type="button" data-aniimo-mode="collection" class="${aniimosViewMode==='collection'?'active':''}">Collection</button>
+   <button type="button" data-aniimo-mode="details" class="${aniimosViewMode==='details'?'active':''}">Details</button>
    <button type="button" data-aniimo-mode="abilities" class="${aniimosViewMode==='abilities'?'active':''}">Abilities</button>
  </div>`;
  const bindAniimoSubnav=()=>{
    root.querySelectorAll('[data-aniimo-mode]').forEach(btn=>btn.addEventListener('click',()=>{
-     aniimosViewMode=btn.dataset.aniimoMode||'browse';
+     aniimosViewMode=btn.dataset.aniimoMode||'collection';
+     localStorage.setItem('aniimosViewMode',aniimosViewMode);
+     renderAniimosTab();
+   }));
+   root.querySelectorAll('[data-aniimo-details]').forEach(btn=>btn.addEventListener('click',()=>{
+     aniimosSelectedName=btn.dataset.aniimoDetails||'';
+     localStorage.setItem('aniimosSelectedName',aniimosSelectedName);
+     aniimosViewMode='details';
      localStorage.setItem('aniimosViewMode',aniimosViewMode);
      renderAniimosTab();
    }));
