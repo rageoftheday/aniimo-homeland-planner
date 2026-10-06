@@ -131,7 +131,7 @@ jobs:
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
-          grep -q 'js/app.js?v=30.20.0' index.html
+          grep -q 'js/app.js?v=30.21.0' index.html
           grep -q 'data-tab="aniimos"' index.html
           grep -q 'id="aniimosPane"' index.html
           grep -q 'Backup ▾' index.html
@@ -197,6 +197,25 @@ jobs:
           grep -q 'function catalogPortraitHTML' js/app.js
           grep -q 'function wikiCatalogEntries' js/app.js
           grep -q 'function aniidexReferenceCatalogEntries' js/app.js
+          grep -q "typeof EMBEDDED_ANIIDEX_CATALOG!=='undefined'" js/app.js
+          grep -q "level>=min && (!ab||a\[0\]===ab)" js/app.js
+          node - <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const code=fs.readFileSync('data/embedded-aniidex-catalog.js','utf8')+';globalThis.__CAT=EMBEDDED_ANIIDEX_CATALOG;';
+          const ctx={};vm.createContext(ctx);vm.runInContext(code,ctx);
+          const forms=ctx.__CAT?.hub?.facts?.forms||{};
+          const byDex=dex=>Object.values(forms).filter(x=>String(x.dex)===String(dex));
+          const som=byDex(30).find(x=>x.skills);
+          const iri=byDex(10001).find(x=>x.skills);
+          if(!som||som.skills.Grass!==4||som.skills.Wind!==3||som.skills.Leisure!==4) throw new Error('Somniwing Homeland ability sentinel failed');
+          if(!iri||iri.skills.Grass!==4||iri.skills.Leisure!==4) throw new Error('Irisalis Homeland ability sentinel failed');
+          const sample=[['A',1],['B',2],['C',3],['D',4]];
+          const match=(min,ab='')=>sample.filter(a=>Number(a[1])>=min&&(!ab||a[0]===ab));
+          if(match(2).map(x=>x[1]).join(',')!=='2,3,4') throw new Error('Lv2+ semantics failed');
+          if(match(3).map(x=>x[1]).join(',')!=='3,4') throw new Error('Lv3+ semantics failed');
+          if(match(4).map(x=>x[1]).join(',')!=='4') throw new Error('Lv4 semantics failed');
+          console.log('Catalog ability fallback/filter sentinels OK');
+          NODE
           grep -q 'function aniimoNameOptions' js/app.js
           grep -q 'function applyWorkerNamePreset' js/app.js
           grep -q 'data-worker-name' js/app.js
