@@ -1069,10 +1069,42 @@ function activeJobs(){
  return jobs;
 }
 function fitLabel(f){if(!f.eligible)return '<span class="fitPoor">Not eligible</span>';if(f.fit==='Perfect'&&f.trait)return '<span class="fitPerfect">Perfect</span>';if(f.fit==='Perfect')return '<span class="fitWorks">Works well</span>';return '<span class="fitWorks">Works</span>'}
+function advisorReferenceForms(){
+ const forms=EMBEDDED_ANIIDEX_CATALOG?.hub?.facts?.forms;
+ return Array.isArray(forms)?forms:Object.values(forms||{});
+}
+function advisorRankNames(ability,level,prismanaOnly=false){
+ const seen=new Set(),out=[];
+ for(const f of advisorReferenceForms()){
+   if(Number(f?.skills?.[ability]||0)!==Number(level))continue;
+   if(prismanaOnly&&!f.prismana)continue;
+   const name=String(f.name||'').trim();if(!name||seen.has(name))continue;
+   seen.add(name);out.push({name,form:f.form||'',prismana:!!f.prismana});
+ }
+ return out.sort((a,b)=>a.name.localeCompare(b.name));
+}
+function advisorStationsForAbility(ability){
+ return Object.entries(STATION_RULES).filter(([,r])=>r.ability===ability).map(([name])=>name);
+}
+function renderAdvisorRankMatrix(){
+ const root=el('advisorRankMatrix');if(!root)return;
+ root.innerHTML=HOME_ABILITIES.map(ability=>{
+   const jobs=advisorStationsForAbility(ability);
+   const tiers=[
+     {label:'Rank 1',sub:'Lv1',rows:advisorRankNames(ability,1)},
+     {label:'Rank 2',sub:'Lv2',rows:advisorRankNames(ability,2)},
+     {label:'Rank 3',sub:'Lv3',rows:advisorRankNames(ability,3)},
+     {label:'Rank 4',sub:'Lv4',rows:advisorRankNames(ability,4)},
+     {label:'Rank 5',sub:'Prismana / BIS',rows:advisorRankNames(ability,4,true),best:true}
+   ];
+   return `<section class="advisorAbilityCard"><div class="advisorAbilityHead"><div><b>${esc(ability)}</b><div class="small">${jobs.length?'Jobs: '+jobs.map(esc).join(' • '):'No current station rule uses this ability directly.'}</div></div></div><div class="advisorRankGrid">${tiers.map(t=>`<div class="advisorRankTier${t.best?' bestTier':''}"><div class="advisorRankTierHead"><b>${t.label}</b><span>${t.sub}</span></div><div class="advisorRankNames">${t.rows.length?t.rows.map(x=>`<span class="advisorAniimoPill${x.prismana?' prismana':''}">${esc(x.name)}${t.best?' ✦':''}</span>`).join(''):'<span class="advisorEmpty">—</span>'}</div></div>`).join('')}</div></section>`;
+ }).join('');
+}
 function renderAdvisor(){
  const root=el('advisorList'),head=el('advisorHeadline');if(!root||!head)return;const jobs=activeJobs();
+ renderAdvisorRankMatrix();
  const active=workers.filter(w=>w.active!==false);head.textContent=`${jobs.length} active job${jobs.length===1?'':'s'} • ${active.length} active roster worker${active.length===1?'':'s'}`;
- if(!jobs.length){root.innerHTML='<div class="small">Assign production recipes or place Heat/Cooling/Sun devices to generate worker recommendations.</div>';return}
+ if(!jobs.length){root.innerHTML='<div class="small">Assign production recipes or place Heat/Cooling/Sun devices to generate owned-worker recommendations. The full ability rank guide is still available below.</div>';return}
  root.innerHTML='';
  for(const job of jobs){
    const candidates=active.map(w=>({w,f:workerFitForJob(w,job)})).filter(x=>x.f.eligible).sort((a,b)=>b.f.score-a.f.score);
@@ -1657,16 +1689,6 @@ document.querySelectorAll('[data-cmode]').forEach(b=>b.addEventListener('click',
 el('aniimoSearch')?.addEventListener('input',renderAniimoCatalog);el('abilityFilter')?.addEventListener('change',renderAniimoCatalog);el('levelFilter')?.addEventListener('change',renderAniimoCatalog);el('familyFilter')?.addEventListener('change',renderAniimoCatalog);
 el('addCustomWorkerBtn')?.addEventListener('click',()=>{workers.push(defaultWorker());render()});
 
-saveBtn.onclick=()=>{
- try{
-   const ok=tryBrowserSave();
-   if(ok) alert('Saved successfully in this browser.');
-   else alert('Browser storage did not verify. Use "Save JSON File" for a permanent backup.');
- }catch(e){
-   alert('Browser storage is unavailable for this local HTML file. Use "Save JSON File" instead.');
- }
-};
-
 loadBtn.onclick=()=>{
  try{
    const found=findBrowserSave();
@@ -1689,18 +1711,6 @@ loadBtn.onclick=()=>{
  }
 };
 
-exportBtn.onclick=()=>{
- jsonBox.value=JSON.stringify(currentPlannerState(),null,2);
-};
-
-importBtn.onclick=()=>{
- try{
-   const d=JSON.parse(jsonBox.value);
-   applyPlannerState(d);
- }catch(e){
-   alert('Invalid JSON: '+(e&&e.message?e.message:String(e)));
- }
-};
 
 saveJsonFileBtn.onclick=()=>{
  const payload=JSON.stringify(currentPlannerState(),null,2);
