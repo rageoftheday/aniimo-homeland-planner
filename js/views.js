@@ -507,21 +507,44 @@ function renderAniimosTab(){
    card.querySelectorAll('[data-preview-open]').forEach(btn=>btn.addEventListener('click',()=>openModal(card)));
  });
 }
-function renderDatabaseTab(){const root=el('databasePane');if(!root)return;const ani=catalogEntries();const forms=ani.filter(x=>(x.abilities||[]).length);const locks=Object.entries(FAMILY_RECIPE_RULES);const ref=window.HomelandData?.validate?.()||{ok:false,issues:['Reference data not loaded'],counts:{}};const hc=ref.counts||{};const speciesData=window.ANIIMO_SPECIES_DATA||{species:[],evolutionFamilies:[],temporaryTransforms:[]};const capturedNames=new Set((window.HomelandData?.raw?.forms||[]).map(x=>x.name));const capturedSpecies=speciesData.species.filter(x=>capturedNames.has(x.name)).length;root.innerHTML=`<div class="databaseBrowser"><div class="databaseBrowserHead"><div class="v30Title">Database / Reference</div><div class="v30Sub">Offline facts currently loaded into this planner. User-entered copy data overrides catalog defaults.</div><div class="dashboardGrid"><div class="metricCard"><div class="label">Reference data</div><div class="metric">${ref.ok?'✓':'!'}</div><div class="small">${ref.ok?'Offline v1 loaded':esc((ref.issues||[]).join(' • '))}</div></div><div class="metricCard"><div class="label">Facilities / recipes</div><div class="metric">${hc.facilities||0} / ${hc.recipes||0}</div><div class="small">${hc.items||0} items • ${hc.plots||0} plots • ${hc.rv||0} RV levels</div></div><div class="metricCard"><div class="label">Released Aniimo</div><div class="metric">${speciesData.species.length}</div><div class="small">${capturedSpecies} with captured Homeland data • ${hc.forms||210} captured forms</div></div><div class="metricCard"><div class="label">Recipe records</div><div class="metric">${Object.values(recipeDB).reduce((n,a)=>n+a.length,0)}</div></div><div class="metricCard"><div class="label">Family-locked recipes</div><div class="metric">${locks.length}</div></div><div class="metricCard"><div class="label">Station work rules</div><div class="metric">${Object.keys(STATION_RULES).length}</div></div></div></div><div class="databaseScroll">
-<div class="databaseSection">
+function renderDatabaseTab(){
+ const root=el('databasePane');if(!root)return;
+ const ani=catalogEntries(),locks=Object.entries(FAMILY_RECIPE_RULES);
+ const ref=window.HomelandData?.validate?.()||{ok:false,issues:['Reference data not loaded'],counts:{}},hc=ref.counts||{};
+ const speciesData=window.ANIIMO_SPECIES_DATA||{species:[],evolutionFamilies:[],temporaryTransforms:[]};
+ const wiki=window.WikiHomeland?.summary?.()||{counts:{species:0,forms:0,formsWithAbilities:0},warnings:[]};
+ const wikiNames=new Set((window.WikiHomeland?.speciesList?.()||[]).map(x=>x.name));
+ const gatedStations=new Set(locks.map(([k])=>k.split('|')[0]));
+ const familyLabelFor=name=>{
+   const known=familyIdForCatalog({name});
+   if(known)return (ANIIMO_FAMILIES[known]||WORKER_FAMILIES[known]||{}).label||known;
+   const evo=(speciesData.evolutionFamilies||[]).find(f=>[...(f.path||[]),...(f.ends||[])].includes(name));
+   return evo?evo.key+' evolution family':'—';
+ };
+ const sourceBadge=c=>c.source==='official-wiki'?'<span class="sourceBadge official">Official Wiki</span>':c.source==='official'?'<span class="sourceBadge official">Official preset</span>':c.source==='verified'?'<span class="sourceBadge">Cross-checked</span>':'<span class="sourceBadge user">Name only</span>';
+ root.innerHTML=`<div class="databaseBrowser"><div class="databaseBrowserHead"><div class="v30Title">Database / Reference</div><div class="v30Sub">Offline facility/recipe facts plus the cached official Wiki Aniimo reference. User-entered copy data still overrides catalog defaults.</div><div class="dashboardGrid">
+ <div class="metricCard"><div class="label">Planner reference data</div><div class="metric">${ref.ok?'✓':'!'}</div><div class="small">${ref.ok?'Offline facility / recipe data loaded':esc((ref.issues||[]).join(' • '))}</div></div>
+ <div class="metricCard"><div class="label">Facilities / recipes</div><div class="metric">${hc.facilities||0} / ${hc.recipes||0}</div><div class="small">${hc.items||0} items • ${hc.plots||0} plots • ${hc.rv||0} RV levels</div></div>
+ <div class="metricCard"><div class="label">Official Wiki Aniimo</div><div class="metric">${wiki.counts?.species||0}</div><div class="small">${wiki.counts?.formsWithAbilities||0}/${wiki.counts?.forms||0} forms with Homeland abilities</div></div>
+ <div class="metricCard"><div class="label">Recipe records</div><div class="metric">${Object.values(recipeDB).reduce((n,a)=>n+a.length,0)}</div></div>
+ <div class="metricCard"><div class="label">Family-gated stations</div><div class="metric">${gatedStations.size}</div><div class="small">${locks.length} station / recipe family rules</div></div>
+ <div class="metricCard"><div class="label">Station work rules</div><div class="metric">${Object.keys(STATION_RULES).length}</div></div>
+ </div></div><div class="databaseScroll">
+ <div class="databaseSection">
   <div class="sectionTitle">Complete Aniimo evolution roster</div>
-  <div class="tableWrap"><table class="dataTable"><thead><tr><th>Evolution line</th><th>Members</th><th>Homeland snapshot</th></tr></thead><tbody>
-  ${speciesData.evolutionFamilies.map(f=>{const members=[...(f.path||[]),...(f.ends||[])];const have=members.filter(n=>capturedNames.has(n)).length;return `<tr><td><b>${esc(f.key)}</b></td><td>${esc((f.path||[]).join(' → '))}${(f.ends||[]).length?' → '+esc((f.ends||[]).join(' / ')):''}</td><td>${have}/${members.length} species captured</td></tr>`}).join('')}
+  <div class="tableWrap"><table class="dataTable"><thead><tr><th>Evolution line</th><th>Members</th><th>Official Wiki coverage</th></tr></thead><tbody>
+  ${speciesData.evolutionFamilies.map(f=>{const members=[...(f.path||[]),...(f.ends||[])];const have=members.filter(n=>wikiNames.has(n)).length;return `<tr><td><b>${esc(f.key)}</b></td><td>${esc((f.path||[]).join(' → '))}${(f.ends||[]).length?' → '+esc((f.ends||[]).join(' / ')):''}</td><td>${have}/${members.length} species</td></tr>`}).join('')}
   </tbody></table></div>
   <div class="small" style="padding-top:6px">Temporary combat transformations are tracked separately: ${speciesData.temporaryTransforms.map(x=>esc(x.from)+' → '+esc(x.to)).join(' • ')}.</div>
-</div>
-<div class="databaseSection databaseAniimoSection">
-  <div class="databaseAniimoFixed"><div class="sectionTitle">Aniimo / forms</div><div class="tableWrap databaseHeaderWrap"><table class="dataTable databaseHeaderTable"><colgroup><col style="width:11%"><col style="width:18%"><col style="width:28%"><col style="width:33%"><col style="width:10%"></colgroup><thead><tr><th>Aniimo</th><th>Form</th><th>Family</th><th>Home Abilities</th><th>Source status</th></tr></thead></table></div></div>
-  <div class="databaseBodyScroll"><table class="dataTable databaseBodyTable"><colgroup><col style="width:11%"><col style="width:18%"><col style="width:28%"><col style="width:33%"><col style="width:10%"></colgroup><tbody>${ani.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.form||'Base')}</td><td>${esc((ANIIMO_FAMILIES[c.family]||{}).label||c.family||'—')}</td><td>${(c.abilities||[]).length?c.abilities.map(a=>esc(a[0])+' Lv'+a[1]).join(' • '):'Not loaded'}</td><td>${c.source==='official'?'<span class="sourceBadge official">Official</span>':c.source==='verified'?'<span class="sourceBadge">Cross-checked</span>':'<span class="sourceBadge user">Name only</span>'}</td></tr>`).join('')}</tbody></table></div>
-</div>
-<div class="databaseSection databaseFamilySection">
-  <div class="databaseFamilyFixed"><div class="sectionTitle">Family-locked recipes</div><div class="tableWrap databaseHeaderWrap"><table class="dataTable databaseHeaderTable"><colgroup><col style="width:38%"><col style="width:24%"><col style="width:38%"></colgroup><thead><tr><th>Station / Recipe</th><th>Required family</th><th>Accepted line</th></tr></thead></table></div></div>
+ </div>
+ <div class="databaseSection databaseAniimoSection">
+  <div class="databaseAniimoFixed"><div class="sectionTitle">Aniimo / forms</div><div class="small" style="margin-bottom:7px">Official Wiki forms are used first; legacy presets only fill a gap when the Wiki snapshot has no matching row.</div><div class="tableWrap databaseHeaderWrap"><table class="dataTable databaseHeaderTable"><colgroup><col style="width:11%"><col style="width:18%"><col style="width:28%"><col style="width:33%"><col style="width:10%"></colgroup><thead><tr><th>Aniimo</th><th>Form</th><th>Family</th><th>Home Abilities</th><th>Source status</th></tr></thead></table></div></div>
+  <div class="databaseBodyScroll"><table class="dataTable databaseBodyTable"><colgroup><col style="width:11%"><col style="width:18%"><col style="width:28%"><col style="width:33%"><col style="width:10%"></colgroup><tbody>${ani.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.form||'Base')}</td><td>${esc(familyLabelFor(c.name))}</td><td>${(c.abilities||[]).length?c.abilities.map(a=>esc(a[0])+' Lv'+a[1]).join(' • '):'Not loaded'}</td><td>${sourceBadge(c)}</td></tr>`).join('')}</tbody></table></div>
+ </div>
+ <div class="databaseSection databaseFamilySection">
+  <div class="databaseFamilyFixed"><div class="sectionTitle">Family Requirements by Station & Recipe</div><div class="small" style="margin-bottom:7px">These are recipe-specific family gates on certain stations; a station can have different family requirements for different recipes.</div><div class="tableWrap databaseHeaderWrap"><table class="dataTable databaseHeaderTable"><colgroup><col style="width:38%"><col style="width:24%"><col style="width:38%"></colgroup><thead><tr><th>Station / Recipe</th><th>Required family</th><th>Accepted line</th></tr></thead></table></div></div>
   <div class="databaseFamilyBodyScroll"><table class="dataTable databaseBodyTable"><colgroup><col style="width:38%"><col style="width:24%"><col style="width:38%"></colgroup><tbody>${locks.map(([k,v])=>`<tr><td>${esc(k.replace('|',' — '))}</td><td>${esc(WORKER_FAMILIES[v.family]?.label||v.family)}</td><td>${esc((WORKER_FAMILIES[v.family]?.members||[]).join(' / '))}</td></tr>`).join('')}</tbody></table></div>
-</div>
-</div></div>`}
+ </div>
+ </div></div>`;
+}
 function renderV30Views(){renderRightQuickStats();if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='suggestions')renderSuggestionsTab();else if(activeMainTab==='progression')renderProgressionTab();else if(activeMainTab==='database')renderDatabaseTab();}
