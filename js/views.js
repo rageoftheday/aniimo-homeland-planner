@@ -1,9 +1,13 @@
 let aniimosBrowseQuery='';
 let aniimosImageFit=localStorage.getItem('aniimosImageFit')||'contain';
 let aniimosImageSize=localStorage.getItem('aniimosImageSize')||'medium';
-let aniimosViewMode=localStorage.getItem('aniimosViewMode')||'browse';
+let aniimosViewMode=localStorage.getItem('aniimosViewMode')||'collection';
+if(aniimosViewMode==='browse')aniimosViewMode='collection';
+let aniimosSelectedName=localStorage.getItem('aniimosSelectedName')||'';
+let aniimosCollectionFilter=localStorage.getItem('aniimosCollectionFilter')||'all';
 let aniimosRankAbility=localStorage.getItem('aniimosRankAbility')||'Hauling';
 let aniimosRankMin=Number(localStorage.getItem('aniimosRankMin')||1);
+let aniimosRankScope=localStorage.getItem('aniimosRankScope')||'all';
 // v30 tab shell and full-screen views
 let activeMainTab='dashboard';
 function setMainTab(tab){
@@ -104,6 +108,10 @@ function renderAniimosTab(){
    return bf?.form||'Basic Form';
  };
  const actualStageFor=name=>stageIndex[stageNameFor(name)]||null;
+ const collectionPayload=aniidexImportMeta?.profile?.profile?.collection||aniidexImportMeta?.profile?.collection||null;
+ const caughtIds=new Set(Array.isArray(collectionPayload?.caught_pet_ids)?collectionPayload.caught_pet_ids.map(x=>String(x)):[]);
+ const collectionLoaded=Array.isArray(collectionPayload?.caught_pet_ids);
+ const wikiNorm=v=>window.WikiHomeland?.normalize?.(v)||String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
  const formEntriesFor=name=>{
    const baseAsset=stageNameFor(name);
    const entries=Object.entries(stageIndex[baseAsset]||{}).map(([id,apps])=>({
@@ -118,6 +126,25 @@ function renderAniimosTab(){
    }
    return entries;
  };
+ const localFormForWiki=(name,wf)=>{
+   const local=formEntriesFor(name);
+   const target=wikiNorm(wf?.label||wf?.slug||'');
+   let hit=local.find(f=>wikiNorm(f.label)===target);
+   if(!hit&&/prismana/i.test(wf?.slug||wf?.label||''))hit=local.find(f=>/prismana/i.test(f.label||''));
+   if(!hit&&/(basic|base)/i.test(wf?.slug||wf?.label||''))hit=local.find(f=>/(basic|base)/i.test(f.label||''));
+   return hit||null;
+ };
+ const wikiFormState=(name,wf)=>{
+   const local=localFormForWiki(name,wf),id=local?.id?String(local.id):'';
+   return {local,id,known:!!id,caught:!!id&&caughtIds.has(id)};
+ };
+ const wikiSpeciesState=ws=>{
+   const forms=(ws?.forms||[]).map(wf=>({...wikiFormState(ws.name,wf),wiki:wf}));
+   const known=forms.filter(f=>f.known),caught=known.filter(f=>f.caught);
+   const prismana=forms.find(f=>/prismana/i.test(f.wiki?.slug||f.wiki?.label||''));
+   return {forms,known:known.length,caught:caught.length,total:forms.length,complete:known.length>0&&caught.length===known.length,prismana};
+ };
+ const rosterCopiesFor=name=>workers.filter(w=>wikiNorm(w.name)===wikiNorm(name));
  const roster=(speciesData.species||[]).map(s=>({...s,releaseStatus:unavailableDex.has(String(s.dex))?'unavailable':'released'}));
  const rosterNames=new Set(roster.map(s=>stageNameFor(s.name)));
  for(const imageName of Object.keys(stageIndex)){
@@ -142,20 +169,114 @@ function renderAniimosTab(){
  const wikiSummary=window.WikiHomeland?.summary?.()||{counts:{species:0,forms:0,formsWithAbilities:0},warnings:[]};
  const wikiTypes=window.WikiHomeland?.allAbilityTypes?.()||[];
  if(!wikiTypes.some(x=>x.type===aniimosRankAbility)&&wikiTypes.length)aniimosRankAbility=wikiTypes[0].type;
+ if(!collectionLoaded&&aniimosCollectionFilter!=='all')aniimosCollectionFilter='all';
+ const officialSpecies=window.WikiHomeland?.speciesList?.()||[];
+ const localSpeciesByName=new Map(roster.map(x=>[wikiNorm(x.name),x]));
+ const collectionBase=officialSpecies.map(ws=>{
+   const local=localSpeciesByName.get(wikiNorm(ws.name))||{};
+   return {...local,...ws,collectionState:wikiSpeciesState(ws)};
+ });
+ const collectionRows=collectionBase.filter(x=>{
+   if(q&&!String(x.name||'').toLowerCase().includes(q)&&!String(x.dex||'').includes(q))return false;
+   const st=x.collectionState;
+   if(aniimosCollectionFilter==='caught')return st.caught>0;
+   if(aniimosCollectionFilter==='missing')return st.known>st.caught;
+   if(aniimosCollectionFilter==='complete')return st.complete;
+   if(aniimosCollectionFilter==='missing-prismana')return !!st.prismana?.known&&!st.prismana.caught;
+   return true;
+ });
+ const collectionCaughtSpecies=collectionBase.filter(x=>x.collectionState.caught>0).length;
+ const collectionComplete=collectionBase.filter(x=>x.collectionState.complete).length;
  const aniimoSubnav=`<div class="aniimosSubnav">
-   <button type="button" data-aniimo-mode="browse" class="${aniimosViewMode==='browse'?'active':''}">All Aniimos</button>
+   <button type="button" data-aniimo-mode="collection" class="${aniimosViewMode==='collection'?'active':''}">Collection</button>
+   <button type="button" data-aniimo-mode="details" class="${aniimosViewMode==='details'?'active':''}">Details</button>
    <button type="button" data-aniimo-mode="abilities" class="${aniimosViewMode==='abilities'?'active':''}">Abilities</button>
  </div>`;
  const bindAniimoSubnav=()=>{
    root.querySelectorAll('[data-aniimo-mode]').forEach(btn=>btn.addEventListener('click',()=>{
-     aniimosViewMode=btn.dataset.aniimoMode||'browse';
+     aniimosViewMode=btn.dataset.aniimoMode||'collection';
+     localStorage.setItem('aniimosViewMode',aniimosViewMode);
+     renderAniimosTab();
+   }));
+   root.querySelectorAll('[data-aniimo-details]').forEach(btn=>btn.addEventListener('click',()=>{
+     aniimosSelectedName=btn.dataset.aniimoDetails||'';
+     localStorage.setItem('aniimosSelectedName',aniimosSelectedName);
+     aniimosViewMode='details';
      localStorage.setItem('aniimosViewMode',aniimosViewMode);
      renderAniimosTab();
    }));
  };
 
+ if(aniimosViewMode==='details'){
+   const wikiSpecies=window.WikiHomeland?.speciesList?.()||[];
+   let selected=window.WikiHomeland?.speciesByName?.(aniimosSelectedName)||wikiSpecies[0]||null;
+   if(selected&&selected.name!==aniimosSelectedName){
+     aniimosSelectedName=selected.name;
+     localStorage.setItem('aniimosSelectedName',aniimosSelectedName);
+   }
+   if(!selected){
+     root.innerHTML=`<div class="aniimosBrowser">${aniimoSubnav}<div class="fullCard">Official Wiki Aniimo reference is not loaded.</div></div>`;
+     bindAniimoSubnav();return;
+   }
+   const state=wikiSpeciesState(selected),copies=rosterCopiesFor(selected.name);
+   const options=wikiSpecies.map(ws=>`<option value="${esc(ws.name)}"${ws.name===selected.name?' selected':''}>#${esc(ws.dex)} · ${esc(ws.name)}</option>`).join('');
+   const formCards=state.forms.map(fs=>{
+     const wf=fs.wiki,local=fs.local,apps=local?.apps||[];
+     const appearance=apps.includes('Normal')?'Normal':(apps[0]||'');
+     const src=local?imagePath(local.assetName,local.id,appearance):'';
+     const abilities=(wf.homelandAbilities||[]).map(a=>`<span class="aniimoDetailAbility">${esc(a.type)} Lv${Number(a.level)||'?'}</span>`).join('');
+     const habitats=(wf.habitats||[]).length?(wf.habitats||[]).map(h=>esc(h)).join(' • '):'Not listed';
+     const status=!collectionLoaded?'<span class="collectionBadge neutral">Sync to check</span>':!fs.known?'<span class="collectionBadge neutral">ID not matched</span>':fs.caught?'<span class="collectionBadge caught">Caught ✓</span>':'<span class="collectionBadge missing">Missing</span>';
+     return `<article class="aniimoDetailFormCard">
+       <div class="aniimoDetailFormImage">${src?`<img src="${esc(src)}" alt="${esc(selected.name+' '+wf.label)}" loading="lazy" decoding="async">`:`<span>${esc(String(selected.name).slice(0,2).toUpperCase())}</span>`}</div>
+       <div class="aniimoDetailFormBody">
+         <div class="aniimoDetailFormHead"><div><b>${esc(wf.label)}</b>${fs.id?`<div class="small">Form ID ${esc(fs.id)}</div>`:''}</div>${status}</div>
+         <div class="aniimoDetailAbilities">${abilities||'<span class="small">No Homeland abilities listed.</span>'}</div>
+         <div class="small"><b>Habitat:</b> ${habitats}</div>
+         <a class="aniimoWikiLink" href="${esc(wf.url)}" target="_blank" rel="noopener">Official Wiki ↗</a>
+       </div>
+     </article>`;
+   }).join('');
+   const best=(selected.bestAbilities||[]).map(a=>`<div class="aniimoBestAbility"><b>${esc(a.type)} Lv${a.level}</b><span>${esc((a.forms||[]).map(x=>x.label).join(' • '))}</span></div>`).join('');
+   const caughtSummary=collectionLoaded?`${state.caught}/${state.known} matched forms caught`:'Sync Aniidx to show caught / missing forms';
+   const copiesHtml=copies.length?copies.map(w=>`<div class="aniimoOwnedCopy"><b>${esc(w.name||selected.name)} — ${esc(w.form||'Base')}</b><span>${esc((w.abilities||[]).filter(a=>a.type).map(a=>a.type+' Lv'+(Number(a.level)||1)).join(' • ')||'No abilities entered')}</span></div>`).join(''):'<div class="small">No copies of this Aniimo are currently in Imported Roster.</div>';
+   root.innerHTML=`<div class="aniimosBrowser">${aniimoSubnav}
+     <div class="aniimosBrowserHead">
+       <div><div class="v30Title">Aniimo Details</div><div class="v30Sub">Official Wiki forms, Homeland abilities and habitats combined with this profile's caught forms and Imported Roster.</div></div>
+       <div class="aniimosBrowseStats">${esc(caughtSummary)}</div>
+     </div>
+     <div class="aniimosDetailPicker"><label>Aniimo<select id="aniimoDetailSpecies">${options}</select></label></div>
+     <div class="aniimoDetailHero">
+       <div><div class="aniimoDetailName">#${esc(selected.dex)} · ${esc(selected.name)}</div><div class="small">${selected.forms.length} official form${selected.forms.length===1?'':'s'} · ${copies.length} Imported Roster cop${copies.length===1?'y':'ies'}</div></div>
+       <button type="button" data-aniimo-mode="collection">Back to Collection</button>
+     </div>
+     <div class="sectionTitle">Best Homeland abilities</div>
+     <div class="aniimoBestAbilityGrid">${best||'<div class="small">No ability data loaded.</div>'}</div>
+     <div class="sectionTitle">Forms</div>
+     <div class="aniimoDetailForms">${formCards}</div>
+     <div class="sectionTitle">Imported Roster copies</div>
+     <div class="aniimoOwnedCopies">${copiesHtml}</div>
+     ${copies.length?'<button type="button" id="aniimoDetailsOpenRoster">Open Imported Roster</button>':''}
+   </div>`;
+   bindAniimoSubnav();
+   root.querySelector('#aniimoDetailSpecies')?.addEventListener('change',e=>{aniimosSelectedName=e.target.value;localStorage.setItem('aniimosSelectedName',aniimosSelectedName);renderAniimosTab();});
+   root.querySelector('#aniimoDetailsOpenRoster')?.addEventListener('click',()=>setMainTab('roster'));
+   return;
+ }
+
  if(aniimosViewMode==='abilities'){
-   const rankRows=window.WikiHomeland?.rankAbility?.(aniimosRankAbility,aniimosRankMin)||[];
+   const bestRankRows=window.WikiHomeland?.rankAbility?.(aniimosRankAbility,aniimosRankMin)||[];
+   const caughtRankRows=collectionLoaded?(window.WikiHomeland?.speciesList?.()||[]).map(ws=>{
+     const matching=(ws.forms||[]).map(wf=>({wf,state:wikiFormState(ws.name,wf)}))
+       .filter(x=>x.state.caught)
+       .map(x=>({wf:x.wf,ability:(x.wf.homelandAbilities||[]).find(a=>a.type===aniimosRankAbility)}))
+       .filter(x=>x.ability&&Number(x.ability.level)>=aniimosRankMin);
+     if(!matching.length)return null;
+     const level=Math.max(...matching.map(x=>Number(x.ability.level)||0));
+     const best=matching.filter(x=>Number(x.ability.level)===level);
+     return {dex:ws.dex,name:ws.name,type:aniimosRankAbility,level,forms:best.map(x=>({slug:x.wf.slug,label:x.wf.label,url:x.wf.url}))};
+   }).filter(Boolean).sort((a,b)=>b.level-a.level||a.name.localeCompare(b.name)):[];
+   const rankRows=aniimosRankScope==='caught'?caughtRankRows:bestRankRows;
    const rankCard=row=>{
      const bestForm=row.forms?.[0]||null;
      const localForms=formEntriesFor(row.name);
@@ -173,14 +294,20 @@ function renderAniimosTab(){
        for(const h of (wf?.habitats||[]))habitatSet.add(h);
      }
      const habitats=[...habitatSet].join(' • ');
+     const bestCaught=collectionLoaded&&(bestFull?.forms||row.forms||[]).some(fref=>{
+       const wf=wikiSpecies?.forms?.find(f=>f.slug===fref.slug);
+       return wf?wikiFormState(row.name,wf).caught:false;
+     });
+     const caughtBadge=!collectionLoaded?'<span class="collectionBadge neutral">Sync to check</span>':bestCaught?'<span class="collectionBadge caught">Caught ✓</span>':'<span class="collectionBadge missing">Best form missing</span>';
      return `<div class="aniimoAbilityRankCard">
        <div class="aniimoAbilityRankNum">Lv${row.level}</div>
        <div class="aniimoAbilityRankImage">${src?`<img src="${esc(src)}" alt="${esc(row.name)}" loading="lazy" decoding="async">`:`<span>${esc(String(row.name||'?').slice(0,2).toUpperCase())}</span>`}</div>
        <div class="aniimoAbilityRankInfo">
          <div class="aniimoAbilityRankName">${row.dex?'#'+esc(row.dex)+' · ':''}${esc(row.name)}</div>
          <div><b>${esc(row.type)} Lv${row.level}</b></div>
-         <div class="small">Best form${(bestFull?.forms?.length||row.forms?.length||0)>1?'s':''}: ${esc(formLabels)}</div>
+         <div class="small">${aniimosRankScope==='caught'?'Best caught form':'Best form'}${(bestFull?.forms?.length||row.forms?.length||0)>1?'s':''}: ${esc(formLabels)}</div>
          ${habitats?`<div class="small">Habitats: ${esc(habitats)}</div>`:''}
+         <div class="aniimoAbilityRankActions">${caughtBadge}<button type="button" data-aniimo-details="${esc(row.name)}">Details</button></div>
        </div>
      </div>`;
    };
@@ -194,25 +321,37 @@ function renderAniimosTab(){
        <label class="aniimosToolLabel">Minimum level<select id="aniimosRankMin">
          ${[1,2,3,4].map(n=>`<option value="${n}"${n===aniimosRankMin?' selected':''}>Lv${n}+</option>`).join('')}
        </select></label>
+       <label class="aniimosToolLabel">Ranking<select id="aniimosRankScope">
+         <option value="all"${aniimosRankScope==='all'?' selected':''}>Best Possible</option>
+         <option value="caught"${aniimosRankScope==='caught'?' selected':''}>My Caught Forms</option>
+       </select></label>
        <div class="wikiReferenceStatus">${wikiSummary.scrapedAt?`Official Wiki snapshot: ${esc(new Date(wikiSummary.scrapedAt).toLocaleDateString())}`:'Official Wiki reference unavailable'}${wikiSummary.warnings?.length?` · ${wikiSummary.warnings.length} warning(s)`:''}</div>
      </div>
-     <div class="aniimoAbilityRankSummary"><b>${rankRows.length}</b> Aniimo reach ${esc(aniimosRankAbility)} Lv${aniimosRankMin}+</div>
+     <div class="aniimoAbilityRankSummary"><b>${rankRows.length}</b> Aniimo reach ${esc(aniimosRankAbility)} Lv${aniimosRankMin}+ ${aniimosRankScope==='caught'?'using forms you have caught':'across all official forms'}${aniimosRankScope==='caught'&&!collectionLoaded?' — sync Aniidx to populate this view':''}</div>
      <div class="aniimoAbilityRankGrid">${rankRows.length?rankRows.map(rankCard).join(''):'<div class="fullCard">No official Wiki matches for this filter.</div>'}</div>
    </div>`;
    bindAniimoSubnav();
    root.querySelector('#aniimosRankAbility')?.addEventListener('change',e=>{aniimosRankAbility=e.target.value;localStorage.setItem('aniimosRankAbility',aniimosRankAbility);renderAniimosTab();});
    root.querySelector('#aniimosRankMin')?.addEventListener('change',e=>{aniimosRankMin=Number(e.target.value)||1;localStorage.setItem('aniimosRankMin',String(aniimosRankMin));renderAniimosTab();});
+   root.querySelector('#aniimosRankScope')?.addEventListener('change',e=>{aniimosRankScope=e.target.value;localStorage.setItem('aniimosRankScope',aniimosRankScope);renderAniimosTab();});
    return;
  }
  root.dataset.imageFit=aniimosImageFit;
  root.dataset.imageSize=aniimosImageSize;
  root.innerHTML=`<div class="aniimosBrowser">${aniimoSubnav}
    <div class="aniimosBrowserHead">
-     <div><div class="v30Title">All Aniimos</div><div class="v30Sub">Every released Aniimo, plus image-backed unreleased / special entries. Form and appearance choices only show files we actually have.</div></div>
-     <div class="aniimosBrowseStats">${species.length} shown / ${visible.length} visible</div>
+     <div><div class="v30Title">Aniimo Collection</div><div class="v30Sub">One card per official Aniimo species. Caught / missing status comes from your Aniidx collection sync; forms, Homeland abilities and habitats come from the official Wiki reference.</div></div>
+     <div class="aniimosBrowseStats">${collectionRows.length} shown / ${collectionBase.length} species${collectionLoaded?` · ${collectionCaughtSpecies} caught · ${collectionComplete} complete`:''}</div>
    </div>
    <div class="aniimosBrowseTools">
      <input id="aniimosBrowseSearch" value="${esc(aniimosBrowseQuery)}" placeholder="Search Aniimo name or Dex #">
+     <label class="aniimosToolLabel">Collection<select id="aniimosCollectionFilter" ${collectionLoaded?'':'disabled'}>
+       <option value="all"${aniimosCollectionFilter==='all'?' selected':''}>All</option>
+       <option value="caught"${aniimosCollectionFilter==='caught'?' selected':''}>Caught</option>
+       <option value="missing"${aniimosCollectionFilter==='missing'?' selected':''}>Missing Forms</option>
+       <option value="complete"${aniimosCollectionFilter==='complete'?' selected':''}>Complete</option>
+       <option value="missing-prismana"${aniimosCollectionFilter==='missing-prismana'?' selected':''}>Missing Prismana</option>
+     </select></label>
      <label class="aniimosToolLabel">Image fit
        <select id="aniimosImageFit">
          <option value="contain"${aniimosImageFit==='contain'?' selected':''}>Fit whole image</option>
@@ -227,7 +366,8 @@ function renderAniimosTab(){
        </select>
      </label>
    </div>
-   <div class="aniimosGrid">${species.map(s=>{
+   ${collectionLoaded?'':'<div class="collectionSyncNotice">Import / Sync Aniidx on Dashboard to turn on caught / missing tracking.</div>'}
+   <div class="aniimosGrid">${collectionRows.map(s=>{
      const forms=formEntriesFor(s.name);
      const firstForm=forms[0]||null;
      const firstApps=firstForm?.apps||[];
@@ -235,13 +375,16 @@ function renderAniimosTab(){
      const firstSrc=firstForm?imagePath(firstForm.assetName,firstForm.id,firstAppearance):'';
      const formOpts=forms.length?forms.map((fm,i)=>`<option value="${esc(fm.key)}"${i===0?' selected':''}>${esc(fm.label)}</option>`).join(''):'<option value="">No local images</option>';
      const appOpts=firstApps.map(a=>`<option value="${esc(a)}"${a===firstAppearance?' selected':''}>${esc(appearanceLabel(a))}</option>`).join('');
-     const status=s.releaseStatus==='unavailable'?'<span class="sourceBadge user">Unreleased · image available</span>':s.releaseStatus==='image-only'?'<span class="sourceBadge user">Image-only / special</span>':'';
+     const st=s.collectionState;
+     const collectionText=!collectionLoaded?'Sync to track':st.known?`${st.caught}/${st.known} forms caught`:'No matched form IDs';
+     const collectionClass=!collectionLoaded?'neutral':st.complete?'caught':st.caught?'partial':'missing';
+     const status=`<span class="collectionBadge ${collectionClass}">${esc(collectionText)}</span>`;
      return `<div class="aniimoBrowseCard" data-aniimo-name="${esc(s.name)}" data-form-key="${esc(firstForm?.key||'')}" data-dex="${esc(s.dex||'')}" data-stage="${esc(s.stage||'')}">
        <button type="button" class="aniimoBrowseImage aniimoPreviewOpen" data-preview-open title="View ${esc(s.name)} larger">${firstSrc?`<img src="${esc(firstSrc)}" alt="${esc(s.name)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="aniimoBrowseFallback" style="display:none">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`:`<span class="aniimoBrowseFallback">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`}<span class="aniimoPreviewBadge">↗</span></button>
-       <div class="aniimoBrowseInfo"><div class="aniimoBrowseName">${s.dex?'#'+esc(s.dex)+' · ':''}${esc(s.name)}</div><div class="small">${esc(s.stage||'')}${status?' · '+status:''}</div>
+       <div class="aniimoBrowseInfo"><div class="aniimoBrowseName">${s.dex?'#'+esc(s.dex)+' · ':''}${esc(s.name)}</div><div class="aniimoCollectionCardStatus">${status}</div>
        ${forms.length>1?`<label class="aniimoSelectLabel">Form<select class="aniimoFormSelect" data-aniimo-form-select>${formOpts}</select></label>`:''}
        <label class="aniimoSelectLabel">Appearance<select class="aniimoAppearanceSelect" data-aniimo-appearance-select ${firstApps.length?'':'disabled'}>${appOpts}</select></label>
-       <button type="button" class="aniimoPreviewButton" data-preview-open>View Larger</button>
+       <div class="aniimoCollectionActions"><button type="button" class="aniimoPreviewButton" data-preview-open>View Larger</button><button type="button" data-aniimo-details="${esc(s.name)}">Details</button></div>
        <div class="small aniimoImageCount">${forms.length>1?forms.length+' image forms · ':''}${firstApps.length?firstApps.length+' looks on selected form':''}</div></div>
      </div>`;
    }).join('')}</div>
@@ -265,6 +408,7 @@ function renderAniimosTab(){
  bindAniimoSubnav();
  const search=root.querySelector('#aniimosBrowseSearch');
  if(search)search.addEventListener('input',e=>{aniimosBrowseQuery=e.target.value;renderAniimosTab();});
+ root.querySelector('#aniimosCollectionFilter')?.addEventListener('change',e=>{aniimosCollectionFilter=e.target.value;localStorage.setItem('aniimosCollectionFilter',aniimosCollectionFilter);renderAniimosTab();});
  root.querySelector('#aniimosImageFit')?.addEventListener('change',e=>{aniimosImageFit=e.target.value;localStorage.setItem('aniimosImageFit',aniimosImageFit);root.dataset.imageFit=aniimosImageFit;});
  root.querySelector('#aniimosImageSize')?.addEventListener('change',e=>{aniimosImageSize=e.target.value;localStorage.setItem('aniimosImageSize',aniimosImageSize);root.dataset.imageSize=aniimosImageSize;});
 

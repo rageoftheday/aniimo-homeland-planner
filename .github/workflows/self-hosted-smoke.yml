@@ -86,8 +86,8 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.16.0' index.html
-          grep -q 'js/views.js?v=30.16.0' index.html
+          grep -q 'css/app.css?v=30.17.0' index.html
+          grep -q 'js/views.js?v=30.17.0' index.html
           grep -q 'js/importer.js?v=30.15.0' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
@@ -148,9 +148,17 @@ jobs:
           grep -q 'id="advisorRankMatrix"' index.html
           grep -q 'productionBrowserHead' js/views.js
           grep -q 'Homeland Ability Rankings' js/views.js
+          grep -q 'Aniimo Collection' js/views.js
+          grep -q 'Aniimo Details' js/views.js
+          grep -q 'Missing Prismana' js/views.js
+          grep -q 'My Caught Forms' js/views.js
+          grep -q 'caught_pet_ids' js/views.js
+          grep -q 'localFormForWiki' js/views.js
           grep -q 'window.WikiHomeland?.rankAbility' js/views.js
           grep -q 'aniimosSubnav' css/app.css
           grep -q 'aniimoAbilityRankGrid' css/app.css
+          grep -q 'collectionBadge' css/app.css
+          grep -q 'aniimoDetailForms' css/app.css
           grep -q "let activeMainTab='dashboard'" js/views.js
           grep -q 'function abilityContributors' js/views.js
           grep -q 'Home Ability Distribution' js/views.js
