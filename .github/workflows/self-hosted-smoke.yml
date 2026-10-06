@@ -131,7 +131,7 @@ jobs:
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
-          grep -q 'js/app.js?v=30.19.0' index.html
+          grep -q 'js/app.js?v=30.20.0' index.html
           grep -q 'data-tab="aniimos"' index.html
           grep -q 'id="aniimosPane"' index.html
           grep -q 'Backup ▾' index.html
@@ -197,6 +197,10 @@ jobs:
           grep -q 'function catalogPortraitHTML' js/app.js
           grep -q 'function wikiCatalogEntries' js/app.js
           grep -q 'function aniidexReferenceCatalogEntries' js/app.js
+          grep -q 'function aniimoNameOptions' js/app.js
+          grep -q 'function applyWorkerNamePreset' js/app.js
+          grep -q 'data-worker-name' js/app.js
+          grep -q 'datalist id="aniimoNameList-' js/app.js
           grep -q 'function canonicalCatalogForm' js/app.js
           grep -q "source:'aniidex-reference'" js/app.js
           grep -q "releasedByDex.get(String(sp.dex))" js/app.js
