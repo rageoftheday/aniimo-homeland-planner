@@ -1,6 +1,9 @@
 let aniimosBrowseQuery='';
 let aniimosImageFit=localStorage.getItem('aniimosImageFit')||'contain';
 let aniimosImageSize=localStorage.getItem('aniimosImageSize')||'medium';
+let aniimosViewMode=localStorage.getItem('aniimosViewMode')||'browse';
+let aniimosRankAbility=localStorage.getItem('aniimosRankAbility')||'Hauling';
+let aniimosRankMin=Number(localStorage.getItem('aniimosRankMin')||1);
 // v30 tab shell and full-screen views
 let activeMainTab='dashboard';
 function setMainTab(tab){
@@ -136,9 +139,74 @@ function renderAniimosTab(){
    return humanize(a);
  };
  const imagePath=(stageName,id,appearance)=>stageName&&id&&appearance?`assets/aniimo/stage/${stageName}__${id}__ThreeQuarter__${appearance}.webp`:'';
+ const wikiSummary=window.WikiHomeland?.summary?.()||{counts:{species:0,forms:0,formsWithAbilities:0},warnings:[]};
+ const wikiTypes=window.WikiHomeland?.allAbilityTypes?.()||[];
+ if(!wikiTypes.some(x=>x.type===aniimosRankAbility)&&wikiTypes.length)aniimosRankAbility=wikiTypes[0].type;
+ const aniimoSubnav=`<div class="aniimosSubnav">
+   <button type="button" data-aniimo-mode="browse" class="${aniimosViewMode==='browse'?'active':''}">All Aniimos</button>
+   <button type="button" data-aniimo-mode="abilities" class="${aniimosViewMode==='abilities'?'active':''}">Abilities</button>
+ </div>`;
+ const bindAniimoSubnav=()=>{
+   root.querySelectorAll('[data-aniimo-mode]').forEach(btn=>btn.addEventListener('click',()=>{
+     aniimosViewMode=btn.dataset.aniimoMode||'browse';
+     localStorage.setItem('aniimosViewMode',aniimosViewMode);
+     renderAniimosTab();
+   }));
+ };
+
+ if(aniimosViewMode==='abilities'){
+   const rankRows=window.WikiHomeland?.rankAbility?.(aniimosRankAbility,aniimosRankMin)||[];
+   const rankCard=row=>{
+     const bestForm=row.forms?.[0]||null;
+     const localForms=formEntriesFor(row.name);
+     const targetNorm=window.WikiHomeland?.normalize?.(bestForm?.label||'')||'';
+     const local=localForms.find(f=>(window.WikiHomeland?.normalize?.(f.label)||'')===targetNorm)||localForms[0]||null;
+     const apps=local?.apps||[];
+     const appearance=apps.includes('Normal')?'Normal':(apps[0]||'');
+     const src=local?imagePath(local.assetName,local.id,appearance):'';
+     const wikiSpecies=window.WikiHomeland?.speciesByName?.(row.name);
+     const bestFull=wikiSpecies?.bestAbilities?.find(a=>a.type===row.type&&Number(a.level)===Number(row.level));
+     const formLabels=(bestFull?.forms||row.forms||[]).map(f=>f.label).join(' • ')||'Unknown form';
+     const habitatSet=new Set();
+     for(const fref of (bestFull?.forms||row.forms||[])){
+       const wf=wikiSpecies?.forms?.find(f=>f.slug===fref.slug);
+       for(const h of (wf?.habitats||[]))habitatSet.add(h);
+     }
+     const habitats=[...habitatSet].join(' • ');
+     return `<div class="aniimoAbilityRankCard">
+       <div class="aniimoAbilityRankNum">Lv${row.level}</div>
+       <div class="aniimoAbilityRankImage">${src?`<img src="${esc(src)}" alt="${esc(row.name)}" loading="lazy" decoding="async">`:`<span>${esc(String(row.name||'?').slice(0,2).toUpperCase())}</span>`}</div>
+       <div class="aniimoAbilityRankInfo">
+         <div class="aniimoAbilityRankName">${row.dex?'#'+esc(row.dex)+' · ':''}${esc(row.name)}</div>
+         <div><b>${esc(row.type)} Lv${row.level}</b></div>
+         <div class="small">Best form${(bestFull?.forms?.length||row.forms?.length||0)>1?'s':''}: ${esc(formLabels)}</div>
+         ${habitats?`<div class="small">Habitats: ${esc(habitats)}</div>`:''}
+       </div>
+     </div>`;
+   };
+   root.innerHTML=`<div class="aniimosBrowser">${aniimoSubnav}
+     <div class="aniimosBrowserHead">
+       <div><div class="v30Title">Homeland Ability Rankings</div><div class="v30Sub">Smart-ranked from the official Aniimo Wiki. Each Aniimo is ranked by the highest level this ability reaches across all of its forms, with the form(s) that provide that maximum shown below.</div></div>
+       <div class="aniimosBrowseStats">${wikiSummary.counts?.species||0} species · ${wikiSummary.counts?.forms||0} forms</div>
+     </div>
+     <div class="aniimosBrowseTools">
+       <label class="aniimosToolLabel">Home Ability<select id="aniimosRankAbility">${wikiTypes.map(x=>`<option value="${esc(x.type)}"${x.type===aniimosRankAbility?' selected':''}>${esc(x.type)}</option>`).join('')}</select></label>
+       <label class="aniimosToolLabel">Minimum level<select id="aniimosRankMin">
+         ${[1,2,3,4].map(n=>`<option value="${n}"${n===aniimosRankMin?' selected':''}>Lv${n}+</option>`).join('')}
+       </select></label>
+       <div class="wikiReferenceStatus">${wikiSummary.scrapedAt?`Official Wiki snapshot: ${esc(new Date(wikiSummary.scrapedAt).toLocaleDateString())}`:'Official Wiki reference unavailable'}${wikiSummary.warnings?.length?` · ${wikiSummary.warnings.length} warning(s)`:''}</div>
+     </div>
+     <div class="aniimoAbilityRankSummary"><b>${rankRows.length}</b> Aniimo reach ${esc(aniimosRankAbility)} Lv${aniimosRankMin}+</div>
+     <div class="aniimoAbilityRankGrid">${rankRows.length?rankRows.map(rankCard).join(''):'<div class="fullCard">No official Wiki matches for this filter.</div>'}</div>
+   </div>`;
+   bindAniimoSubnav();
+   root.querySelector('#aniimosRankAbility')?.addEventListener('change',e=>{aniimosRankAbility=e.target.value;localStorage.setItem('aniimosRankAbility',aniimosRankAbility);renderAniimosTab();});
+   root.querySelector('#aniimosRankMin')?.addEventListener('change',e=>{aniimosRankMin=Number(e.target.value)||1;localStorage.setItem('aniimosRankMin',String(aniimosRankMin));renderAniimosTab();});
+   return;
+ }
  root.dataset.imageFit=aniimosImageFit;
  root.dataset.imageSize=aniimosImageSize;
- root.innerHTML=`<div class="aniimosBrowser">
+ root.innerHTML=`<div class="aniimosBrowser">${aniimoSubnav}
    <div class="aniimosBrowserHead">
      <div><div class="v30Title">All Aniimos</div><div class="v30Sub">Every released Aniimo, plus image-backed unreleased / special entries. Form and appearance choices only show files we actually have.</div></div>
      <div class="aniimosBrowseStats">${species.length} shown / ${visible.length} visible</div>
@@ -194,6 +262,7 @@ function renderAniimosTab(){
      </div>
    </div>
  </div>`;
+ bindAniimoSubnav();
  const search=root.querySelector('#aniimosBrowseSearch');
  if(search)search.addEventListener('input',e=>{aniimosBrowseQuery=e.target.value;renderAniimosTab();});
  root.querySelector('#aniimosImageFit')?.addEventListener('change',e=>{aniimosImageFit=e.target.value;localStorage.setItem('aniimosImageFit',aniimosImageFit);root.dataset.imageFit=aniimosImageFit;});
