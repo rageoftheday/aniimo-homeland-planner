@@ -141,6 +141,9 @@ jobs:
           node --check extension/aniidex-isolated.js
           node --check extension/aniidex-main.js
           node -e "JSON.parse(require('fs').readFileSync('extension/manifest.json','utf8')); console.log('Companion manifest OK')"
+          grep -q '"+'"version"'+"": "+'"0.1.1"'+"' extension/manifest.json
+          grep -q 'async function sendToAniidex' extension/background.js
+          grep -q 'chrome.tabs.reload(tab.id)' extension/background.js
           node --check js/views.js
           node - <<'NODE'
           global.window=global;
