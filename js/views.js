@@ -1,4 +1,6 @@
 let aniimosBrowseQuery='';
+let aniimosImageFit=localStorage.getItem('aniimosImageFit')||'contain';
+let aniimosImageSize=localStorage.getItem('aniimosImageSize')||'medium';
 // v30 tab shell and full-screen views
 let activeMainTab='map';
 function setMainTab(tab){
@@ -44,38 +46,198 @@ function renderAniimosTab(){
  const root=el('aniimosPane');if(!root)return;
  const speciesData=window.ANIIMO_SPECIES_DATA||{species:[]};
  const manifest=window.ANIIMO_ASSET_MANIFEST||{aniimoForms:{}};
- const allForms=Object.entries(manifest.aniimoForms||{}).map(([id,f])=>({id,...f}));
+ const stageIndex=window.ANIIMO_STAGE_INDEX||{};
+ const unavailableDex=new Set(['084','085','086','087','088','089','090','091','092','093']);
+ const stageNameFor=n=>({Hexxin:'Witchin'}[n]||n);
+ const humanize=s=>String(s||'').replace(/-/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
+ const formLabel=(name,id)=>{
+   const mf=(manifest.aniimoForms||{})[id];
+   if(mf?.form)return mf.form;
+   const base=String(id||'').split('-')[0];
+   const bf=(manifest.aniimoForms||{})[base];
+   const slug=String(id||'').slice(base.length).replace(/^-+/,'');
+   if(slug)return humanize(slug);
+   return bf?.form||'Basic Form';
+ };
+ const actualStageFor=name=>stageIndex[stageNameFor(name)]||null;
+ const roster=(speciesData.species||[]).map(s=>({...s,releaseStatus:unavailableDex.has(String(s.dex))?'unavailable':'released'}));
+ const rosterNames=new Set(roster.map(s=>stageNameFor(s.name)));
+ for(const imageName of Object.keys(stageIndex)){
+   if(!rosterNames.has(imageName))roster.push({dex:'',name:imageName,stage:'',releaseStatus:'image-only'});
+ }
+ const visible=roster.filter(s=>s.releaseStatus!=='unavailable'||!!actualStageFor(s.name));
  const q=String(aniimosBrowseQuery||'').trim().toLowerCase();
- const species=(speciesData.species||[]).filter(s=>!q||String(s.name||'').toLowerCase().includes(q)||String(s.dex||'').includes(q));
+ const species=visible.filter(s=>!q||String(s.name||'').toLowerCase().includes(q)||String(s.dex||'').includes(q));
+ const appearanceLabel=a=>{
+   if(a==='Normal'||a==='Umbral')return a;
+   const m=String(a).match(/^Sparkling-(\d+)$/);
+   if(m){
+     const n=Number(m[1]);
+     if(n>=1&&n<=10)return 'Sparkling Type '+['I','II','III','IV','V','VI','VII','VIII','IX','X'][n-1];
+     if(n===11)return 'Dazzling';
+     if(n===12)return 'Shadow';
+   }
+   return humanize(a);
+ };
+ const imagePath=(stageName,id,appearance)=>stageName&&id&&appearance?`assets/aniimo/stage/${stageName}__${id}__ThreeQuarter__${appearance}.webp`:'';
+ root.dataset.imageFit=aniimosImageFit;
+ root.dataset.imageSize=aniimosImageSize;
  root.innerHTML=`<div class="aniimosBrowser">
    <div class="aniimosBrowserHead">
-     <div><div class="v30Title">All Aniimos</div><div class="v30Sub">Browse the complete roster and switch between every locally known form.</div></div>
-     <div class="aniimosBrowseStats">${species.length} shown / ${(speciesData.species||[]).length} total</div>
+     <div><div class="v30Title">All Aniimos</div><div class="v30Sub">Every released Aniimo, plus image-backed unreleased / special entries. Form and appearance choices only show files we actually have.</div></div>
+     <div class="aniimosBrowseStats">${species.length} shown / ${visible.length} visible</div>
    </div>
-   <div class="aniimosBrowseTools"><input id="aniimosBrowseSearch" value="${esc(aniimosBrowseQuery)}" placeholder="Search Aniimo name or Dex #"></div>
+   <div class="aniimosBrowseTools">
+     <input id="aniimosBrowseSearch" value="${esc(aniimosBrowseQuery)}" placeholder="Search Aniimo name or Dex #">
+     <label class="aniimosToolLabel">Image fit
+       <select id="aniimosImageFit">
+         <option value="contain"${aniimosImageFit==='contain'?' selected':''}>Fit whole image</option>
+         <option value="cover"${aniimosImageFit==='cover'?' selected':''}>Fill frame</option>
+       </select>
+     </label>
+     <label class="aniimosToolLabel">Image size
+       <select id="aniimosImageSize">
+         <option value="small"${aniimosImageSize==='small'?' selected':''}>Small</option>
+         <option value="medium"${aniimosImageSize==='medium'?' selected':''}>Medium</option>
+         <option value="large"${aniimosImageSize==='large'?' selected':''}>Large</option>
+       </select>
+     </label>
+   </div>
    <div class="aniimosGrid">${species.map(s=>{
-     const forms=allForms.filter(f=>f.name===s.name).sort((a,b)=>(a.form||'').localeCompare(b.form||''));
-     const first=forms[0]||null;
-     const src=first?(window.AniimoAssets?.portraitCandidates?.(s.name,first.form||'','Normal','')||[])[0]||first.head||'':'';
-     const opts=forms.length?forms.map((f,i)=>`<option value="${esc(f.id)}"${i===0?' selected':''}>${esc(f.form||'Basic Form')}</option>`).join(''):'<option value="">No captured forms</option>';
-     return `<div class="aniimoBrowseCard" data-aniimo-name="${esc(s.name)}">
-       <div class="aniimoBrowseImage">${src?`<img src="${esc(src)}" alt="${esc(s.name)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="aniimoBrowseFallback" style="display:none">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`:`<span class="aniimoBrowseFallback">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`}</div>
-       <div class="aniimoBrowseInfo"><div class="aniimoBrowseName">#${esc(s.dex||'—')} · ${esc(s.name)}</div><div class="small">${esc(s.stage||'')}</div>
-       <select class="aniimoFormSelect" data-aniimo-form-select="${esc(s.name)}" ${forms.length?'':'disabled'}>${opts}</select></div>
+     const stageName=stageNameFor(s.name);
+     const stageForms=actualStageFor(s.name)||{};
+     const ids=Object.keys(stageForms);
+     const firstId=ids[0]||'';
+     const firstApps=firstId?stageForms[firstId]:[];
+     const firstAppearance=firstApps.includes('Normal')?'Normal':(firstApps[0]||'');
+     const firstSrc=imagePath(stageName,firstId,firstAppearance);
+     const formOpts=ids.length?ids.map((id,i)=>`<option value="${esc(id)}"${i===0?' selected':''}>${esc(formLabel(s.name,id))}</option>`).join(''):'<option value="">No local images</option>';
+     const appOpts=firstApps.map(a=>`<option value="${esc(a)}"${a===firstAppearance?' selected':''}>${esc(appearanceLabel(a))}</option>`).join('');
+     const status=s.releaseStatus==='unavailable'?'<span class="sourceBadge user">Unreleased · image available</span>':s.releaseStatus==='image-only'?'<span class="sourceBadge user">Image-only / special</span>':'';
+     return `<div class="aniimoBrowseCard" data-aniimo-name="${esc(s.name)}" data-stage-name="${esc(stageName)}" data-model-id="${esc(firstId)}" data-dex="${esc(s.dex||'')}" data-stage="${esc(s.stage||'')}">
+       <button type="button" class="aniimoBrowseImage aniimoPreviewOpen" data-preview-open title="View ${esc(s.name)} larger">${firstSrc?`<img src="${esc(firstSrc)}" alt="${esc(s.name)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="aniimoBrowseFallback" style="display:none">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`:`<span class="aniimoBrowseFallback">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`}<span class="aniimoPreviewBadge">↗</span></button>
+       <div class="aniimoBrowseInfo"><div class="aniimoBrowseName">${s.dex?'#'+esc(s.dex)+' · ':''}${esc(s.name)}</div><div class="small">${esc(s.stage||'')}${status?' · '+status:''}</div>
+       ${ids.length>1?`<label class="aniimoSelectLabel">Form<select class="aniimoFormSelect" data-aniimo-form-select>${formOpts}</select></label>`:''}
+       <label class="aniimoSelectLabel">Appearance<select class="aniimoAppearanceSelect" data-aniimo-appearance-select ${firstApps.length?'':'disabled'}>${appOpts}</select></label>
+       <button type="button" class="aniimoPreviewButton" data-preview-open>View Larger</button>
+       <div class="small aniimoImageCount">${ids.length>1?ids.length+' image forms · ':''}${firstApps.length?firstApps.length+' looks on selected form':''}</div></div>
      </div>`;
    }).join('')}</div>
+ </div>
+ <div class="aniimoModal" id="aniimoPreviewModal" aria-hidden="true" tabindex="-1">
+   <div class="aniimoModalBackdrop" data-modal-close></div>
+   <div class="aniimoModalPanel" role="dialog" aria-modal="true" aria-labelledby="aniimoModalTitle">
+     <button type="button" class="aniimoModalClose" data-modal-close aria-label="Close">×</button>
+     <div class="aniimoModalImageWrap"><img id="aniimoModalImage" alt=""></div>
+     <div class="aniimoModalControls">
+       <div class="aniimoModalTitle" id="aniimoModalTitle"></div>
+       <div class="small" id="aniimoModalMeta"></div>
+       <label class="aniimoSelectLabel" id="aniimoModalFormWrap">Form<select id="aniimoModalForm"></select></label>
+       <label class="aniimoSelectLabel">Appearance<select id="aniimoModalAppearance"></select></label>
+       <div class="aniimoModalNav"><button type="button" id="aniimoModalPrev">← Previous</button><span class="small" id="aniimoModalCounter"></span><button type="button" id="aniimoModalNext">Next →</button></div>
+       <label class="aniimoSelectLabel">Large image fit<select id="aniimoModalFit"><option value="contain">Fit whole image</option><option value="cover">Fill frame</option></select></label>
+       <a class="aniimoOpenOriginal" id="aniimoOpenOriginal" target="_blank" rel="noopener">Open Original Image</a>
+     </div>
+   </div>
  </div>`;
  const search=root.querySelector('#aniimosBrowseSearch');
  if(search)search.addEventListener('input',e=>{aniimosBrowseQuery=e.target.value;renderAniimosTab();});
- root.querySelectorAll('[data-aniimo-form-select]').forEach(sel=>sel.addEventListener('change',()=>{
-   const name=sel.dataset.aniimoFormSelect;
-   const f=(manifest.aniimoForms||{})[sel.value];
-   const card=sel.closest('.aniimoBrowseCard');
-   const img=card?.querySelector('.aniimoBrowseImage img');
-   if(!f||!card)return;
-   const src=(window.AniimoAssets?.portraitCandidates?.(name,f.form||'','Normal','')||[])[0]||f.head||'';
+ root.querySelector('#aniimosImageFit')?.addEventListener('change',e=>{aniimosImageFit=e.target.value;localStorage.setItem('aniimosImageFit',aniimosImageFit);root.dataset.imageFit=aniimosImageFit;});
+ root.querySelector('#aniimosImageSize')?.addEventListener('change',e=>{aniimosImageSize=e.target.value;localStorage.setItem('aniimosImageSize',aniimosImageSize);root.dataset.imageSize=aniimosImageSize;});
+
+ const modal=root.querySelector('#aniimoPreviewModal');
+ const modalImg=root.querySelector('#aniimoModalImage');
+ const modalTitle=root.querySelector('#aniimoModalTitle');
+ const modalMeta=root.querySelector('#aniimoModalMeta');
+ const modalForm=root.querySelector('#aniimoModalForm');
+ const modalFormWrap=root.querySelector('#aniimoModalFormWrap');
+ const modalAppearance=root.querySelector('#aniimoModalAppearance');
+ const modalCounter=root.querySelector('#aniimoModalCounter');
+ const modalOriginal=root.querySelector('#aniimoOpenOriginal');
+ const modalFit=root.querySelector('#aniimoModalFit');
+ let modalCard=null;
+
+ const cardState=card=>{
+   const stageName=card.dataset.stageName;
+   const data=stageIndex[stageName]||{};
+   const formSel=card.querySelector('[data-aniimo-form-select]');
+   const appSel=card.querySelector('[data-aniimo-appearance-select]');
+   const id=formSel?.value||card.dataset.modelId||Object.keys(data)[0]||'';
+   const apps=data[id]||[];
+   const appearance=appSel?.value||apps[0]||'';
+   return {stageName,data,formSel,appSel,id,apps,appearance};
+ };
+ const syncCardImage=card=>{
+   const st=cardState(card);
+   card.dataset.modelId=st.id;
+   const img=card.querySelector('.aniimoBrowseImage img');
+   const src=imagePath(st.stageName,st.id,st.appearance);
    if(img&&src){img.style.display='';img.src=src;}
- }));
+   const count=card.querySelector('.aniimoImageCount');
+   if(count){const totalForms=Object.keys(st.data).length;count.textContent=`${totalForms>1?totalForms+' image forms · ':''}${st.apps.length} looks on selected form`;}
+ };
+ const syncModal=()=>{
+   if(!modalCard)return;
+   const st=cardState(modalCard);
+   const src=imagePath(st.stageName,st.id,st.appearance);
+   modalImg.src=src;modalImg.alt=modalCard.dataset.aniimoName||'Aniimo';
+   modalTitle.textContent=(modalCard.dataset.dex?'#'+modalCard.dataset.dex+' · ':'')+(modalCard.dataset.aniimoName||'Aniimo');
+   modalMeta.textContent=modalCard.dataset.stage||'';
+   modalFormWrap.style.display=Object.keys(st.data).length>1?'grid':'none';
+   modalForm.innerHTML=Object.keys(st.data).map(id=>`<option value="${esc(id)}"${id===st.id?' selected':''}>${esc(formLabel(modalCard.dataset.aniimoName,id))}</option>`).join('');
+   modalAppearance.innerHTML=st.apps.map(a=>`<option value="${esc(a)}"${a===st.appearance?' selected':''}>${esc(appearanceLabel(a))}</option>`).join('');
+   const ai=Math.max(0,st.apps.indexOf(st.appearance));
+   modalCounter.textContent=st.apps.length?`${ai+1} / ${st.apps.length}`:'0 / 0';
+   modalOriginal.href=src||'#';
+   modalOriginal.classList.toggle('disabled',!src);
+ };
+ const openModal=card=>{
+   if(!card)return;modalCard=card;syncModal();
+   modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.classList.add('aniimoModalOpen');modal.focus();
+ };
+ const closeModal=()=>{modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('aniimoModalOpen');modalCard=null;};
+ root.querySelectorAll('[data-modal-close]').forEach(b=>b.addEventListener('click',closeModal));
+ modal?.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+ modalFit?.addEventListener('change',()=>{modal.dataset.fit=modalFit.value;});
+ modal.dataset.fit='contain';
+ root.querySelector('#aniimoModalPrev')?.addEventListener('click',()=>{
+   if(!modalCard)return;const st=cardState(modalCard);if(!st.apps.length)return;
+   const i=(Math.max(0,st.apps.indexOf(st.appearance))-1+st.apps.length)%st.apps.length;
+   st.appSel.value=st.apps[i];syncCardImage(modalCard);syncModal();
+ });
+ root.querySelector('#aniimoModalNext')?.addEventListener('click',()=>{
+   if(!modalCard)return;const st=cardState(modalCard);if(!st.apps.length)return;
+   const i=(Math.max(0,st.apps.indexOf(st.appearance))+1)%st.apps.length;
+   st.appSel.value=st.apps[i];syncCardImage(modalCard);syncModal();
+ });
+ modalForm?.addEventListener('change',()=>{
+   if(!modalCard)return;const st=cardState(modalCard);
+   modalCard.dataset.modelId=modalForm.value;
+   if(st.formSel)st.formSel.value=modalForm.value;
+   const apps=st.data[modalForm.value]||[];
+   st.appSel.innerHTML=apps.map(a=>`<option value="${esc(a)}">${esc(appearanceLabel(a))}</option>`).join('');
+   st.appSel.disabled=!apps.length;
+   syncCardImage(modalCard);syncModal();
+ });
+ modalAppearance?.addEventListener('change',()=>{
+   if(!modalCard)return;const st=cardState(modalCard);
+   st.appSel.value=modalAppearance.value;syncCardImage(modalCard);syncModal();
+ });
+
+ root.querySelectorAll('.aniimoBrowseCard').forEach(card=>{
+   const formSel=card.querySelector('[data-aniimo-form-select]');
+   const appSel=card.querySelector('[data-aniimo-appearance-select]');
+   const stageName=card.dataset.stageName;
+   const data=stageIndex[stageName]||{};
+   formSel?.addEventListener('change',()=>{
+     card.dataset.modelId=formSel.value;
+     const apps=data[formSel.value]||[];
+     appSel.innerHTML=apps.map(a=>`<option value="${esc(a)}">${esc(appearanceLabel(a))}</option>`).join('');
+     appSel.disabled=!apps.length;syncCardImage(card);
+   });
+   appSel?.addEventListener('change',()=>syncCardImage(card));
+   card.querySelectorAll('[data-preview-open]').forEach(btn=>btn.addEventListener('click',()=>openModal(card)));
+ });
 }
 function renderDatabaseTab(){const root=el('databasePane');if(!root)return;const ani=catalogEntries();const forms=ani.filter(x=>(x.abilities||[]).length);const locks=Object.entries(FAMILY_RECIPE_RULES);const ref=window.HomelandData?.validate?.()||{ok:false,issues:['Reference data not loaded'],counts:{}};const hc=ref.counts||{};const speciesData=window.ANIIMO_SPECIES_DATA||{species:[],evolutionFamilies:[],temporaryTransforms:[]};const capturedNames=new Set((window.HomelandData?.raw?.forms||[]).map(x=>x.name));const capturedSpecies=speciesData.species.filter(x=>capturedNames.has(x.name)).length;root.innerHTML=`<div class="databaseBrowser"><div class="databaseBrowserHead"><div class="v30Title">Database / Reference</div><div class="v30Sub">Offline facts currently loaded into this planner. User-entered copy data overrides catalog defaults.</div><div class="dashboardGrid"><div class="metricCard"><div class="label">Reference data</div><div class="metric">${ref.ok?'✓':'!'}</div><div class="small">${ref.ok?'Offline v1 loaded':esc((ref.issues||[]).join(' • '))}</div></div><div class="metricCard"><div class="label">Facilities / recipes</div><div class="metric">${hc.facilities||0} / ${hc.recipes||0}</div><div class="small">${hc.items||0} items • ${hc.plots||0} plots • ${hc.rv||0} RV levels</div></div><div class="metricCard"><div class="label">Released Aniimo</div><div class="metric">${speciesData.species.length}</div><div class="small">${capturedSpecies} with captured Homeland data • ${hc.forms||210} captured forms</div></div><div class="metricCard"><div class="label">Recipe records</div><div class="metric">${Object.values(recipeDB).reduce((n,a)=>n+a.length,0)}</div></div><div class="metricCard"><div class="label">Family-locked recipes</div><div class="metric">${locks.length}</div></div><div class="metricCard"><div class="label">Station work rules</div><div class="metric">${Object.keys(STATION_RULES).length}</div></div></div></div><div class="databaseScroll">
 <div class="databaseSection">
