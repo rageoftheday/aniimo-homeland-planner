@@ -1220,7 +1220,7 @@ function render(){
     else e.classList.add('reqoff');
   }
 }
- renderModules();renderCatalog();renderAniimoCatalog();renderProfileBar();updateInspector();rebuildCropPicker();updateCropSummary();updateProductionSummary();updateBatchUpgradeSummary();updateSupplyAudit();updatePlacementAudit();renderRoster();renderAdvisor();refreshWorkerSelectors();renderV30Views();if(profileStore&&profileStore.current)scheduleProfileAutosave()
+ renderModules();renderCatalog();updateClimateStarterState();renderAniimoCatalog();renderProfileBar();updateInspector();rebuildCropPicker();updateCropSummary();updateProductionSummary();updateBatchUpgradeSummary();updateSupplyAudit();updatePlacementAudit();renderRoster();renderAdvisor();refreshWorkerSelectors();renderV30Views();if(profileStore&&profileStore.current)scheduleProfileAutosave()
 }
 function dragStart(ev,o){
  selected=o.id;render();const r=workspace.getBoundingClientRect(),ox=ev.clientX-r.left-o.x*U,oy=ev.clientY-r.top-o.y*U;

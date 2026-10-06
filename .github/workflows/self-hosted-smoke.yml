@@ -131,7 +131,7 @@ jobs:
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
-          grep -q 'js/app.js?v=30.18.0' index.html
+          grep -q 'js/app.js?v=30.18.1' index.html
           grep -q 'data-tab="aniimos"' index.html
           grep -q 'id="aniimosPane"' index.html
           grep -q 'Backup ▾' index.html
@@ -165,6 +165,8 @@ jobs:
           grep -q 'aniimoDetailForms' css/app.css
           grep -q "let activeMainTab='dashboard'" js/views.js
           grep -q 'function abilityContributors' js/views.js
+          grep -q 'renderCatalog();updateClimateStarterState();renderAniimoCatalog()' js/app.js
+          grep -q "Climate Starter 🔒 RV7" js/app.js
           grep -q 'Home Ability Distribution' js/views.js
           grep -q 'dashboardImport' js/views.js
           grep -q 'Aniimo</th><th>Total levels</th><th>Current job demand' js/views.js
