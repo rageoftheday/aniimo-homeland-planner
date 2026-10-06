@@ -86,8 +86,8 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.15.0' index.html
-          grep -q 'js/views.js?v=30.15.0' index.html
+          grep -q 'css/app.css?v=30.16.0' index.html
+          grep -q 'js/views.js?v=30.16.0' index.html
           grep -q 'js/importer.js?v=30.15.0' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
@@ -98,6 +98,24 @@ jobs:
           grep -q 'data/aniimo-species.js' index.html
           grep -q 'js/assets.js' index.html
           grep -q 'data/embedded-aniidex-catalog.js' index.html
+          grep -q 'data/official-wiki-homeland.js?v=30.16.0' index.html
+          grep -q 'js/wiki-homeland.js?v=30.16.0' index.html
+          test -s data/official-wiki-homeland.json
+          test -s data/official-wiki-homeland.js
+          node --check js/wiki-homeland.js
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('data/official-wiki-homeland.json','utf8'));
+          if(d.counts.species!==86) throw new Error('Unexpected Wiki species count '+d.counts.species);
+          if(d.counts.forms!==206) throw new Error('Unexpected Wiki form count '+d.counts.forms);
+          if(d.counts.formsWithAbilities!==206) throw new Error('Missing Wiki form abilities');
+          if(d.counts.unknownAbilityIds!==0||d.counts.abilitiesMissingLevel!==0) throw new Error('Wiki ability parse incomplete');
+          const g=d.species.find(s=>s.name==='Glacy');
+          const p=g&&g.forms.find(f=>f.slug==='prismana-form');
+          const sig=(p?.homelandAbilities||[]).map(a=>a.type+':'+a.level).sort().join(',');
+          if(sig!=='Hauling:4,Light:3,Water:4') throw new Error('Glacy Wiki sentinel mismatch '+sig);
+          console.log('Official Wiki Homeland reference OK');
+          NODE
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
@@ -117,6 +135,10 @@ jobs:
           grep -q 'Imported Roster / Job Advisor' index.html
           grep -q 'id="advisorRankMatrix"' index.html
           grep -q 'productionBrowserHead' js/views.js
+          grep -q 'Homeland Ability Rankings' js/views.js
+          grep -q 'window.WikiHomeland?.rankAbility' js/views.js
+          grep -q 'aniimosSubnav' css/app.css
+          grep -q 'aniimoAbilityRankGrid' css/app.css
           grep -q "let activeMainTab='dashboard'" js/views.js
           grep -q 'function abilityContributors' js/views.js
           grep -q 'Home Ability Distribution' js/views.js
