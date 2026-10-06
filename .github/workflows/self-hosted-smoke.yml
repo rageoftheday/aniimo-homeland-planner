@@ -81,11 +81,15 @@ jobs:
           test -s data/aniimo-stage-images.csv
           test -s js/assets.js
           grep -q '<!doctype html>' index.html
-          grep -q 'Aniimo Homeland Offline Planner v30.12.4' index.html
+          grep -q '<title>Aniimo Homeland Offline Planner</title>' index.html
+          grep -q '<h1>Aniimo Homeland Offline Planner</h1>' index.html
+          ! grep -q '<title>Aniimo Homeland Offline Planner v' index.html
+          ! grep -q '<h1>Aniimo Homeland Offline Planner v' index.html
           grep -q 'css/app.css' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
           grep -q 'data/asset-manifest.js' index.html
+          grep -q 'data/aniimo-species.js' index.html
           grep -q 'data/aniimo-species.js' index.html
           grep -q 'js/assets.js' index.html
           grep -q 'data/embedded-aniidex-catalog.js' index.html
