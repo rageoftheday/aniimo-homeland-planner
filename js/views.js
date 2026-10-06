@@ -118,9 +118,9 @@ function renderAniimosTab(){
      return `<div class="aniimoBrowseCard" data-aniimo-name="${esc(s.name)}" data-stage-name="${esc(stageName)}">
        <div class="aniimoBrowseImage">${firstSrc?`<img src="${esc(firstSrc)}" alt="${esc(s.name)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="aniimoBrowseFallback" style="display:none">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`:`<span class="aniimoBrowseFallback">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`}</div>
        <div class="aniimoBrowseInfo"><div class="aniimoBrowseName">${s.dex?'#'+esc(s.dex)+' · ':''}${esc(s.name)}</div><div class="small">${esc(s.stage||'')}${status?' · '+status:''}</div>
-       <label class="aniimoSelectLabel">Form<select class="aniimoFormSelect" data-aniimo-form-select ${ids.length?'':'disabled'}>${formOpts}</select></label>
+       ${ids.length>1?`<label class="aniimoSelectLabel">Form<select class="aniimoFormSelect" data-aniimo-form-select>${formOpts}</select></label>`:''}
        <label class="aniimoSelectLabel">Appearance<select class="aniimoAppearanceSelect" data-aniimo-appearance-select ${firstApps.length?'':'disabled'}>${appOpts}</select></label>
-       <div class="small aniimoImageCount">${ids.length} image form${ids.length===1?'':'s'}${firstApps.length?' · '+firstApps.length+' looks on selected form':''}</div></div>
+       <div class="small aniimoImageCount">${ids.length>1?ids.length+' image forms · ':''}${firstApps.length?firstApps.length+' looks on selected form':''}</div></div>
      </div>`;
    }).join('')}</div>
  </div>`;
@@ -138,7 +138,7 @@ function renderAniimosTab(){
    const updateImage=()=>{
      const id=formSel?.value||'',a=appSel?.value||'';
      if(img&&id&&a){img.style.display='';img.src=`assets/aniimo/stage/${stageName}__${id}__ThreeQuarter__${a}.webp`;}
-     if(count&&id){const apps=data[id]||[];count.textContent=`${Object.keys(data).length} image form${Object.keys(data).length===1?'':'s'} · ${apps.length} looks on selected form`;}
+     if(count&&id){const totalForms=Object.keys(data).length,apps=data[id]||[];count.textContent=`${totalForms>1?totalForms+' image forms · ':''}${apps.length} looks on selected form`;}
    };
    formSel?.addEventListener('change',()=>{
      const apps=data[formSel.value]||[];
