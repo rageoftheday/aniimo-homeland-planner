@@ -139,7 +139,8 @@ function renderAniimosTab(){
    return {local,id,known:!!id,caught:!!id&&caughtIds.has(id)};
  };
  const wikiSpeciesState=ws=>{
-   const forms=(ws?.forms||[]).map(wf=>({...wikiFormState(ws.name,wf),wiki:wf}));
+   const canonicalName=releasedByDex?.get?.(String(ws?.dex))||ws?.name||'';
+   const forms=(ws?.forms||[]).map(wf=>({...wikiFormState(canonicalName,wf),wiki:wf}));
    const known=forms.filter(f=>f.known),caught=known.filter(f=>f.caught);
    const prismana=forms.find(f=>/prismana/i.test(f.wiki?.slug||f.wiki?.label||''));
    return {forms,known:known.length,caught:caught.length,total:forms.length,complete:known.length>0&&caught.length===known.length,prismana};
@@ -171,8 +172,11 @@ function renderAniimosTab(){
  if(!wikiTypes.some(x=>x.type===aniimosRankAbility)&&wikiTypes.length)aniimosRankAbility=wikiTypes[0].type;
  if(!collectionLoaded&&aniimosCollectionFilter!=='all')aniimosCollectionFilter='all';
  const officialSpecies=window.WikiHomeland?.speciesList?.()||[];
+ const releasedByDex=new Map((speciesData.species||[]).map(x=>[String(x.dex),x.name]));
+ const canonicalWikiSpecies=ws=>({...ws,name:releasedByDex.get(String(ws.dex))||ws.name,wikiName:ws.name});
  const localSpeciesByName=new Map(roster.map(x=>[wikiNorm(x.name),x]));
- const collectionBase=officialSpecies.map(ws=>{
+ const collectionBase=officialSpecies.map(rawWs=>{
+   const ws=canonicalWikiSpecies(rawWs);
    const local=localSpeciesByName.get(wikiNorm(ws.name))||{};
    return {...local,...ws,collectionState:wikiSpeciesState(ws)};
  });
@@ -208,8 +212,8 @@ function renderAniimosTab(){
  };
 
  if(aniimosViewMode==='details'){
-   const wikiSpecies=window.WikiHomeland?.speciesList?.()||[];
-   let selected=window.WikiHomeland?.speciesByName?.(aniimosSelectedName)||wikiSpecies[0]||null;
+   const wikiSpecies=(window.WikiHomeland?.speciesList?.()||[]).map(canonicalWikiSpecies);
+   let selected=wikiSpecies.find(x=>wikiNorm(x.name)===wikiNorm(aniimosSelectedName)||wikiNorm(x.wikiName)===wikiNorm(aniimosSelectedName))||wikiSpecies[0]||null;
    if(selected&&selected.name!==aniimosSelectedName){
      aniimosSelectedName=selected.name;
      localStorage.setItem('aniimosSelectedName',aniimosSelectedName);
@@ -265,8 +269,8 @@ function renderAniimosTab(){
  }
 
  if(aniimosViewMode==='abilities'){
-   const bestRankRows=window.WikiHomeland?.rankAbility?.(aniimosRankAbility,aniimosRankMin)||[];
-   const caughtRankRows=collectionLoaded?(window.WikiHomeland?.speciesList?.()||[]).map(ws=>{
+   const bestRankRows=(window.WikiHomeland?.rankAbility?.(aniimosRankAbility,aniimosRankMin)||[]).map(row=>({...row,name:releasedByDex.get(String(row.dex))||row.name}));
+   const caughtRankRows=collectionLoaded?(window.WikiHomeland?.speciesList?.()||[]).map(canonicalWikiSpecies).map(ws=>{
      const matching=(ws.forms||[]).map(wf=>({wf,state:wikiFormState(ws.name,wf)}))
        .filter(x=>x.state.caught)
        .map(x=>({wf:x.wf,ability:(x.wf.homelandAbilities||[]).find(a=>a.type===aniimosRankAbility)}))
@@ -285,7 +289,7 @@ function renderAniimosTab(){
      const apps=local?.apps||[];
      const appearance=apps.includes('Normal')?'Normal':(apps[0]||'');
      const src=local?imagePath(local.assetName,local.id,appearance):'';
-     const wikiSpecies=window.WikiHomeland?.speciesByName?.(row.name);
+     const wikiSpecies=(window.WikiHomeland?.speciesList?.()||[]).find(ws=>String(ws.dex)===String(row.dex))||window.WikiHomeland?.speciesByName?.(row.name);
      const bestFull=wikiSpecies?.bestAbilities?.find(a=>a.type===row.type&&Number(a.level)===Number(row.level));
      const formLabels=(bestFull?.forms||row.forms||[]).map(f=>f.label).join(' • ')||'Unknown form';
      const habitatSet=new Set();
@@ -539,8 +543,8 @@ function renderDatabaseTab(){
   <div class="small" style="padding-top:6px">Temporary combat transformations are tracked separately: ${speciesData.temporaryTransforms.map(x=>esc(x.from)+' → '+esc(x.to)).join(' • ')}.</div>
  </div>
  <div class="databaseSection databaseAniimoSection">
-  <div class="databaseAniimoFixed"><div class="sectionTitle">Aniimo / forms</div><div class="small" style="margin-bottom:7px">Official Wiki forms are used first; legacy presets only fill a gap when the Wiki snapshot has no matching row.</div><div class="tableWrap databaseHeaderWrap"><table class="dataTable databaseHeaderTable"><colgroup><col style="width:11%"><col style="width:18%"><col style="width:28%"><col style="width:33%"><col style="width:10%"></colgroup><thead><tr><th>Aniimo</th><th>Form</th><th>Family</th><th>Home Abilities</th><th>Source status</th></tr></thead></table></div></div>
-  <div class="databaseBodyScroll"><table class="dataTable databaseBodyTable"><colgroup><col style="width:11%"><col style="width:18%"><col style="width:28%"><col style="width:33%"><col style="width:10%"></colgroup><tbody>${ani.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.form||'Base')}</td><td>${esc(familyLabelFor(c.name))}</td><td>${(c.abilities||[]).length?c.abilities.map(a=>esc(a[0])+' Lv'+a[1]).join(' • '):'Not loaded'}</td><td>${sourceBadge(c)}</td></tr>`).join('')}</tbody></table></div>
+  <div class="databaseAniimoFixed"><div class="sectionTitle">Aniimo / forms</div><div class="small" style="margin-bottom:7px">Official Wiki forms are used first; legacy presets only fill a gap when the Wiki snapshot has no matching row.</div><div class="tableWrap databaseHeaderWrap"><table class="dataTable databaseHeaderTable"><colgroup><col style="width:14%"><col style="width:22%"><col style="width:28%"><col style="width:36%"></colgroup><thead><tr><th>Aniimo</th><th>Form</th><th>Family</th><th>Home Abilities</th></tr></thead></table></div></div>
+  <div class="databaseBodyScroll"><table class="dataTable databaseBodyTable"><colgroup><col style="width:14%"><col style="width:22%"><col style="width:28%"><col style="width:36%"></colgroup><tbody>${ani.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.form||'Base')}</td><td>${esc(familyLabelFor(c.name))}</td><td>${(c.abilities||[]).length?c.abilities.map(a=>esc(a[0])+' Lv'+a[1]).join(' • '):'Not loaded'}</td></tr>`).join('')}</tbody></table></div>
  </div>
  <div class="databaseSection databaseFamilySection">
   <div class="databaseFamilyFixed"><div class="sectionTitle">Family Requirements by Station & Recipe</div><div class="small" style="margin-bottom:7px">These are recipe-specific family gates on certain stations; a station can have different family requirements for different recipes.</div><div class="tableWrap databaseHeaderWrap"><table class="dataTable databaseHeaderTable"><colgroup><col style="width:38%"><col style="width:24%"><col style="width:38%"></colgroup><thead><tr><th>Station / Recipe</th><th>Required family</th><th>Accepted line</th></tr></thead></table></div></div>

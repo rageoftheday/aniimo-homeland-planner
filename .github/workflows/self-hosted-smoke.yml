@@ -87,7 +87,7 @@ jobs:
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
           grep -q 'css/app.css?v=30.17.0' index.html
-          grep -q 'js/views.js?v=30.18.0' index.html
+          grep -q 'js/views.js?v=30.19.0' index.html
           grep -q 'js/importer.js?v=30.15.0' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
@@ -131,7 +131,7 @@ jobs:
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
-          grep -q 'js/app.js?v=30.18.1' index.html
+          grep -q 'js/app.js?v=30.19.0' index.html
           grep -q 'data-tab="aniimos"' index.html
           grep -q 'id="aniimosPane"' index.html
           grep -q 'Backup ▾' index.html
@@ -196,6 +196,14 @@ jobs:
           node --check js/dom.js
           grep -q 'function catalogPortraitHTML' js/app.js
           grep -q 'function wikiCatalogEntries' js/app.js
+          grep -q 'function aniidexReferenceCatalogEntries' js/app.js
+          grep -q 'function canonicalCatalogForm' js/app.js
+          grep -q "source:'aniidex-reference'" js/app.js
+          grep -q "releasedByDex.get(String(sp.dex))" js/app.js
+          grep -q 'Home Abilities</th></tr>' js/views.js
+          ! grep -q 'Source status</th>' js/views.js
+          grep -q 'canonicalWikiSpecies' js/views.js
+          grep -q "String(ws.dex)===String(row.dex)" js/views.js
           grep -q "source:'official-wiki'" js/app.js
           grep -q "releasedByDex.get(String(sp.dex))" js/app.js
           grep -q 'Official Wiki forms and Homeland abilities are loaded first' index.html
