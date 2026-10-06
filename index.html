@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Aniimo Homeland Planner</title>
-<link rel="stylesheet" href="css/app.css?v=30.14.1"/>
+<link rel="stylesheet" href="css/app.css?v=30.15.0"/>
 </head>
 <body>
 <header>
@@ -58,11 +58,11 @@
 
 <section id="workspaceWrap" class="panel workspaceShell">
 <div id="mainTabs" class="mainTabs">
-  <button data-tab="dashboard">Dashboard</button><button data-tab="map" class="active">Map</button><button data-tab="production">Production</button><button data-tab="progression">Progression</button><button data-tab="advisor">Advisor</button><button data-tab="suggestions">Suggestions</button><button data-tab="roster">Roster</button><button data-tab="aniimos">Aniimos</button><button data-tab="database">Database</button><button data-tab="import">Import / Sync</button>
+  <button data-tab="dashboard" class="active">Dashboard</button><button data-tab="map">Homeland Maker</button><button data-tab="progression">Progression</button><button data-tab="advisor">Advisor</button><button data-tab="roster">Imported Roster</button><button data-tab="suggestions">Suggestions</button><button data-tab="aniimos">Aniimos</button><button data-tab="production">Recipes</button><button data-tab="database">Database</button>
 </div>
 <div id="tabStage" class="tabStage">
-  <div id="dashboardPane" class="tabPane"></div>
-  <div id="mapPane" class="tabPane active"><div id="mapViewport" class="mapViewport"></div></div>
+  <div id="dashboardPane" class="tabPane active"></div>
+  <div id="mapPane" class="tabPane"><div id="mapViewport" class="mapViewport"></div></div>
   <div id="productionPane" class="tabPane"></div>
   <div id="aniimosPane" class="tabPane"></div>
   <div id="rosterPane" class="tabPane"></div>
@@ -70,7 +70,6 @@
   <div id="suggestionsPane" class="tabPane"></div>
   <div id="progressionPane" class="tabPane"></div>
   <div id="databasePane" class="tabPane"></div>
-  <div id="importPane" class="tabPane"></div>
 </div>
 <div class="toolbar">
 <span class="small">Snap:</span><select id="snapSel"><option value=".5">0.5 square</option><option value="1">1 square</option></select>
@@ -184,11 +183,11 @@
 </div>
 
 <div class="rosterBox">
-  <div class="rosterHead"><div><b>Aniimo Roster / Job Advisor</b><div class="small">Each owned copy is separate. Catalog values are a starting point; your actual in-game copy always wins.</div></div><div id="rosterCount" class="small"></div></div>
+  <div class="rosterHead"><div><b>Imported Roster / Job Advisor</b><div class="small">Each imported owned copy is separate. Catalog values are a starting point; your actual in-game copy always wins.</div></div><div id="rosterCount" class="small"></div></div>
   <div class="profileBar">
     <div class="profileRow"><label>Profile<select id="profileSelect"></select></label><label>Type<select id="profileType"><option>Main</option><option>Casual</option><option>Beginner</option><option>Balanced</option><option>Max Coins</option><option>All Crops</option><option>RV Upgrade</option><option>Custom</option></select></label><span id="profileSaveState" class="saveState">Saved locally ✓</span></div>
     <div class="profileButtons"><button id="newProfileBtn">+ New</button><button id="duplicateProfileBtn">Duplicate</button><button id="renameProfileBtn">Rename</button><button id="deleteProfileBtn" class="danger">Delete</button></div>
-    <div class="rosterImportShortcut"><div><b>Import / Sync</b><div class="small">Update this profile from Aniիդex or a saved sync file without crowding the roster editor.</div></div><button onclick="setMainTab('import')">Open Import / Sync</button></div>
+    <div class="rosterImportShortcut"><div><b>Import / Sync</b><div class="small">Update this profile from Aniidx or a saved sync file from the Dashboard.</div></div><button onclick="focusHomelandImporter()">Open Dashboard Sync</button></div>
   <div class="personalityLegend">
     <div><b>E/I</b><br>Energetic / Instinctive</div><div><b>S/N</b><br>Practical / Nimble</div><div><b>T/F</b><br>Tenacious / Faithful</div><div><b>J/P</b><br>Judicious / Playful</div>
   </div>
@@ -231,8 +230,8 @@
 <script src="js/assets.js?v=30.12.4"></script>
 <script src="js/homeland-data.js?v=30.12.4"></script>
 <script src="data/embedded-aniidex-catalog.js?v=30.12.4"></script>
-<script src="js/importer.js?v=30.14.6"></script>
-<script src="js/views.js?v=30.14.0"></script>
+<script src="js/importer.js?v=30.15.0"></script>
+<script src="js/views.js?v=30.15.0"></script>
 <script src="js/app.js?v=30.14.1"></script>
 </body>
 </html>
