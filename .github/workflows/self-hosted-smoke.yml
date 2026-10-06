@@ -108,7 +108,9 @@ jobs:
           grep -q 'productionRecipeTable' css/app.css
           grep -q 'function aniidexBookmarkletCode' js/importer.js
           grep -q 'Download Companion Extension' js/importer.js
-          grep -q 'aniimo-homeland-planner/archive/refs/heads/main.zip' js/importer.js
+          grep -q 'downloadAniimoCompanionExtension' js/importer.js
+          grep -q 'downloads <b>only the extension</b>' js/importer.js
+          grep -q 'Aniimo_Homeland_Companion.zip' js/importer.js
           ! grep -q 'Direct UID Test' js/importer.js
           ! grep -q 'function importAniidexUid' js/importer.js
           grep -q 'const EMBEDDED_ANIIDEX_CATALOG=' data/embedded-aniidex-catalog.js
