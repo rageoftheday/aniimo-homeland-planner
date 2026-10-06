@@ -116,38 +116,18 @@ function parseAbilities(html) {
   ]);
   if (!chunk) return [];
 
+  // Wiki capsules are nested spans. Match the icon class and the level text that
+  // follows inside the same capsule rather than trying to parse balanced HTML.
   const out = [];
-  const capsuleRe = /<span\b[^>]*class=["'][^"']*capsule-item[^"']*["'][^>]*>([\s\S]*?)<\/span>\s*<\/span>?/gi;
-  let c;
-  while ((c = capsuleRe.exec(chunk))) {
-    const body = c[1];
-    const idMatch = body.match(/icon-home-(\d+)/i);
-    if (!idMatch) continue;
-    const abilityId = Number(idMatch[1]);
-
-    // The level is the numeric text inside the same capsule. Ignore ids from classes.
-    const textOnly = clean(body);
-    const levelMatch = textOnly.match(/(?:^|\s)(\d+)(?:\s|$)/);
-    const level = levelMatch ? Number(levelMatch[1]) : null;
+  const re = /icon-home-(\d+)[\s\S]{0,1200}?class=["'][^"']*\bflex-1\b[^"']*["'][^>]*>\s*(\d+)\s*<\/span>/gi;
+  let m;
+  while ((m = re.exec(chunk))) {
+    const abilityId = Number(m[1]);
     out.push({
       abilityId,
       type: ABILITY_NAMES[abilityId] || `Home ${abilityId}`,
-      level
+      level: Number(m[2])
     });
-  }
-
-  // Fallback for minified/changed capsule nesting: find icon and a nearby level.
-  if (!out.length) {
-    const re = /icon-home-(\d+)[\s\S]{0,900}?flex-1[^>]*>\s*(\d+)\s*</gi;
-    let m;
-    while ((m = re.exec(chunk))) {
-      const abilityId = Number(m[1]);
-      out.push({
-        abilityId,
-        type: ABILITY_NAMES[abilityId] || `Home ${abilityId}`,
-        level: Number(m[2])
-      });
-    }
   }
 
   const seen = new Set();
@@ -263,6 +243,9 @@ async function main() {
       if (!homelandAbilities.length) {
         warnings.push(`${name} / ${label}: no Homeland Ability capsules parsed`);
       }
+      if (homelandAbilities.some(a => !Number.isInteger(a.level) || a.level < 1 || a.level > 4)) {
+        warnings.push(`${name} / ${label}: invalid Homeland ability level(s)`);
+      }
 
       forms.push({
         slug: formSeed.slug,
@@ -299,7 +282,8 @@ async function main() {
       species: species.length,
       forms: species.reduce((n, s) => n + s.forms.length, 0),
       formsWithAbilities: species.reduce((n, s) => n + s.forms.filter(f => f.homelandAbilities.length).length, 0),
-      unknownAbilityIds: uniq(species.flatMap(s => s.forms.flatMap(f => f.homelandAbilities.filter(a => !ABILITY_NAMES[a.abilityId]).map(a => a.abilityId)))).length
+      unknownAbilityIds: uniq(species.flatMap(s => s.forms.flatMap(f => f.homelandAbilities.filter(a => !ABILITY_NAMES[a.abilityId]).map(a => a.abilityId)))).length,
+      abilitiesMissingLevel: species.reduce((n, s) => n + s.forms.reduce((m, f) => m + f.homelandAbilities.filter(a => !Number.isInteger(a.level)).length, 0), 0)
     },
     warnings,
     species
