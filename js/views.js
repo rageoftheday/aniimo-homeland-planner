@@ -44,38 +44,88 @@ function renderAniimosTab(){
  const root=el('aniimosPane');if(!root)return;
  const speciesData=window.ANIIMO_SPECIES_DATA||{species:[]};
  const manifest=window.ANIIMO_ASSET_MANIFEST||{aniimoForms:{}};
- const allForms=Object.entries(manifest.aniimoForms||{}).map(([id,f])=>({id,...f}));
+ const stageIndex=window.ANIIMO_STAGE_INDEX||{};
+ const unavailableDex=new Set(['084','085','086','087','088','089','090','091','092','093']);
+ const stageNameFor=n=>({Hexxin:'Witchin'}[n]||n);
+ const humanize=s=>String(s||'').replace(/-/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
+ const formLabel=(name,id)=>{
+   const mf=(manifest.aniimoForms||{})[id];
+   if(mf?.form)return mf.form;
+   const base=String(id||'').split('-')[0];
+   const bf=(manifest.aniimoForms||{})[base];
+   const slug=String(id||'').slice(base.length).replace(/^-+/,'');
+   if(slug)return humanize(slug);
+   return bf?.form||'Basic Form';
+ };
+ const actualStageFor=name=>stageIndex[stageNameFor(name)]||null;
+ const roster=(speciesData.species||[]).map(s=>({...s,releaseStatus:unavailableDex.has(String(s.dex))?'unavailable':'released'}));
+ const rosterNames=new Set(roster.map(s=>stageNameFor(s.name)));
+ for(const imageName of Object.keys(stageIndex)){
+   if(!rosterNames.has(imageName)){
+     roster.push({dex:'',name:imageName,stage:'',releaseStatus:'image-only'});
+   }
+ }
+ const visible=roster.filter(s=>s.releaseStatus!=='unavailable'||!!actualStageFor(s.name));
  const q=String(aniimosBrowseQuery||'').trim().toLowerCase();
- const species=(speciesData.species||[]).filter(s=>!q||String(s.name||'').toLowerCase().includes(q)||String(s.dex||'').includes(q));
+ const species=visible.filter(s=>!q||String(s.name||'').toLowerCase().includes(q)||String(s.dex||'').includes(q));
+ const appearanceLabel=a=>{
+   if(a==='Normal'||a==='Umbral')return a;
+   const m=String(a).match(/^Sparkling-(\d+)$/);
+   if(m){
+     const n=Number(m[1]);
+     if(n>=1&&n<=10)return 'Sparkling Type '+['I','II','III','IV','V','VI','VII','VIII','IX','X'][n-1];
+     if(n===11)return 'Dazzling';
+     if(n===12)return 'Shadow';
+   }
+   return humanize(a);
+ };
  root.innerHTML=`<div class="aniimosBrowser">
    <div class="aniimosBrowserHead">
-     <div><div class="v30Title">All Aniimos</div><div class="v30Sub">Browse the complete roster and switch between every locally known form.</div></div>
-     <div class="aniimosBrowseStats">${species.length} shown / ${(speciesData.species||[]).length} total</div>
+     <div><div class="v30Title">All Aniimos</div><div class="v30Sub">Every released Aniimo, plus image-backed unreleased / special entries. Form and appearance choices only show files we actually have.</div></div>
+     <div class="aniimosBrowseStats">${species.length} shown / ${visible.length} visible</div>
    </div>
    <div class="aniimosBrowseTools"><input id="aniimosBrowseSearch" value="${esc(aniimosBrowseQuery)}" placeholder="Search Aniimo name or Dex #"></div>
    <div class="aniimosGrid">${species.map(s=>{
-     const forms=allForms.filter(f=>f.name===s.name).sort((a,b)=>(a.form||'').localeCompare(b.form||''));
-     const first=forms[0]||null;
-     const src=first?(window.AniimoAssets?.portraitCandidates?.(s.name,first.form||'','Normal','')||[])[0]||first.head||'':'';
-     const opts=forms.length?forms.map((f,i)=>`<option value="${esc(f.id)}"${i===0?' selected':''}>${esc(f.form||'Basic Form')}</option>`).join(''):'<option value="">No captured forms</option>';
-     return `<div class="aniimoBrowseCard" data-aniimo-name="${esc(s.name)}">
-       <div class="aniimoBrowseImage">${src?`<img src="${esc(src)}" alt="${esc(s.name)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="aniimoBrowseFallback" style="display:none">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`:`<span class="aniimoBrowseFallback">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`}</div>
-       <div class="aniimoBrowseInfo"><div class="aniimoBrowseName">#${esc(s.dex||'—')} · ${esc(s.name)}</div><div class="small">${esc(s.stage||'')}</div>
-       <select class="aniimoFormSelect" data-aniimo-form-select="${esc(s.name)}" ${forms.length?'':'disabled'}>${opts}</select></div>
+     const stageName=stageNameFor(s.name);
+     const stageForms=actualStageFor(s.name)||{};
+     const ids=Object.keys(stageForms);
+     const firstId=ids[0]||'';
+     const firstApps=firstId?stageForms[firstId]:[];
+     const firstAppearance=firstApps.includes('Normal')?'Normal':(firstApps[0]||'');
+     const firstSrc=firstId&&firstAppearance?`assets/aniimo/stage/${stageName}__${firstId}__ThreeQuarter__${firstAppearance}.webp`:'';
+     const formOpts=ids.length?ids.map((id,i)=>`<option value="${esc(id)}"${i===0?' selected':''}>${esc(formLabel(s.name,id))}</option>`).join(''):'<option value="">No local images</option>';
+     const appOpts=firstApps.map((a,i)=>`<option value="${esc(a)}"${a===firstAppearance?' selected':''}>${esc(appearanceLabel(a))}</option>`).join('');
+     const status=s.releaseStatus==='unavailable'?'<span class="sourceBadge user">Unreleased · image available</span>':s.releaseStatus==='image-only'?'<span class="sourceBadge user">Image-only / special</span>':'';
+     return `<div class="aniimoBrowseCard" data-aniimo-name="${esc(s.name)}" data-stage-name="${esc(stageName)}">
+       <div class="aniimoBrowseImage">${firstSrc?`<img src="${esc(firstSrc)}" alt="${esc(s.name)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="aniimoBrowseFallback" style="display:none">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`:`<span class="aniimoBrowseFallback">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`}</div>
+       <div class="aniimoBrowseInfo"><div class="aniimoBrowseName">${s.dex?'#'+esc(s.dex)+' · ':''}${esc(s.name)}</div><div class="small">${esc(s.stage||'')}${status?' · '+status:''}</div>
+       <select class="aniimoFormSelect" data-aniimo-form-select ${ids.length?'':'disabled'}>${formOpts}</select>
+       <select class="aniimoAppearanceSelect" data-aniimo-appearance-select ${firstApps.length?'':'disabled'}>${appOpts}</select>
+       <div class="small aniimoImageCount">${ids.length} image form${ids.length===1?'':'s'}${firstApps.length?' · '+firstApps.length+' looks on selected form':''}</div></div>
      </div>`;
    }).join('')}</div>
  </div>`;
  const search=root.querySelector('#aniimosBrowseSearch');
  if(search)search.addEventListener('input',e=>{aniimosBrowseQuery=e.target.value;renderAniimosTab();});
- root.querySelectorAll('[data-aniimo-form-select]').forEach(sel=>sel.addEventListener('change',()=>{
-   const name=sel.dataset.aniimoFormSelect;
-   const f=(manifest.aniimoForms||{})[sel.value];
-   const card=sel.closest('.aniimoBrowseCard');
-   const img=card?.querySelector('.aniimoBrowseImage img');
-   if(!f||!card)return;
-   const src=(window.AniimoAssets?.portraitCandidates?.(name,f.form||'','Normal','')||[])[0]||f.head||'';
-   if(img&&src){img.style.display='';img.src=src;}
- }));
+ root.querySelectorAll('.aniimoBrowseCard').forEach(card=>{
+   const formSel=card.querySelector('[data-aniimo-form-select]');
+   const appSel=card.querySelector('[data-aniimo-appearance-select]');
+   const img=card.querySelector('.aniimoBrowseImage img');
+   const count=card.querySelector('.aniimoImageCount');
+   const stageName=card.dataset.stageName;
+   const data=stageIndex[stageName]||{};
+   const updateImage=()=>{
+     const id=formSel?.value||'',a=appSel?.value||'';
+     if(img&&id&&a){img.style.display='';img.src=`assets/aniimo/stage/${stageName}__${id}__ThreeQuarter__${a}.webp`;}
+     if(count&&id){const apps=data[id]||[];count.textContent=`${Object.keys(data).length} image form${Object.keys(data).length===1?'':'s'} · ${apps.length} looks on selected form`;}
+   };
+   formSel?.addEventListener('change',()=>{
+     const apps=data[formSel.value]||[];
+     appSel.innerHTML=apps.map(a=>`<option value="${esc(a)}">${esc(appearanceLabel(a))}</option>`).join('');
+     appSel.disabled=!apps.length;updateImage();
+   });
+   appSel?.addEventListener('change',updateImage);
+ });
 }
 function renderDatabaseTab(){const root=el('databasePane');if(!root)return;const ani=catalogEntries();const forms=ani.filter(x=>(x.abilities||[]).length);const locks=Object.entries(FAMILY_RECIPE_RULES);const ref=window.HomelandData?.validate?.()||{ok:false,issues:['Reference data not loaded'],counts:{}};const hc=ref.counts||{};const speciesData=window.ANIIMO_SPECIES_DATA||{species:[],evolutionFamilies:[],temporaryTransforms:[]};const capturedNames=new Set((window.HomelandData?.raw?.forms||[]).map(x=>x.name));const capturedSpecies=speciesData.species.filter(x=>capturedNames.has(x.name)).length;root.innerHTML=`<div class="databaseBrowser"><div class="databaseBrowserHead"><div class="v30Title">Database / Reference</div><div class="v30Sub">Offline facts currently loaded into this planner. User-entered copy data overrides catalog defaults.</div><div class="dashboardGrid"><div class="metricCard"><div class="label">Reference data</div><div class="metric">${ref.ok?'✓':'!'}</div><div class="small">${ref.ok?'Offline v1 loaded':esc((ref.issues||[]).join(' • '))}</div></div><div class="metricCard"><div class="label">Facilities / recipes</div><div class="metric">${hc.facilities||0} / ${hc.recipes||0}</div><div class="small">${hc.items||0} items • ${hc.plots||0} plots • ${hc.rv||0} RV levels</div></div><div class="metricCard"><div class="label">Released Aniimo</div><div class="metric">${speciesData.species.length}</div><div class="small">${capturedSpecies} with captured Homeland data • ${hc.forms||210} captured forms</div></div><div class="metricCard"><div class="label">Recipe records</div><div class="metric">${Object.values(recipeDB).reduce((n,a)=>n+a.length,0)}</div></div><div class="metricCard"><div class="label">Family-locked recipes</div><div class="metric">${locks.length}</div></div><div class="metricCard"><div class="label">Station work rules</div><div class="metric">${Object.keys(STATION_RULES).length}</div></div></div></div><div class="databaseScroll">
 <div class="databaseSection">
