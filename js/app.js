@@ -1004,6 +1004,41 @@ function formOptionsForWorker(w){const forms=catalogFormsForName(w.name);const v
 function workerAbilityPills(w){const arr=(w.abilities||[]).filter(a=>a.type);return arr.length?arr.map((a,i)=>`<span class="abilityPill${i===0?' primary':''}">${esc(a.type)} Lv${Number(a.level)||1}</span>`).join(''):'<span class="small">No Home abilities entered</span>'}
 function workerPortraitHTML(w){const af=window.AniimoAssets?.form?.(w.name,w.form);const candidates=window.AniimoAssets?.portraitCandidates?.(w.name,w.form,w.appearance,w.sparklingHue)||[];const local=w.localPortrait||candidates[0]||af?.head||'';const remote=w.portrait||'';if(local||remote){const first=local||remote,backup=local&&remote&&remote!==local?remote:'';const fallback=backup?`this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='block'};this.src='${esc(backup)}'`:`this.style.display='none';this.nextElementSibling.style.display='block'`;return `<img src="${esc(first)}" alt="${esc(w.name||'Aniimo')}" onerror="${fallback}"><span class="initials" style="display:none">${esc(initialsFor(w.name))}</span><span class="portraitTag">${esc(w.appearance||'Normal')}</span>`}return `<span class="initials">${esc(initialsFor(w.name))}</span><span class="portraitTag">${esc(w.appearance||'Normal')}</span>`}
 
+function openWorkerLargePreview(w,portrait){
+ const image=portrait?.querySelector('img');
+ const src=image?.currentSrc||image?.src||'';
+ if(!src)return;
+ document.querySelector('.workerLargePreview')?.remove();
+ const modal=document.createElement('div');
+ modal.className='workerLargePreview aniimoModal open';
+ modal.dataset.fit='contain';
+ modal.setAttribute('aria-hidden','false');
+ modal.innerHTML=`<div class="aniimoModalBackdrop" data-worker-modal-close></div>
+ <div class="aniimoModalPanel" role="dialog" aria-modal="true" aria-label="Aniimo portrait preview">
+  <button type="button" class="aniimoModalClose" data-worker-modal-close aria-label="Close">×</button>
+  <div class="aniimoModalImageWrap"><img alt=""></div>
+  <div class="aniimoModalControls">
+   <div class="aniimoModalTitle"></div>
+   <div class="small workerLargePreviewMeta"></div>
+   <div class="small workerLargePreviewAbilities"></div>
+   <label class="aniimoSelectLabel">Large image fit<select data-worker-modal-fit><option value="contain">Fit whole image</option><option value="cover">Fill frame</option></select></label>
+   <a class="aniimoOpenOriginal" target="_blank" rel="noopener">Open Original Image</a>
+  </div>
+ </div>`;
+ const modalImg=modal.querySelector('.aniimoModalImageWrap img');
+ modalImg.src=src;modalImg.alt=w.name||'Aniimo';
+ modal.querySelector('.aniimoModalTitle').textContent=w.name||'Aniimo';
+ modal.querySelector('.workerLargePreviewMeta').textContent=[w.form||'Base',w.appearance||'Normal',w.sparklingHue||''].filter(Boolean).join(' · ');
+ modal.querySelector('.workerLargePreviewAbilities').textContent=(w.abilities||[]).filter(a=>a.type).map(a=>a.type+' Lv'+(Number(a.level)||1)).join(' · ')||'No Home abilities entered';
+ modal.querySelector('.aniimoOpenOriginal').href=src;
+ const close=()=>{modal.remove();document.body.classList.remove('aniimoModalOpen');document.removeEventListener('keydown',onKey);};
+ const onKey=e=>{if(e.key==='Escape')close();};
+ modal.querySelectorAll('[data-worker-modal-close]').forEach(el=>el.addEventListener('click',close));
+ modal.querySelector('[data-worker-modal-fit]')?.addEventListener('change',e=>{modal.dataset.fit=e.target.value;});
+ document.body.appendChild(modal);document.body.classList.add('aniimoModalOpen');document.addEventListener('keydown',onKey);
+ modal.querySelector('.aniimoModalClose')?.focus();
+}
+
 function renderRoster(){
  const root=el('rosterList'),count=el('rosterCount');if(!root)return;
  const active=workers.filter(w=>w.active!==false).length;count.textContent=`${active} active / ${workers.length} entered`;
@@ -1012,7 +1047,7 @@ function renderRoster(){
  for(const w of workers){
    const card=document.createElement('div');const prot=workerIsProtected(w);card.className='workerCard'+(prot?' lockedWorker':'');
    const fam=familyForWorker(w);const assigned=assignedObjectForWorker(w.id);const preset=catalogPresetForWorker(w);
-   card.innerHTML=`<div class="workerVisualRow"><div class="workerPortrait">${workerPortraitHTML(w)}</div><div class="workerIdentity">
+   card.innerHTML=`<div class="workerVisualRow"><button type="button" class="workerPortrait aniimoPreviewOpen" data-worker-preview title="View ${esc(w.name||'Aniimo')} larger">${workerPortraitHTML(w)}<span class="aniimoPreviewBadge">↗</span></button><div class="workerIdentity">
       <input data-k="name" value="${esc(w.name||'')}" placeholder="Aniimo name">
       <div class="variantRow"><select data-form>${formOptionsForWorker(w)}</select><select data-k="appearance">${appearanceOptions(w.appearance||'Normal')}</select></div>
       <input data-k="sparklingHue" value="${esc(w.sparklingHue||'')}" placeholder="Sparkling hue/style (optional)" ${String(w.appearance||'').toLowerCase().includes('sparkling')?'':'style="display:none"'}>
@@ -1028,6 +1063,7 @@ function renderRoster(){
    card.appendChild(rows);
    const extra=document.createElement('div');extra.className='abilityRow';extra.innerHTML=`<input data-k="portrait" value="${esc(w.portrait||'')}" placeholder="Optional portrait image URL / data URI"><span class="small">optional</span>`;card.appendChild(extra);
    const flags=document.createElement('div');flags.className='workerFlags';flags.innerHTML=`<label><input type="checkbox" data-active ${w.active!==false?'checked':''}> Production Zone</label><button data-remove class="danger">Archive / Remove</button>`;card.appendChild(flags);
+   card.querySelector('[data-worker-preview]')?.addEventListener('click',e=>openWorkerLargePreview(w,e.currentTarget));
    card.querySelectorAll('[data-k]').forEach(inp=>inp.addEventListener('change',()=>setWorkerField(w.id,inp.dataset.k,inp.value)));
    card.querySelector('[data-form]')?.addEventListener('change',e=>applyWorkerCatalogPreset(w.id,e.target.value));
    card.querySelectorAll('[data-appearance-choice]').forEach(btn=>btn.addEventListener('click',()=>{
