@@ -91,12 +91,32 @@ function summarizeAniidexImport(profileData,homeData){
  const prof=profileData?.profile||profileData||{},home=homeData?.home||homeData||{};
  const collection=prof.collection||{};return {name:prof.player_name||home.name||'',rv:Number(home.home_level||prof.homeland?.rv_level||11),caught:Number(collection.total_caught_forms||0),aniimo:Array.isArray(home.aniimo)?home.aniimo.length:0,working:Array.isArray(home.aniimo)?home.aniimo.filter(a=>a.facility!=null).length:0,facilities:countImportedFacilities(home.facilities),plots:(home.plots||[]).filter(n=>n>=1&&n<=16)};
 }
+function aniidexRvModuleLevels(profileData,homeData){
+ const prof=profileData?.profile||profileData||{},home=homeData?.home||homeData||{};
+ const raw=prof?.homeland?.rv_modules||home?.rv_modules||homeData?.rv_modules||{};
+ const ids={
+  2:'Rest Module',
+  3:'Ecological Module',
+  4:'Kitchen Module',
+  5:'Resource Detector',
+  6:'Crafting Module',
+  7:'Power Module',
+  8:'Plant Research Module',
+  9:'Incubation Reaction Module',
+  10:'Signal Transmitter'
+ };
+ const out={};
+ for(const [id,name] of Object.entries(ids))out[name]=Math.max(0,Number(raw[id]??raw[String(id)]??0)||0);
+ return {raw,levels:out,count:Object.values(out).filter(v=>v>0).length};
+}
 function applyAniidexImportedData(profileData,homeData,sourceLabel='Aniidex',catalogData=null){
  const sum=summarizeAniidexImport(profileData,homeData);
- const ok=confirm(`${sourceLabel} import is ready.\n\n${sum.name||'Player'}\nRV ${sum.rv}\n${sum.aniimo} Homeland Aniimo (${sum.working} placed at facilities)\n${sum.facilities} facility pieces in snapshot\n${sum.caught||0} caught forms\n\nImport into the CURRENT profile?\n\nRaw imported data will also be retained for later ID decoding.`);
+ const ok=confirm(`${sourceLabel} import is ready.\n\n${sum.name||'Player'}\nRV ${sum.rv}\n${sum.aniimo} Homeland Aniimo (${sum.working} placed at facilities)\n${sum.facilities} facility pieces in snapshot\n${sum.caught||0} caught forms\n${aniidexRvModuleLevels(profileData,homeData).count} installed RV modules\n\nImport into the CURRENT profile?\n\nRaw imported data will also be retained for later ID decoding.`);
  if(!ok)return false;
  rvLevel.value=String(sum.rv||11);
  const rawHome=homeData?.home||homeData||{};
+ const importedModules=aniidexRvModuleLevels(profileData,homeData);
+ moduleLevels={...importedModules.levels};
  const normalPlots=(rawHome.plots||[]).filter(n=>n>=1&&n<=16);if(normalPlots.length)openPlots=new Set(normalPlots);
  const rawAniimo=rawHome.aniimo||[];workers=rawAniimo.map(a=>importedWorkerFromAniidex(a,catalogData));workerIdCounter=Math.max(1,...workers.map(w=>(Number(w.id)||0)+1));
  aniidexImportMeta={uid:String(rawHome.uid||profileData?.profile?.uid||profileData?.uid||''),importedAt:Date.now(),summary:sum,profile:profileData,home:homeData,catalog:catalogData,source:sourceLabel};
