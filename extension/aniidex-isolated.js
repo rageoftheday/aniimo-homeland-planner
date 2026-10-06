@@ -1,0 +1,34 @@
+window.addEventListener('message',event=>{
+  if(event.source!==window||event.origin!==location.origin)return;
+  const msg=event.data||{};
+  if(msg.channel!=='aniimo-homeland-companion-page')return;
+  if(msg.type==='ANIIMO_PAGE_STATUS'){
+    chrome.runtime.sendMessage({
+      type:'ANIIMO_SYNC_STATUS',
+      requestId:msg.requestId,
+      message:msg.message,
+      error:!!msg.error,
+      verificationRequired:!!msg.verificationRequired
+    }).catch(()=>{});
+  }
+  if(msg.type==='ANIIMO_PAGE_RESULT'){
+    chrome.runtime.sendMessage({
+      type:'ANIIMO_SYNC_RESULT',
+      requestId:msg.requestId,
+      ok:!!msg.ok,
+      bundle:msg.bundle,
+      error:msg.error
+    }).catch(()=>{});
+  }
+});
+
+chrome.runtime.onMessage.addListener((msg,sender,sendResponse)=>{
+  if(msg?.type!=='ANIIMO_SYNC_UID')return;
+  window.postMessage({
+    channel:'aniimo-homeland-companion-control',
+    type:'ANIIMO_RUN_SYNC',
+    requestId:msg.requestId,
+    uid:msg.uid
+  },location.origin);
+  sendResponse({ok:true});
+});
