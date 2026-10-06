@@ -7,12 +7,30 @@ function aniidexCatalogParts(catalogData){
  const planner=src?.planner||src?.homelandPlanner||EMBEDDED_ANIIDEX_CATALOG.planner;
  return {hub,facts,text,planner};
 }
+const aniidexFormIndexCache=new WeakMap();
+function aniidexFormIndexes(forms){
+ if(!forms||typeof forms!=='object')return {byKey:new Map(),byVariant:new Map(),byPet:new Map()};
+ const cached=aniidexFormIndexCache.get(forms);if(cached)return cached;
+ const byKey=new Map(),byVariant=new Map(),byPet=new Map();
+ const entries=Array.isArray(forms)?forms.map((fr,i)=>[String(i),fr]):Object.entries(forms);
+ for(const [key,fr] of entries){
+   if(!fr)continue;
+   byKey.set(String(key),fr);
+   if(fr.variant!=null)byVariant.set(String(fr.variant),fr);
+   if(fr.pet!=null)byPet.set(String(fr.pet),fr);
+ }
+ const out={byKey,byVariant,byPet};aniidexFormIndexCache.set(forms,out);return out;
+}
 function aniidexFormFactById(forms,formId){
  if(!forms)return null;
- const direct=forms[String(formId)]??forms[formId];if(direct)return direct;
  const id=String(formId??'');
- const rows=Array.isArray(forms)?forms:Object.values(forms);
- return rows.find(fr=>String(fr?.variant??'')===id)||rows.find(fr=>String(fr?.pet??'')===id)||null;
+ const idx=aniidexFormIndexes(forms);
+ return idx.byKey.get(id)||idx.byVariant.get(id)||idx.byPet.get(id)||null;
+}
+function aniidexHasLiveForms(catalogData){
+ const hub=catalogData?.hub||catalogData?.homelandHub||catalogData?.homeland;
+ const facts=hub?.facts||catalogData?.facts;
+ return !!(facts?.forms&&Object.keys(facts.forms).length);
 }
 function aniidexSparklingAppearance(code){
  const n=Number(code)||0;
@@ -37,12 +55,24 @@ function decodeAniidexForm(formId,catalogData){
  }
  return {name:vr?.name||fr.name||`Form ${formId}`,form:vr?.form||fr.form||'',skills,variant:fr.variant,prismana:!!fr.prismana,oneLine:!!fr.oneLine,path:fr.path||'',raw:fr};
 }
+function decodeAniidexFormPreferred(formId,catalogData=null){
+ if(catalogData&&catalogData!==EMBEDDED_ANIIDEX_CATALOG&&aniidexHasLiveForms(catalogData)){
+   const live=decodeAniidexForm(formId,catalogData);if(live)return {...live,catalogSource:'aniidex-live'};
+ }
+ const embedded=decodeAniidexForm(formId,EMBEDDED_ANIIDEX_CATALOG);
+ return embedded?{...embedded,catalogSource:'aniidex-embedded'}:null;
+}
+function aniidexBundleCatalog(data){
+ if(data?.planner&&aniidexHasLiveForms(data.planner))return data.planner;
+ if(data?.catalog&&Object.keys(data.catalog||{}).length)return data.catalog;
+ return EMBEDDED_ANIIDEX_CATALOG;
+}
 function importedWorkerFromAniidex(a,catalogData=null){
  const w=defaultWorker();
- const decoded=decodeAniidexForm(a.form,catalogData||EMBEDDED_ANIIDEX_CATALOG);
+ const decoded=decodeAniidexFormPreferred(a.form,catalogData);
  const preset=catalogEntries().find(c=>String(c.formId||'')===String(a.form));
  if(decoded){
-   w.name=decoded.name;w.form=decoded.form||'';w.catalogSource='aniidex-catalog';
+   w.name=decoded.name;w.form=decoded.form||'';w.catalogSource=decoded.catalogSource||'aniidex-catalog';
    w.formId=String(decoded.variant||a.form||'');
    w.abilities=decoded.skills.map(x=>({type:x.type,level:x.level}));while(w.abilities.length<3)w.abilities.push({type:'',level:1});
    w.portrait=`https://aniidex.com/images/aniimo/UI_PetHead_${decoded.variant||a.form}.webp`;
@@ -227,7 +257,7 @@ window.addEventListener('message',event=>{
      const data=msg.bundle||{};
      const profileData=data.profile||{};
      const homeData=data.homeland||{};
-     const sum=applyAniidexImportedData(profileData,homeData,'Aniidx direct sync',EMBEDDED_ANIIDEX_CATALOG);
+     const sum=applyAniidexImportedData(profileData,homeData,'Aniidx direct sync',aniidexBundleCatalog(data));
      if(!sum){setAniidexCompanionMessage('Aniidx sync received; import was cancelled.');return;}
      setAniidexCompanionMessage(`Direct Aniidx sync complete ✓ ${sum.name||'Player'} • RV ${sum.rv} • ${sum.aniimo} Homeland Aniimo • ${sum.facilities} facility pieces • ${sum.caught||0} caught forms`);
      renderImportTab();
@@ -237,7 +267,7 @@ window.addEventListener('message',event=>{
  }
 });
 function aniidexBookmarkletCode(){
- const code=`(async()=>{try{if(!/(^|\\.)aniidex\\.com$/i.test(location.hostname)){alert('Aniimo Homeland Sync must run on aniidex.com.\\n\\nAniidex Homeland will open now. Once it finishes loading, click the Aniimo Homeland Sync bookmark again.');location.href='https://aniidex.com/homeland/';return;}const uid=prompt('Aniimo UID to sync:');if(!uid)return;if(!/^\\d{8,16}$/.test(String(uid).trim())){alert('Please enter a numeric Aniimo UID.');return;}const get=async(u,o)=>{const r=await fetch(u,o);if(!r.ok)throw new Error(u+' HTTP '+r.status);return r.json()};const clean=String(uid).trim();let stage='player context';const profile=await get('/api/player/'+encodeURIComponent(clean),{headers:{Accept:'application/json'}});await new Promise(r=>setTimeout(r,250));stage='Homeland snapshot';const homeland=await get('/api/player/home-import',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json','X-Aniidex-Request':'1'},body:JSON.stringify({uid:clean})});const bundle={format:'aniimo-homeland-sync-v3',capturedAt:new Date().toISOString(),source:'aniidex.com',uid:clean,profile:profile||{},homeland,warnings:[]};const b=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='Aniimo_Homeland_'+clean+'_'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);alert('Aniimo Homeland sync downloaded.\\n\\nLoad that JSON in the planner Import / Sync tab.');}catch(e){alert('Aniimo sync failed while loading '+(typeof stage==='string'?stage:'Aniidex data')+': '+(e&&e.message||e)+'\\n\\nOpen https://aniidex.com/homeland/, make sure you are signed in, load that player on Aniidex if needed, then click the sync bookmark again.');}})()`;
+ const code=`(async()=>{try{if(!/(^|\\.)aniidex\\.com$/i.test(location.hostname)){alert('Aniimo Homeland Sync must run on aniidex.com.\\n\\nAniidex Homeland will open now. Once it finishes loading, click the Aniimo Homeland Sync bookmark again.');location.href='https://aniidex.com/homeland/';return;}const uid=prompt('Aniimo UID to sync:');if(!uid)return;if(!/^\\d{8,16}$/.test(String(uid).trim())){alert('Please enter a numeric Aniimo UID.');return;}const get=async(u,o)=>{const r=await fetch(u,o);if(!r.ok)throw new Error(u+' HTTP '+r.status);return r.json()};const clean=String(uid).trim(),warnings=[];let stage='player context';const profile=await get('/api/player/'+encodeURIComponent(clean),{headers:{Accept:'application/json'}});await new Promise(r=>setTimeout(r,250));stage='Homeland snapshot';const homeland=await get('/api/player/home-import',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json','X-Aniidex-Request':'1'},body:JSON.stringify({uid:clean})});let planner=null;stage='Homeland reference data';try{planner=await get('/api/homeland/planner',{headers:{Accept:'application/json'},cache:'no-store'});}catch(e){warnings.push('Live planner reference unavailable; embedded decoder fallback will be used: '+(e&&e.message||e));}const bundle={format:'aniimo-homeland-sync-v4',capturedAt:new Date().toISOString(),source:'aniidex.com',uid:clean,profile:profile||{},homeland,planner,warnings};const b=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='Aniimo_Homeland_'+clean+'_'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);alert('Aniimo Homeland sync downloaded.\\n\\nLoad that JSON in the planner Import / Sync tab.');}catch(e){alert('Aniimo sync failed while loading '+(typeof stage==='string'?stage:'Aniidex data')+': '+(e&&e.message||e)+'\\n\\nOpen https://aniidex.com/homeland/, make sure you are signed in, load that player on Aniidex if needed, then click the sync bookmark again.');}})()`;
  return 'javascript:'+code.replace(/\\n+/g,' ');
 }
 async function importAniidexSyncFile(file){
@@ -246,7 +276,8 @@ async function importAniidexSyncFile(file){
  try{
   const data=JSON.parse(await file.text());
   let profileData,homeData,catalogData=null;
-  if(data?.format==='aniimo-homeland-sync-v3'){profileData=data.profile||{};homeData=data.homeland;catalogData=EMBEDDED_ANIIDEX_CATALOG;}
+  if(data?.format==='aniimo-homeland-sync-v4'){profileData=data.profile||{};homeData=data.homeland;catalogData=aniidexBundleCatalog(data);}
+  else if(data?.format==='aniimo-homeland-sync-v3'){profileData=data.profile||{};homeData=data.homeland;catalogData=EMBEDDED_ANIIDEX_CATALOG;}
   else if(data?.format==='aniimo-homeland-sync-v2'){profileData=data.profile||{};homeData=data.homeland;catalogData=data.catalog||EMBEDDED_ANIIDEX_CATALOG;}
   else if(data?.format==='aniimo-homeland-sync-v1'){profileData=data.profile||{};homeData=data.homeland;catalogData=EMBEDDED_ANIIDEX_CATALOG;}
   else if(data?.profile&&data?.homeland){profileData=data.profile||{};homeData=data.homeland;catalogData=data.catalog||EMBEDDED_ANIIDEX_CATALOG;}
