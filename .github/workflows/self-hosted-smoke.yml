@@ -86,9 +86,9 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.14.1' index.html
-          grep -q 'js/views.js?v=30.14.0' index.html
-          grep -q 'js/importer.js?v=30.14.6' index.html
+          grep -q 'css/app.css?v=30.15.0' index.html
+          grep -q 'js/views.js?v=30.15.0' index.html
+          grep -q 'js/importer.js?v=30.15.0' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
@@ -111,11 +111,25 @@ jobs:
           ! grep -q 'id="saveBtn"' index.html
           ! grep -q 'id="exportBtn"' index.html
           ! grep -q 'id="importBtn"' index.html
-          grep -q 'data-tab="progression">Progression</button><button data-tab="advisor">Advisor' index.html
+          grep -q 'data-tab="dashboard" class="active">Dashboard</button><button data-tab="map">Homeland Maker</button><button data-tab="progression">Progression</button><button data-tab="advisor">Advisor</button><button data-tab="roster">Imported Roster</button><button data-tab="suggestions">Suggestions</button><button data-tab="aniimos">Aniimos</button><button data-tab="production">Recipes</button><button data-tab="database">Database</button>' index.html
+          ! grep -q 'data-tab="import"' index.html
+          ! grep -q 'id="importPane"' index.html
+          grep -q 'Imported Roster / Job Advisor' index.html
           grep -q 'id="advisorRankMatrix"' index.html
           grep -q 'productionBrowserHead' js/views.js
+          grep -q "let activeMainTab='dashboard'" js/views.js
+          grep -q 'function abilityContributors' js/views.js
+          grep -q 'Home Ability Distribution' js/views.js
+          grep -q 'dashboardImport' js/views.js
+          grep -q 'Aniimo</th><th>Total levels</th><th>Current job demand' js/views.js
+          node --check js/views.js
           grep -q 'productionRecipeTable' css/app.css
+          grep -q 'dashboardImportHost' css/app.css
+          grep -q 'abilityContributorGrid' css/app.css
           grep -q 'function aniidexBookmarkletCode' js/importer.js
+          grep -q "setMainTab('dashboard')" js/importer.js
+          grep -q "function renderImportTab(targetId='dashboardImport'" js/importer.js
+          grep -q 'Dashboard Import / Sync section' js/importer.js
           grep -q 'Download Companion Extension' js/importer.js
           grep -q 'extension/download.html' js/importer.js
           grep -q 'downloads <b>only the extension</b>' js/importer.js
