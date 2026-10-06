@@ -82,12 +82,13 @@ jobs:
           test -s data/aniimo-stage-index.js
           test -s js/assets.js
           grep -q '<!doctype html>' index.html
-          grep -q '<title>Aniimo Homeland Offline Planner</title>' index.html
-          grep -q '<h1>Aniimo Homeland Offline Planner</h1>' index.html
-          ! grep -q '<title>Aniimo Homeland Offline Planner v' index.html
-          ! grep -q '<h1>Aniimo Homeland Offline Planner v' index.html
+          grep -q '<title>Aniimo Homeland Planner</title>' index.html
+          grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
+          ! grep -q '<title>Aniimo Homeland Planner v' index.html
+          ! grep -q '<h1>Aniimo Homeland Planner v' index.html
           grep -q 'css/app.css?v=30.13.4' index.html
           grep -q 'js/views.js?v=30.13.6' index.html
+          grep -q 'js/importer.js?v=30.14.0' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
@@ -126,6 +127,16 @@ jobs:
           console.log('Somniwing catalog entry OK');
           NODE
           node --check js/importer.js
+          test -s extension/manifest.json
+          test -s extension/background.js
+          test -s extension/planner-bridge.js
+          test -s extension/aniidex-isolated.js
+          test -s extension/aniidex-main.js
+          node --check extension/background.js
+          node --check extension/planner-bridge.js
+          node --check extension/aniidex-isolated.js
+          node --check extension/aniidex-main.js
+          node -e "JSON.parse(require('fs').readFileSync('extension/manifest.json','utf8')); console.log('Companion manifest OK')"
           node --check js/views.js
           node - <<'NODE'
           global.window=global;

@@ -72,6 +72,76 @@ function focusHomelandImporter(){setMainTab('import');setTimeout(()=>el('aniidex
 
 
 let importUiMessage='';
+let aniidexCompanionDetected=false;
+let aniidexCompanionTimer=null;
+
+function setAniidexCompanionMessage(message,isError=false){
+ importUiMessage=String(message||'');
+ const status=el('aniidexImportStatus');
+ if(status){
+   status.className=isError?'rightAlert':'rightGood';
+   status.textContent=importUiMessage;
+ }
+}
+
+function requestAniidexCompanionSync(){
+ const input=el('aniidexCompanionUid');
+ const uid=String(input?.value||'').trim();
+ if(!/^[1-9]\d{7,15}$/.test(uid)){
+   setAniidexCompanionMessage('Enter a valid numeric Aniimo UID first.',true);
+   return;
+ }
+ const btn=el('aniidexCompanionBtn');
+ if(btn)btn.disabled=true;
+ setAniidexCompanionMessage(aniidexCompanionDetected?'Connecting to Aniidx…':'Looking for the Aniimo Homeland Companion extension…');
+ window.postMessage({channel:'aniimo-homeland-planner',type:'ANIIMO_SYNC_REQUEST',uid},location.origin);
+ clearTimeout(aniidexCompanionTimer);
+ aniidexCompanionTimer=setTimeout(()=>{
+   if(!aniidexCompanionDetected){
+     if(btn)btn.disabled=false;
+     setAniidexCompanionMessage('Aniimo Homeland Companion was not detected. Install/load the extension from this repository, then refresh the planner.',true);
+   }
+ },1600);
+}
+
+window.addEventListener('message',event=>{
+ if(event.source!==window||event.origin!==location.origin)return;
+ const msg=event.data||{};
+ if(msg.channel!=='aniimo-homeland-companion')return;
+ if(msg.type==='ANIIMO_COMPANION_READY'){
+   aniidexCompanionDetected=true;
+   clearTimeout(aniidexCompanionTimer);
+   const badge=el('aniidexCompanionState');
+   if(badge){badge.textContent='Companion detected ✓';badge.className='okText';}
+   return;
+ }
+ if(msg.type==='ANIIMO_SYNC_STATUS'){
+   aniidexCompanionDetected=true;
+   clearTimeout(aniidexCompanionTimer);
+   setAniidexCompanionMessage(msg.message||'Connecting to Aniidx…',!!msg.error);
+   return;
+ }
+ if(msg.type==='ANIIMO_SYNC_RESULT'){
+   aniidexCompanionDetected=true;
+   clearTimeout(aniidexCompanionTimer);
+   const btn=el('aniidexCompanionBtn');if(btn)btn.disabled=false;
+   if(!msg.ok){
+     setAniidexCompanionMessage(msg.error||'Aniidx sync failed.',true);
+     return;
+   }
+   try{
+     const data=msg.bundle||{};
+     const profileData=data.profile||{};
+     const homeData=data.homeland||{};
+     const sum=applyAniidexImportedData(profileData,homeData,'Aniidx direct sync',EMBEDDED_ANIIDEX_CATALOG);
+     if(!sum){setAniidexCompanionMessage('Aniidx sync received; import was cancelled.');return;}
+     setAniidexCompanionMessage(`Direct Aniidx sync complete ✓ ${sum.name||'Player'} • RV ${sum.rv} • ${sum.aniimo} Homeland Aniimo • ${sum.facilities} facility pieces • ${sum.caught||0} caught forms`);
+     renderImportTab();
+   }catch(err){
+     setAniidexCompanionMessage('Direct Aniidx sync import failed: '+(err?.message||err),true);
+   }
+ }
+});
 function aniidexBookmarkletCode(){
  const code=`(async()=>{try{if(!/(^|\\.)aniidex\\.com$/i.test(location.hostname)){alert('Aniimo Homeland Sync must run on aniidex.com.\\n\\nAniidex Homeland will open now. Once it finishes loading, click the Aniimo Homeland Sync bookmark again.');location.href='https://aniidex.com/homeland/';return;}const uid=prompt('Aniimo UID to sync:');if(!uid)return;if(!/^\\d{8,16}$/.test(String(uid).trim())){alert('Please enter a numeric Aniimo UID.');return;}const get=async(u,o)=>{const r=await fetch(u,o);if(!r.ok)throw new Error(u+' HTTP '+r.status);return r.json()};const clean=String(uid).trim();let stage='player context';const profile=await get('/api/player/'+encodeURIComponent(clean),{headers:{Accept:'application/json'}});await new Promise(r=>setTimeout(r,250));stage='Homeland snapshot';const homeland=await get('/api/player/home-import',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json','X-Aniidex-Request':'1'},body:JSON.stringify({uid:clean})});const bundle={format:'aniimo-homeland-sync-v3',capturedAt:new Date().toISOString(),source:'aniidex.com',uid:clean,profile:profile||{},homeland,warnings:[]};const b=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='Aniimo_Homeland_'+clean+'_'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);alert('Aniimo Homeland sync downloaded.\\n\\nLoad that JSON in the planner Import / Sync tab.');}catch(e){alert('Aniimo sync failed while loading '+(typeof stage==='string'?stage:'Aniidex data')+': '+(e&&e.message||e)+'\\n\\nOpen https://aniidex.com/homeland/, make sure you are signed in, load that player on Aniidex if needed, then click the sync bookmark again.');}})()`;
  return 'javascript:'+code.replace(/\\n+/g,' ');
@@ -102,19 +172,24 @@ function downloadBookmarkletText(){
 function renderImportTab(){
  const root=el('importPane');if(!root)return;
  const meta=aniidexImportMeta, sum=meta?.summary||{};
- root.innerHTML=`<div class="v30Title">Import / Sync</div><div class="v30Sub">Keep imports out of the roster editor. The easiest offline workflow is a one-click bookmark helper on Aniիդex that downloads one sync file for this planner.</div>
- <div class="importSummary">${meta?`<span class="importChip">Last source: ${esc(meta.source||'Aniիդex')}</span><span class="importChip">${esc(sum.name||'Player')} • RV ${sum.rv||'?'}</span><span class="importChip">${sum.aniimo||0} Homeland Aniimo</span><span class="importChip">${sum.caught||0} caught forms</span>`:'<span class="importChip">No Aniիդex sync imported into this profile yet</span>'}</div>
- ${importUiMessage?`<div class="${/failed/i.test(importUiMessage)?'rightAlert':'rightGood'}" style="margin-top:10px">${esc(importUiMessage)}</div>`:''}
+ const directUid=esc(String(meta?.uid||''));
+ root.innerHTML=`<div class="v30Title">Import / Sync</div><div class="v30Sub">Sync a UID directly through the optional Aniimo Homeland Companion. The extension uses Aniidx's normal signed-in browser session and legitimate verification flow; it never exposes cookies or Turnstile tokens to the planner.</div>
+ <div class="importSummary">${meta?`<span class="importChip">Last source: ${esc(meta.source||'Aniidx')}</span><span class="importChip">${esc(sum.name||'Player')} • RV ${sum.rv||'?'}</span><span class="importChip">${sum.aniimo||0} Homeland Aniimo</span><span class="importChip">${sum.caught||0} caught forms</span>`:'<span class="importChip">No Aniidx sync imported into this profile yet</span>'}</div>
+ ${importUiMessage?`<div class="${/failed|not detected|invalid/i.test(importUiMessage)?'rightAlert':'rightGood'}" style="margin-top:10px">${esc(importUiMessage)}</div>`:''}
  <div class="importGrid" style="margin-top:12px">
-  <div class="importMethod"><h3>1. Easy Aniիդex Sync Helper</h3><div class="small">One-time setup. This bookmark runs while you are already on Aniիդex, so its same-origin API calls are allowed. It downloads one JSON file; it does not copy cookies or passwords into the planner. v30.5 also captures Aniիդex's public Homeland catalog so numeric form IDs can resolve to names, forms and Home abilities automatically.</div><ol class="importSteps"><li>Drag the button below to your bookmarks bar, or copy it into a new bookmark's URL.</li><li>Open Aniիդex → Homeland and let the page finish loading.</li><li>Click the bookmark and enter your UID. If you accidentally run it from the planner, it will take you to Aniիդex first; click the bookmark again after Aniիդex loads.</li><li>Load the downloaded JSON using the box to the right.</li></ol><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><a id="syncBookmarklet" class="bookmarkletLink" href="#" title="Drag this to your bookmarks bar. Clicking it here will only open Aniիդex.">Drag to Bookmarks: Aniimo Homeland Sync</a><button id="openAniidexBtn">Open Aniիդex Homeland</button><button id="copyBookmarkletBtn">Copy Bookmarklet</button><button id="downloadBookmarkletBtn">Download Instructions</button></div><details style="margin-top:10px"><summary>Show bookmarklet code</summary><textarea id="bookmarkletCode" class="bookmarkletCode" readonly></textarea></details></div>
-  <div class="importMethod"><h3>2. Load Sync File</h3><div class="syncDrop"><input type="file" id="aniidexSyncFile" accept="application/json,.json"><div class="small" style="margin-top:6px">Choose the <b>Aniimo_Homeland_...json</b> file downloaded by the helper. New v2 sync files include the public Homeland catalog, English labels and planner reference data so the roster can decode numeric form IDs immediately.</div></div><div class="small" style="margin-top:10px"><b>Import priority:</b> imported individual data → decoded Aniimo/form defaults → editable user overrides.</div></div>
+  <div class="importMethod"><h3>1. Direct Aniidx Sync (Companion)</h3><div class="small">Enter a UID here. The companion asks Aniidx to authorize the lookup, completes the normal <b>/api/player/pass</b> verification when required, then returns the player profile and Homeland snapshot directly to this planner. If Cloudflare requires interaction, the Aniidx tab is brought forward only for that verification.</div><div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-top:10px"><label style="min-width:230px">Aniimo UID<input id="aniidexCompanionUid" inputmode="numeric" autocomplete="off" value="${directUid}" placeholder="302000117964"></label><button class="primary" id="aniidexCompanionBtn">Import from Aniidx</button><span id="aniidexCompanionState" class="small">${aniidexCompanionDetected?'Companion detected ✓':'Companion extension required'}</span></div><div class="small" style="margin-top:8px">Extension source is included in this repo under <b>extension/</b>. Load it unpacked in Chrome/Edge once, then refresh this planner.</div></div>
+  <div class="importMethod"><h3>2. Bookmarklet Fallback</h3><div class="small">The existing same-origin helper remains available if you do not want to install the companion. It runs on Aniidx and downloads one JSON sync file without copying cookies or passwords into the planner.</div><ol class="importSteps"><li>Drag the button below to your bookmarks bar, or copy it into a new bookmark's URL.</li><li>Open Aniidx → Homeland and let the page finish loading.</li><li>Click the bookmark and enter your UID.</li><li>Load the downloaded JSON using the sync-file box.</li></ol><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><a id="syncBookmarklet" class="bookmarkletLink" href="#" title="Drag this to your bookmarks bar. Clicking it here will only open Aniidx.">Drag to Bookmarks: Aniimo Homeland Sync</a><button id="openAniidexBtn">Open Aniidx Homeland</button><button id="copyBookmarkletBtn">Copy Bookmarklet</button><button id="downloadBookmarkletBtn">Download Instructions</button></div><details style="margin-top:10px"><summary>Show bookmarklet code</summary><textarea id="bookmarkletCode" class="bookmarkletCode" readonly></textarea></details></div>
+  <div class="importMethod"><h3>3. Load Sync File</h3><div class="syncDrop"><input type="file" id="aniidexSyncFile" accept="application/json,.json"><div class="small" style="margin-top:6px">Choose an <b>Aniimo_Homeland_...json</b> file downloaded by the fallback helper.</div></div><div class="small" style="margin-top:10px"><b>Import priority:</b> imported individual data → decoded Aniimo/form defaults → editable user overrides.</div></div>
   <div id="aniidexImportStatus" class="small" style="margin:10px 0"></div>
-  <div class="importMethod"><h3>3. Advanced: Paste Network Responses</h3><div class="small">Fallback for troubleshooting. Paste the GET <b>/api/player/&lt;UID&gt;</b> response and POST <b>/api/player/home-import</b> response.</div><div class="copiedGrid" style="grid-template-columns:1fr;margin-top:8px"><label>Profile / Collection<textarea id="aniidexProfilePaste" placeholder='Paste response containing "profile" and "collection"'></textarea></label><label>Homeland<textarea id="aniidexHomePaste" placeholder='Paste response containing "home", "facilities" and "aniimo"'></textarea></label></div><div class="importActions"><button class="primary" id="aniidexPasteImportBtn">Import Copied Responses</button><button id="aniidexPasteClearBtn">Clear</button></div></div>
+  <div class="importMethod"><h3>4. Advanced: Paste Network Responses</h3><div class="small">Fallback for troubleshooting. Paste the GET <b>/api/player/&lt;UID&gt;</b> response and POST <b>/api/player/home-import</b> response.</div><div class="copiedGrid" style="grid-template-columns:1fr;margin-top:8px"><label>Profile / Collection<textarea id="aniidexProfilePaste" placeholder='Paste response containing "profile" and "collection"'></textarea></label><label>Homeland<textarea id="aniidexHomePaste" placeholder='Paste response containing "home", "facilities" and "aniimo"'></textarea></label></div><div class="importActions"><button class="primary" id="aniidexPasteImportBtn">Import Copied Responses</button><button id="aniidexPasteClearBtn">Clear</button></div></div>
  </div>`;
- const bm=aniidexBookmarkletCode();el('syncBookmarklet').href=bm;el('bookmarkletCode').value=bm;el('syncBookmarklet').onclick=(e)=>{e.preventDefault();importUiMessage='Opened Aniիդex Homeland. Once it finishes loading, click the Aniimo Homeland Sync bookmark from your browser bookmarks bar.';window.open('https://aniidex.com/homeland/','_blank');renderImportTab()};el('openAniidexBtn').onclick=()=>window.open('https://aniidex.com/homeland/','_blank');
+ const bm=aniidexBookmarkletCode();el('syncBookmarklet').href=bm;el('bookmarkletCode').value=bm;el('syncBookmarklet').onclick=(e)=>{e.preventDefault();importUiMessage='Opened Aniidx Homeland. Once it finishes loading, click the Aniimo Homeland Sync bookmark from your browser bookmarks bar.';window.open('https://aniidex.com/homeland/','_blank');renderImportTab()};el('openAniidexBtn').onclick=()=>window.open('https://aniidex.com/homeland/','_blank');
+ el('aniidexCompanionBtn').onclick=requestAniidexCompanionSync;
+ el('aniidexCompanionUid').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();requestAniidexCompanionSync();}});
  el('copyBookmarkletBtn').onclick=async()=>{try{await navigator.clipboard.writeText(bm);importUiMessage='Bookmarklet copied. Create a bookmark and paste it into the URL/location field.';}catch{importUiMessage='Clipboard permission was blocked. Open “Show bookmarklet code” and copy it manually.';}renderImportTab()};
  el('downloadBookmarkletBtn').onclick=downloadBookmarkletText;
  el('aniidexSyncFile').onchange=e=>importAniidexSyncFile(e.target.files?.[0]);
  el('aniidexPasteImportBtn').onclick=importAniidexPastedResponses;
  el('aniidexPasteClearBtn').onclick=()=>{el('aniidexProfilePaste').value='';el('aniidexHomePaste').value='';};
+ window.postMessage({channel:'aniimo-homeland-planner',type:'ANIIMO_COMPANION_PING'},location.origin);
 }
