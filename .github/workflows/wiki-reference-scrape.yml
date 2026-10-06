@@ -2,12 +2,6 @@ name: Build Official Wiki Homeland Reference
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - work/wiki-homeland-scraper
-    paths:
-      - tools/scrape-aniimo-wiki.js
-      - .github/workflows/wiki-reference-scrape.yml
 
 permissions:
   contents: write
@@ -42,6 +36,13 @@ jobs:
           if((d.counts?.species||0)<70) throw new Error('Too few species: '+d.counts?.species);
           if((d.counts?.forms||0)<70) throw new Error('Too few forms: '+d.counts?.forms);
           if((d.counts?.formsWithAbilities||0)<60) throw new Error('Too few forms with abilities: '+d.counts?.formsWithAbilities);
+          if((d.counts?.unknownAbilityIds||0)!==0) throw new Error('Unknown ability ids: '+d.counts.unknownAbilityIds);
+          if((d.counts?.abilitiesMissingLevel||0)!==0) throw new Error('Missing ability levels: '+d.counts.abilitiesMissingLevel);
+          if((d.warnings||[]).length) throw new Error('Scraper warnings: '+d.warnings.join(' | '));
+          const glacy=d.species.find(s=>s.name==='Glacy');
+          const gp=glacy?.forms.find(f=>f.slug==='prismana-form');
+          const sig=(gp?.homelandAbilities||[]).map(a=>a.type+':'+a.level).sort().join(',');
+          if(sig!=='Hauling:4,Light:3,Water:4') throw new Error('Glacy Prismana sentinel mismatch: '+sig);
           console.log(d.counts);
           console.log('warnings',d.warnings?.length||0);
           NODE
