@@ -123,6 +123,8 @@ jobs:
           grep -q 'databaseAniimoFixed' css/app.css
           grep -q 'databaseHeaderTable' js/views.js
           grep -q 'databaseBodyScroll' js/views.js
+          grep -q 'databaseFamilySection' js/views.js
+          grep -q 'databaseFamilyBodyScroll' js/views.js
           node - <<'NODE'
           global.window=global;
           require('./data/homeland-reference-data.js');
