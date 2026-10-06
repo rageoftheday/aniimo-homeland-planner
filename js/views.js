@@ -10,6 +10,69 @@ let aniimosRankMin=Number(localStorage.getItem('aniimosRankMin')||1);
 let aniimosRankScope=localStorage.getItem('aniimosRankScope')||'all';
 // v30 tab shell and full-screen views
 let activeMainTab='dashboard';
+let homelandPlannerMode=localStorage.getItem('homelandPlannerMode')||'overview';
+let homelandFocusedPlot=Number(localStorage.getItem('homelandFocusedPlot')||1);
+const HOMELAND_PLOT_UNLOCKS={
+ 1:{rv:1,cost:0},2:{rv:2,cost:2000},3:{rv:3,cost:4000},4:{rv:4,cost:6000},
+ 5:{rv:5,cost:14000},6:{rv:6,cost:19000},7:{rv:7,cost:38000},8:{rv:8,cost:46000},
+ 9:{rv:9,cost:72000},10:{rv:10,cost:80000},11:{rv:11,cost:110000},12:{rv:12,cost:170000},
+ 13:{rv:13,cost:200000},14:{rv:14,cost:240000},15:{rv:15,cost:270000},16:{rv:16,cost:390000}
+};
+function homelandPlotDef(n){return plotDefs.find(p=>p.n===Number(n))}
+function homelandPlotObjects(n){
+ const p=homelandPlotDef(n);if(!p)return[];
+ return objects.filter(o=>{const cx=o.x+o.w/2,cy=o.y+o.h/2;return cx>=p.x&&cx<p.x+20&&cy>=p.y&&cy<p.y+15});
+}
+function homelandObjectTitle(o){return o.cropName||o.recipeName||o.label||o.name}
+function homelandPlotRole(n){
+ const rows=homelandPlotObjects(n);if(!rows.length)return 'Free';
+ const farms=rows.filter(o=>o.name==='Farmland').length,woods=rows.filter(o=>o.name==='Woodland').length,mines=rows.filter(o=>o.name==='Mine').length;
+ const stations=rows.filter(o=>recipeDB[o.name]?.length).length;
+ if(farms>=Math.max(2,rows.length*.45))return 'Fields';
+ if(woods>=Math.max(2,rows.length*.4))return 'Groves';
+ if(mines>=Math.max(1,rows.length*.35))return 'Mines';
+ if(stations>=Math.max(2,rows.length*.4))return 'Workshop';
+ return rows.length===1?'Idle':'Mixed';
+}
+function setHomelandPlannerMode(mode,plot){
+ homelandPlannerMode=mode;
+ if(plot!=null)homelandFocusedPlot=Number(plot)||1;
+ localStorage.setItem('homelandPlannerMode',homelandPlannerMode);
+ localStorage.setItem('homelandFocusedPlot',String(homelandFocusedPlot));
+ renderHomelandPlannerV2();
+}
+function homelandMiniObject(o,p,big=false){
+ const l=Math.max(0,o.x-p.x),t=Math.max(0,o.y-p.y);
+ const title=homelandObjectTitle(o),lv=o.facilityLevel||o.placedLevel||'';
+ return `<button type="button" class="hpv2Obj${big?' big':''}" data-hpv2-object="${o.id}" title="${esc(title)}${lv?' · Lv'+lv:''}" style="left:${l/20*100}%;top:${t/15*100}%;width:${Math.min(o.w,20)/20*100}%;height:${Math.min(o.h,15)/15*100}%"><span>${esc((title||o.name||'?').slice(0,1))}</span>${big&&lv?`<b>Lv${lv}</b>`:''}</button>`;
+}
+function renderHomelandPlannerV2(){
+ const map=el('mapPane');if(!map)return;
+ let root=el('homelandPlannerV2');
+ if(!root){root=document.createElement('div');root.id='homelandPlannerV2';map.insertBefore(root,map.firstChild)}
+ const toolbar=map.querySelector('.toolbar'),viewport=el('mapViewport'),legend=map.querySelector('.legend');
+ const legacy=homelandPlannerMode==='legacy';
+ if(toolbar)toolbar.hidden=!legacy;if(viewport)viewport.hidden=!legacy;if(legend)legend.hidden=!legacy;
+ if(legacy){
+   root.innerHTML=`<div class="hpv2ModeBar"><button onclick="setHomelandPlannerMode('overview')">← New Overview</button><div><b>Legacy Board</b><span>Existing 80×60 editor preserved while the new planner is built.</span></div></div>`;
+   return;
+ }
+ const modeBar=`<div class="hpv2ModeBar"><div><b>Homeland Planner</b><span>Overview first · click an open plot to focus its 20×15 workspace.</span></div><div class="hpv2ModeActions"><button class="${homelandPlannerMode==='overview'?'active':''}" onclick="setHomelandPlannerMode('overview')">All Plots</button><button class="${homelandPlannerMode==='plot'?'active':''}" onclick="setHomelandPlannerMode('plot',homelandFocusedPlot)">Plot Editor</button><button onclick="setHomelandPlannerMode('legacy')">Legacy Board</button></div></div>`;
+ if(homelandPlannerMode==='plot'){
+   const n=homelandFocusedPlot,p=homelandPlotDef(n)||homelandPlotDef(1),rows=homelandPlotObjects(n),unlock=HOMELAND_PLOT_UNLOCKS[n]||{};
+   root.innerHTML=modeBar+`<div class="hpv2FocusHead"><button onclick="setHomelandPlannerMode('overview')">← All Plots</button><div><h3>Plot ${n} · ${esc(homelandPlotRole(n))}</h3><span>${rows.length} placed object${rows.length===1?'':'s'} · 20×15 squares</span></div><div class="hpv2FocusMeta">RV ${unlock.rv||'—'} · ${Number(unlock.cost||0).toLocaleString()} HC unlock</div></div><div class="hpv2FocusGrid"><div class="hpv2GridLines"></div>${rows.map(o=>homelandMiniObject(o,p,true)).join('')}</div><div class="hpv2FocusFoot"><span>Click a tile to select it in the existing Details inspector.</span><button onclick="setHomelandPlannerMode('legacy')">Open precision board</button></div>`;
+ }else{
+   const cards=plotDefs.map(p=>{
+     const open=isPlotOpen(p.n),rows=homelandPlotObjects(p.n),u=HOMELAND_PLOT_UNLOCKS[p.n]||{},role=homelandPlotRole(p.n);
+     if(!open)return `<button class="hpv2PlotCard locked" data-hpv2-locked="${p.n}"><div class="hpv2Lock">🔒</div><b>Plot ${p.n}</b><span>RV ${u.rv||'—'} · ${Number(u.cost||0).toLocaleString()} HC</span></button>`;
+     return `<button class="hpv2PlotCard open" data-hpv2-plot="${p.n}"><div class="hpv2PlotTitle"><b>Plot ${p.n}</b><span>${esc(role)}</span></div><div class="hpv2MiniGrid"><div class="hpv2GridLines"></div>${rows.slice(0,50).map(o=>homelandMiniObject(o,p)).join('')}</div><div class="hpv2PlotFoot"><span>${rows.length?rows.length+' placed':'Nothing planned'}</span><strong>Open ›</strong></div></button>`;
+   }).join('');
+   root.innerHTML=modeBar+`<div class="hpv2Summary"><div><b>Home Overview</b><span>RV ${rvLevel.value} · ${openPlots.size} / 16 plots open · ${objects.length} placed objects</span></div><div class="hpv2SummaryHint">Locked cards show the reference RV + Home Coin unlock.</div></div><div class="hpv2PlotGrid">${cards}</div>`;
+ }
+ root.querySelectorAll('[data-hpv2-plot]').forEach(b=>b.addEventListener('click',()=>setHomelandPlannerMode('plot',b.dataset.hpv2Plot)));
+ root.querySelectorAll('[data-hpv2-object]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();selected=Number(b.dataset.hpv2Object);render();}));
+ root.querySelectorAll('[data-hpv2-locked]').forEach(b=>b.addEventListener('click',()=>{const n=Number(b.dataset.hpv2Locked),u=HOMELAND_PLOT_UNLOCKS[n]||{};b.title=`Plot ${n}: unlock reference RV ${u.rv||'—'}, ${Number(u.cost||0).toLocaleString()} HC`;}));
+}
 function setMainTab(tab){
  activeMainTab=tab;document.querySelectorAll('#mainTabs [data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));document.querySelectorAll('.tabPane').forEach(p=>p.classList.toggle('active',p.id===tab+'Pane'));
  if(tab==='map')setTimeout(()=>{if(el('autoFit')?.checked)fitBoard()},30);
@@ -552,4 +615,4 @@ function renderDatabaseTab(){
  </div>
  </div></div>`;
 }
-function renderV30Views(){renderRightQuickStats();if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='suggestions')renderSuggestionsTab();else if(activeMainTab==='progression')renderProgressionTab();else if(activeMainTab==='database')renderDatabaseTab();}
+function renderV30Views(){renderRightQuickStats();if(activeMainTab==='map')renderHomelandPlannerV2();else if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='suggestions')renderSuggestionsTab();else if(activeMainTab==='progression')renderProgressionTab();else if(activeMainTab==='database')renderDatabaseTab();}
