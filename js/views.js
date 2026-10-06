@@ -1,9 +1,13 @@
 let aniimosBrowseQuery='';
 let aniimosImageFit=localStorage.getItem('aniimosImageFit')||'contain';
 let aniimosImageSize=localStorage.getItem('aniimosImageSize')||'medium';
-let aniimosViewMode=localStorage.getItem('aniimosViewMode')||'browse';
+let aniimosViewMode=localStorage.getItem('aniimosViewMode')||'collection';
+if(aniimosViewMode==='browse')aniimosViewMode='collection';
+let aniimosSelectedName=localStorage.getItem('aniimosSelectedName')||'';
+let aniimosCollectionFilter=localStorage.getItem('aniimosCollectionFilter')||'all';
 let aniimosRankAbility=localStorage.getItem('aniimosRankAbility')||'Hauling';
 let aniimosRankMin=Number(localStorage.getItem('aniimosRankMin')||1);
+let aniimosRankScope=localStorage.getItem('aniimosRankScope')||'all';
 // v30 tab shell and full-screen views
 let activeMainTab='dashboard';
 function setMainTab(tab){
@@ -104,6 +108,10 @@ function renderAniimosTab(){
    return bf?.form||'Basic Form';
  };
  const actualStageFor=name=>stageIndex[stageNameFor(name)]||null;
+ const collectionPayload=aniidexImportMeta?.profile?.profile?.collection||aniidexImportMeta?.profile?.collection||null;
+ const caughtIds=new Set(Array.isArray(collectionPayload?.caught_pet_ids)?collectionPayload.caught_pet_ids.map(x=>String(x)):[]);
+ const collectionLoaded=Array.isArray(collectionPayload?.caught_pet_ids);
+ const wikiNorm=v=>window.WikiHomeland?.normalize?.(v)||String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
  const formEntriesFor=name=>{
    const baseAsset=stageNameFor(name);
    const entries=Object.entries(stageIndex[baseAsset]||{}).map(([id,apps])=>({
@@ -118,6 +126,25 @@ function renderAniimosTab(){
    }
    return entries;
  };
+ const localFormForWiki=(name,wf)=>{
+   const local=formEntriesFor(name);
+   const target=wikiNorm(wf?.label||wf?.slug||'');
+   let hit=local.find(f=>wikiNorm(f.label)===target);
+   if(!hit&&/prismana/i.test(wf?.slug||wf?.label||''))hit=local.find(f=>/prismana/i.test(f.label||''));
+   if(!hit&&/(basic|base)/i.test(wf?.slug||wf?.label||''))hit=local.find(f=>/(basic|base)/i.test(f.label||''));
+   return hit||null;
+ };
+ const wikiFormState=(name,wf)=>{
+   const local=localFormForWiki(name,wf),id=local?.id?String(local.id):'';
+   return {local,id,known:!!id,caught:!!id&&caughtIds.has(id)};
+ };
+ const wikiSpeciesState=ws=>{
+   const forms=(ws?.forms||[]).map(wf=>({...wikiFormState(ws.name,wf),wiki:wf}));
+   const known=forms.filter(f=>f.known),caught=known.filter(f=>f.caught);
+   const prismana=forms.find(f=>/prismana/i.test(f.wiki?.slug||f.wiki?.label||''));
+   return {forms,known:known.length,caught:caught.length,total:forms.length,complete:known.length>0&&caught.length===known.length,prismana};
+ };
+ const rosterCopiesFor=name=>workers.filter(w=>wikiNorm(w.name)===wikiNorm(name));
  const roster=(speciesData.species||[]).map(s=>({...s,releaseStatus:unavailableDex.has(String(s.dex))?'unavailable':'released'}));
  const rosterNames=new Set(roster.map(s=>stageNameFor(s.name)));
  for(const imageName of Object.keys(stageIndex)){
