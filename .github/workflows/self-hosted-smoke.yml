@@ -172,6 +172,7 @@ jobs:
           grep -q 'aniimosImageSize' js/views.js
           grep -q 'Image fit' js/views.js
           grep -q 'Appearance' js/views.js
+          grep -q "ids.length>1" js/views.js
           grep -q "unavailableDex=new Set" js/views.js
           grep -q 'aniimosGrid' css/app.css
           grep -q 'databaseBrowserHead' js/views.js
