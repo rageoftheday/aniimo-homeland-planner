@@ -662,6 +662,15 @@ function catalogKey(c){return c.name+'|'+(c.form||'')}
 function catalogEntries(){const seen=new Set(),out=[];for(const c of ANIIMO_CATALOG){const k=catalogKey(c);if(seen.has(k))continue;seen.add(k);out.push(c)}return out}
 function addCatalogWorker(c){const w=defaultWorker();w.name=c.name;w.form=c.form||'';w.family=c.family||'';w.catalogSource=c.source||'';w.appearance='Normal';w.abilities=(c.abilities||[]).map(a=>({type:a[0],level:a[1]}));while(w.abilities.length<3)w.abilities.push({type:'',level:1});const af=window.AniimoAssets?.form?.(w.name,w.form);if(af){w.formId=af.id;w.localPortrait='';}workers.push(w);render();}
 function familyIdForCatalog(c){if(c.family)return c.family;const n=(c.name||'').toLowerCase();for(const [id,f] of Object.entries(WORKER_FAMILIES))if(f.members.some(m=>m.toLowerCase()===n))return id;return ''}
+function catalogPortraitHTML(c){
+ const a=window.AniimoAssets?.form?.(c.name,c.form||'');
+ const candidates=window.AniimoAssets?.portraitCandidates?.(c.name,c.form||'','Normal','')||[];
+ const src=candidates[0]||a?.head||'';
+ if(!src)return esc(initialsFor(c.name));
+ const fallback=a?.head&&a.head!==src?a.head:'';
+ const onerr=fallback?`this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='block'};this.src='${esc(fallback)}'`:`this.style.display='none';this.nextElementSibling.style.display='block'`;
+ return `<img src="${esc(src)}" alt="${esc(c.name||'Aniimo')}" loading="lazy" decoding="async" onerror="${onerr}"><span style="display:none">${esc(initialsFor(c.name))}</span>`;
+}
 function renderAniimoCatalog(){
  const result=el('catalogResults');if(!result)return;const q=normalizeSearch(el('aniimoSearch')?.value||''),ab=el('abilityFilter')?.value||'',min=Number(el('levelFilter')?.value||1),fam=el('familyFilter')?.value||'';
  let rows=catalogEntries();
@@ -671,7 +680,7 @@ function renderAniimoCatalog(){
  else rows.sort((a,b)=>a.name.localeCompare(b.name)||(a.form||'').localeCompare(b.form||''));
  result.innerHTML='';
  if(!rows.length){result.innerHTML='<div class="small">No catalog match. Try a shorter spelling or use + Custom / Unknown.</div>';return}
- for(const c of rows.slice(0,120)){const d=document.createElement('div');d.className='catalogResult';const abs=(c.abilities||[]).length?(c.abilities||[]).map(a=>`${a[0]} Lv${a[1]}`).join(' • '):'Abilities not yet verified in offline catalog — editable after adding';const f=familyIdForCatalog(c);d.innerHTML=`<div class="catalogPortrait">${(()=>{const a=window.AniimoAssets?.form?.(c.name,c.form||'');return a?.head?`<img src="${esc(a.head)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none">${esc(initialsFor(c.name))}</span>`:esc(initialsFor(c.name))})()}</div><div class="catalogName">${esc(c.name)}${c.form?' — '+esc(c.form):''}</div><div class="catalogAbilities">${esc(abs)}</div><div class="catalogHint">${f&&ANIIMO_FAMILIES[f]?esc(ANIIMO_FAMILIES[f].label):f?'Family: '+esc(f):''}${(c.source==='official'?' • Official preset':c.source==='verified'?' • Verified preset':' • Name preset only')}</div>`;d.onclick=()=>addCatalogWorker(c);result.appendChild(d)}
+ for(const c of rows.slice(0,120)){const d=document.createElement('div');d.className='catalogResult';const abs=(c.abilities||[]).length?(c.abilities||[]).map(a=>`${a[0]} Lv${a[1]}`).join(' • '):'Abilities not yet verified in offline catalog — editable after adding';const f=familyIdForCatalog(c);d.innerHTML=`<div class="catalogPortrait">${catalogPortraitHTML(c)}</div><div class="catalogName">${esc(c.name)}${c.form?' — '+esc(c.form):''}</div><div class="catalogAbilities">${esc(abs)}</div><div class="catalogHint">${f&&ANIIMO_FAMILIES[f]?esc(ANIIMO_FAMILIES[f].label):f?'Family: '+esc(f):''}${(c.source==='official'?' • Official preset':c.source==='verified'?' • Verified preset':' • Name preset only')}</div>`;d.onclick=()=>addCatalogWorker(c);result.appendChild(d)}
 }
 
 let workers=[]; let workerIdCounter=1;
