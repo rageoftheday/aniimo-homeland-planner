@@ -944,9 +944,14 @@ function rebuildCropPicker(){
       return `<option value="${c.name}" ${unlocked?'':'disabled'}>${c.display||c.name} — ${c.coinPH.toLocaleString()} HC/h — ${reqLabels[c.req]}${unlocked?'':lockWhy}</option>`;
    }).join('');
  renderCropCards();
-}function addObject(item,x=21,y=1){
+}function addObject(item,x=null,y=null){
  const rv=+rvLevel.value,limit=maxCount(item,rv),dims=effectiveDims(item);
  if(!isUnlocked(item)||objects.filter(o=>o.name===item.name).length>=limit||dims.w<=0||dims.h<=0)return;
+ if(x==null||y==null){
+   const p=nextFree(dims.w,dims.h);
+   if(!p){if(startupStatus){startupStatus.textContent='No legal free space is available in the currently open plots.';startupStatus.style.color='#ffcb6b';}return;}
+   [x,y]=p;
+ }
  const obj={id:idCounter++,name:item.name,w:dims.w,h:dims.h,x,y,cls:item.cls||'',zone:item.zone||null,label:item.name,req:'none'};
  if(facilityLevels[item.name]&&facilityLevels[item.name].length){
    obj.facilityLevel=preferredPlaceLevel(item.name);
@@ -1649,7 +1654,7 @@ el('personalitySelect').addEventListener('change',()=>{const o=objects.find(x=>x
 el('clearRecipeBtn').addEventListener('click',()=>{const o=objects.find(x=>x.id===selected);clearRecipe(o)});
 rotateBtn.onclick=()=>{const o=objects.find(x=>x.id===selected);if(o){[o.w,o.h]=[o.h,o.w];render()}};
 deleteBtn.onclick=()=>{objects=objects.filter(x=>x.id!==selected);selected=null;render()};
-duplicateBtn.onclick=()=>{const o=objects.find(x=>x.id===selected);if(!o)return;const item=catalog.find(i=>i.name===o.name);if(!item)return;const lim=maxCount(item,+rvLevel.value);if(objects.filter(x=>x.name===o.name).length>=lim)return;objects.push({...o,id:idCounter++,x:o.x+.5,y:o.y+.5});selected=objects.at(-1).id;render()};
+duplicateBtn.onclick=()=>{const o=objects.find(x=>x.id===selected);if(!o)return;const item=catalog.find(i=>i.name===o.name);if(!item)return;const lim=maxCount(item,+rvLevel.value);if(objects.filter(x=>x.name===o.name).length>=lim)return;const p=nextFree(o.w,o.h);if(!p){if(startupStatus){startupStatus.textContent='No legal free space is available for a duplicate in the currently open plots.';startupStatus.style.color='#ffcb6b';}return;}objects.push({...o,id:idCounter++,x:p[0],y:p[1]});selected=objects.at(-1).id;render()};
 
 function nextFree(w,h){for(let y=0;y<=60-h;y+=.5)for(let x=0;x<=80-w;x+=.5){const t={id:-1,x,y,w,h};if(validArea(t)&&!collide(t))return[x,y]}return null}
 addAllBtn.onclick=()=>{for(const item of catalog.filter(isUnlocked)){const lim=maxCount(item,+rvLevel.value),d=effectiveDims(item);if(d.w<=0||d.h<=0)continue;while(objects.filter(o=>o.name===item.name).length<lim){const p=nextFree(d.w,d.h);if(!p)break;{const obj={id:idCounter++,name:item.name,w:d.w,h:d.h,x:p[0],y:p[1],cls:item.cls||'',zone:item.zone||null,label:item.name,req:'none'};if(facilityLevels[item.name]&&facilityLevels[item.name].length){obj.facilityLevel=preferredPlaceLevel(item.name);obj.targetLevel=obj.facilityLevel;obj.placedLevel=obj.facilityLevel;obj.placementCost=directPlacementCost(item.name,obj.facilityLevel)}objects.push(obj)}}}selected=null;render()};
