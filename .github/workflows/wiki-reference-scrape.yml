@@ -1,0 +1,59 @@
+name: Build Official Wiki Homeland Reference
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - work/wiki-homeland-scraper
+    paths:
+      - tools/scrape-aniimo-wiki.js
+      - .github/workflows/wiki-reference-scrape.yml
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Syntax check scraper
+        run: node --check tools/scrape-aniimo-wiki.js
+
+      - name: Scrape official Wiki
+        env:
+          ANIIMO_WIKI_DELAY_MS: '160'
+        run: node tools/scrape-aniimo-wiki.js
+
+      - name: Validate generated reference
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('data/official-wiki-homeland.json','utf8'));
+          if(d.format!=='aniimo-official-wiki-homeland-v1') throw new Error('Unexpected format');
+          if((d.counts?.species||0)<70) throw new Error('Too few species: '+d.counts?.species);
+          if((d.counts?.forms||0)<70) throw new Error('Too few forms: '+d.counts?.forms);
+          if((d.counts?.formsWithAbilities||0)<60) throw new Error('Too few forms with abilities: '+d.counts?.formsWithAbilities);
+          console.log(d.counts);
+          console.log('warnings',d.warnings?.length||0);
+          NODE
+
+      - name: Commit refreshed reference
+        run: |
+          if git diff --quiet -- data/official-wiki-homeland.json data/official-wiki-homeland.js; then
+            echo "Reference data unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/official-wiki-homeland.json data/official-wiki-homeland.js
+          git commit -m "Refresh official Wiki Homeland reference"
+          git push
