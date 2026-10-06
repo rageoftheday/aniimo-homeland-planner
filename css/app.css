@@ -359,3 +359,17 @@ header{align-items:center}
 .advisorAniimoPill.prismana{border-color:#8a70c7;background:#2a2141;color:#e3d7ff}
 .advisorEmpty{font-size:10px;color:#738999}
 @media(max-width:1100px){.advisorRankGrid{grid-template-columns:repeat(5,170px)}}
+
+
+/* v30.15 dashboard-first navigation + embedded sync + ability distribution */
+.dashboardImportHost{background:#111e28;border:1px solid #30495d;border-radius:12px;padding:12px;margin-bottom:12px;scroll-margin-top:12px}
+.dashboardSyncHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px}
+.dashboardSyncHead h3{margin:2px 0 5px;font-size:15px}
+.dashboardSyncEyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.09em;font-weight:800;color:#8fd2ff}
+.abilityDistributionTable .abilityCountBtn{padding:4px 8px;font-size:11px;white-space:nowrap}
+.abilityContributorRow td{background:#0d1821;padding:0!important}
+.abilityContributorList{padding:9px 10px 11px}
+.abilityContributorGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px;margin-top:7px}
+.abilityContributor{display:flex;justify-content:space-between;gap:8px;text-align:left;align-items:center;padding:6px 8px;font-size:10px;background:#162a38;border:1px solid #304f64;border-radius:7px}
+.abilityContributor:hover{border-color:#72bfe9;background:#1b3547}
+.abilityContributor span{color:#a9c6da;white-space:nowrap}
