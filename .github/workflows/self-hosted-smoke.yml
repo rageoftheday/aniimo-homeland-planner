@@ -86,7 +86,7 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.14.0' index.html
+          grep -q 'css/app.css?v=30.14.1' index.html
           grep -q 'js/views.js?v=30.14.0' index.html
           grep -q 'js/importer.js?v=30.14.6' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
@@ -136,6 +136,8 @@ jobs:
           grep -q 'function appearancePreviewChoices' js/app.js
           grep -q 'data-appearance-choice' js/app.js
           grep -q 'appearancePreviewStrip' css/app.css
+          grep -q 'workerPortrait img{width:100%;height:100%;object-fit:contain' css/app.css
+          grep -q 'appearancePreview img{width:45px;height:45px;object-fit:contain' css/app.css
           grep -q 'catalogPortraitHTML(c)' js/app.js
           node --check js/app.js
           grep -q 'function renderAdvisorRankMatrix' js/app.js
