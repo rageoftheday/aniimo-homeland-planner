@@ -661,7 +661,35 @@ let catalogMode='all';
 function normalizeSearch(v){return String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
 function levenshtein(a,b){a=normalizeSearch(a);b=normalizeSearch(b);const m=a.length,n=b.length,d=Array.from({length:m+1},()=>Array(n+1).fill(0));for(let i=0;i<=m;i++)d[i][0]=i;for(let j=0;j<=n;j++)d[0][j]=j;for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][n]}
 function catalogKey(c){return c.name+'|'+(c.form||'')}
-function catalogEntries(){const seen=new Set(),out=[];for(const c of ANIIMO_CATALOG){const k=catalogKey(c);if(seen.has(k))continue;seen.add(k);out.push(c)}return out}
+function wikiCatalogEntries(){
+ const rows=[];
+ const species=window.WikiHomeland?.speciesList?.()||[];
+ for(const sp of species){
+   const family=familyIdForCatalog({name:sp.name});
+   for(const form of (sp.forms||[])){
+     rows.push({
+       name:sp.name,
+       form:/^(basic|base) form$/i.test(form.label||'')?'Base':(form.label||''),
+       family,
+       abilities:(form.homelandAbilities||[]).map(a=>[a.type,Number(a.level)||1]),
+       source:'official-wiki',
+       dex:sp.dex,
+       wikiUrl:form.url||sp.indexUrl||''
+     });
+   }
+ }
+ return rows;
+}
+function catalogEntries(){
+ const seen=new Set(),out=[];
+ for(const c of wikiCatalogEntries()){
+   const k=catalogKey(c);if(seen.has(k))continue;seen.add(k);out.push(c);
+ }
+ for(const c of ANIIMO_CATALOG){
+   const k=catalogKey(c);if(seen.has(k))continue;seen.add(k);out.push(c);
+ }
+ return out;
+}
 function addCatalogWorker(c){const w=defaultWorker();w.name=c.name;w.form=c.form||'';w.family=c.family||'';w.catalogSource=c.source||'';w.appearance='Normal';w.abilities=(c.abilities||[]).map(a=>({type:a[0],level:a[1]}));while(w.abilities.length<3)w.abilities.push({type:'',level:1});const af=window.AniimoAssets?.form?.(w.name,w.form);if(af){w.formId=af.id;w.localPortrait='';}workers.push(w);render();}
 function familyIdForCatalog(c){if(c.family)return c.family;const n=(c.name||'').toLowerCase();for(const [id,f] of Object.entries(WORKER_FAMILIES))if(f.members.some(m=>m.toLowerCase()===n))return id;return ''}
 function catalogPortraitHTML(c){
@@ -682,7 +710,7 @@ function renderAniimoCatalog(){
  else rows.sort((a,b)=>a.name.localeCompare(b.name)||(a.form||'').localeCompare(b.form||''));
  result.innerHTML='';
  if(!rows.length){result.innerHTML='<div class="small">No catalog match. Try a shorter spelling or use + Custom / Unknown.</div>';return}
- for(const c of rows){const d=document.createElement('div');d.className='catalogResult';const abs=(c.abilities||[]).length?(c.abilities||[]).map(a=>`${a[0]} Lv${a[1]}`).join(' • '):'Abilities not yet verified in offline catalog — editable after adding';const f=familyIdForCatalog(c);d.innerHTML=`<div class="catalogPortrait">${catalogPortraitHTML(c)}</div><div class="catalogName">${esc(c.name)}${c.form?' — '+esc(c.form):''}</div><div class="catalogAbilities">${esc(abs)}</div><div class="catalogHint">${f&&ANIIMO_FAMILIES[f]?esc(ANIIMO_FAMILIES[f].label):f?'Family: '+esc(f):''}${(c.source==='official'?' • Official preset':c.source==='verified'?' • Verified preset':' • Name preset only')}</div>`;d.onclick=()=>addCatalogWorker(c);result.appendChild(d)}
+ for(const c of rows){const d=document.createElement('div');d.className='catalogResult';const abs=(c.abilities||[]).length?(c.abilities||[]).map(a=>`${a[0]} Lv${a[1]}`).join(' • '):'Abilities not yet loaded — editable after adding';const f=familyIdForCatalog(c);const src=c.source==='official-wiki'?'Official Wiki':c.source==='official'?'Official preset':c.source==='verified'?'Cross-checked preset':'Name preset only';d.innerHTML=`<div class="catalogPortrait">${catalogPortraitHTML(c)}</div><div class="catalogName">${esc(c.name)}${c.form?' — '+esc(c.form):''}</div><div class="catalogAbilities">${esc(abs)}</div><div class="catalogHint">${f&&ANIIMO_FAMILIES[f]?esc(ANIIMO_FAMILIES[f].label):f?'Family: '+esc(f):''}${src?' • '+esc(src):''}</div>`;d.onclick=()=>addCatalogWorker(c);result.appendChild(d)}
 }
 
 let workers=[]; let workerIdCounter=1;
@@ -1056,7 +1084,7 @@ function renderRoster(){
       <div class="portraitHelp">Form changes can offer known defaults. Appearance is tracked separately; your in-game copy always wins.</div>
       ${appearancePreviewHTML(w)}
    </div></div>
-   <div class="workerMeta">${fam?`<span class="badge lock">${esc((ANIIMO_FAMILIES[fam]||WORKER_FAMILIES[fam]||{}).label||fam)}</span>`:''}${prot?'<span class="badge lock">🔒 Locked-In</span>':''}${assigned?`<span class="badge ok">Assigned: ${esc(assigned.name)}${assigned.recipeName?' — '+esc(assigned.recipeName):''}</span>`:''}${w.catalogSource?`<span class="badge ${w.catalogSource==='official'||w.catalogSource==='verified'?'ok':'warn'}">${w.catalogSource==='official'?'Official preset':w.catalogSource==='verified'?'Verified preset':'Editable preset'}</span>`:''}<span class="personalityCode">${esc(w.personality||'')}</span></div>`;
+   <div class="workerMeta">${fam?`<span class="badge lock">${esc((ANIIMO_FAMILIES[fam]||WORKER_FAMILIES[fam]||{}).label||fam)}</span>`:''}${prot?'<span class="badge lock">🔒 Locked-In</span>':''}${assigned?`<span class="badge ok">Assigned: ${esc(assigned.name)}${assigned.recipeName?' — '+esc(assigned.recipeName):''}</span>`:''}${w.catalogSource?`<span class="badge ${w.catalogSource==='official-wiki'||w.catalogSource==='official'||w.catalogSource==='verified'?'ok':'warn'}">${w.catalogSource==='official-wiki'?'Official Wiki':w.catalogSource==='official'?'Official preset':w.catalogSource==='verified'?'Verified preset':'Editable preset'}</span>`:''}<span class="personalityCode">${esc(w.personality||'')}</span></div>`;
    const ps=document.createElement('div');ps.className='personalityStrip';const code=String(w.personality||'');for(const letter of ['E','I','S','N','T','F','J','P']){const sp=document.createElement('span');sp.className='personalityLetter'+(code.includes(letter)?' on':'');sp.textContent=letter;sp.title=PERSONALITY_NAMES[letter];ps.appendChild(sp)}card.appendChild(ps);
    const rows=document.createElement('div');rows.className='abilityRows';
    for(let i=0;i<3;i++){const a=(w.abilities||[])[i]||{type:'',level:1};const r=document.createElement('div');r.className='abilityRow';r.innerHTML=`<select data-ai="${i}" data-af="type">${abilityOptions(a.type)}</select><select data-ai="${i}" data-af="level">${levelOptions(a.level)}</select>`;rows.appendChild(r)}
