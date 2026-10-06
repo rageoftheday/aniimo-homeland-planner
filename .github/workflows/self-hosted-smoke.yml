@@ -104,6 +104,18 @@ jobs:
           test -s data/official-wiki-homeland.js
           node --check js/wiki-homeland.js
           node - <<'NODE'
+          global.window=global;
+          require('./data/official-wiki-homeland.js');
+          require('./js/wiki-homeland.js');
+          const hauling=global.WikiHomeland.rankAbility('Hauling',4);
+          const glacy=hauling.find(x=>x.name==='Glacy');
+          if(!glacy||glacy.level!==4||!glacy.forms.some(f=>f.slug==='prismana-form')) throw new Error('Smart Hauling ranking failed for Glacy');
+          const leisure=global.WikiHomeland.rankAbility('Leisure',4);
+          const sherro=leisure.find(x=>x.name==='Sherro');
+          if(!sherro||sherro.level!==4) throw new Error('Smart Leisure ranking failed for Sherro');
+          console.log('Official Wiki smart ranking helpers OK');
+          NODE
+          node - <<'NODE'
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('data/official-wiki-homeland.json','utf8'));
           if(d.counts.species!==86) throw new Error('Unexpected Wiki species count '+d.counts.species);
