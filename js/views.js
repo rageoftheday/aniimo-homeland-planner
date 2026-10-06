@@ -49,6 +49,11 @@ function renderAniimosTab(){
  const stageIndex=window.ANIIMO_STAGE_INDEX||{};
  const unavailableDex=new Set(['084','085','086','087','088','089','090','091','092','093']);
  const stageNameFor=n=>({Hexxin:'Witchin'}[n]||n);
+ const hiddenImageOnly=new Set(['Jabster','Morphling','Fennelun','Soleon']);
+ const abilityImageForms={
+   Lunara:[{assetName:'Fennelun',id:'1037300',label:'Ability Form — Fennelun'}],
+   Helion:[{assetName:'Soleon',id:'1036300',label:'Ability Form — Soleon'}]
+ };
  const humanize=s=>String(s||'').replace(/-/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
  const formLabel=(name,id)=>{
    const mf=(manifest.aniimoForms||{})[id];
@@ -60,12 +65,24 @@ function renderAniimosTab(){
    return bf?.form||'Basic Form';
  };
  const actualStageFor=name=>stageIndex[stageNameFor(name)]||null;
+ const formEntriesFor=name=>{
+   const baseAsset=stageNameFor(name);
+   const entries=Object.entries(stageIndex[baseAsset]||{}).map(([id,apps])=>({
+     key:baseAsset+'|'+id,assetName:baseAsset,id,apps,label:formLabel(name,id)
+   }));
+   for(const extra of abilityImageForms[name]||[]){
+     const apps=stageIndex[extra.assetName]?.[extra.id]||[];
+     if(apps.length)entries.push({key:extra.assetName+'|'+extra.id,assetName:extra.assetName,id:extra.id,apps,label:extra.label});
+   }
+   return entries;
+ };
  const roster=(speciesData.species||[]).map(s=>({...s,releaseStatus:unavailableDex.has(String(s.dex))?'unavailable':'released'}));
  const rosterNames=new Set(roster.map(s=>stageNameFor(s.name)));
  for(const imageName of Object.keys(stageIndex)){
+   if(hiddenImageOnly.has(imageName))continue;
    if(!rosterNames.has(imageName))roster.push({dex:'',name:imageName,stage:'',releaseStatus:'image-only'});
  }
- const visible=roster.filter(s=>s.releaseStatus!=='unavailable'||!!actualStageFor(s.name));
+ const visible=roster.filter(s=>s.releaseStatus!=='unavailable'||formEntriesFor(s.name).length>0);
  const q=String(aniimosBrowseQuery||'').trim().toLowerCase();
  const species=visible.filter(s=>!q||String(s.name||'').toLowerCase().includes(q)||String(s.dex||'').includes(q));
  const appearanceLabel=a=>{
@@ -104,23 +121,21 @@ function renderAniimosTab(){
      </label>
    </div>
    <div class="aniimosGrid">${species.map(s=>{
-     const stageName=stageNameFor(s.name);
-     const stageForms=actualStageFor(s.name)||{};
-     const ids=Object.keys(stageForms);
-     const firstId=ids[0]||'';
-     const firstApps=firstId?stageForms[firstId]:[];
+     const forms=formEntriesFor(s.name);
+     const firstForm=forms[0]||null;
+     const firstApps=firstForm?.apps||[];
      const firstAppearance=firstApps.includes('Normal')?'Normal':(firstApps[0]||'');
-     const firstSrc=imagePath(stageName,firstId,firstAppearance);
-     const formOpts=ids.length?ids.map((id,i)=>`<option value="${esc(id)}"${i===0?' selected':''}>${esc(formLabel(s.name,id))}</option>`).join(''):'<option value="">No local images</option>';
+     const firstSrc=firstForm?imagePath(firstForm.assetName,firstForm.id,firstAppearance):'';
+     const formOpts=forms.length?forms.map((fm,i)=>`<option value="${esc(fm.key)}"${i===0?' selected':''}>${esc(fm.label)}</option>`).join(''):'<option value="">No local images</option>';
      const appOpts=firstApps.map(a=>`<option value="${esc(a)}"${a===firstAppearance?' selected':''}>${esc(appearanceLabel(a))}</option>`).join('');
      const status=s.releaseStatus==='unavailable'?'<span class="sourceBadge user">Unreleased · image available</span>':s.releaseStatus==='image-only'?'<span class="sourceBadge user">Image-only / special</span>':'';
-     return `<div class="aniimoBrowseCard" data-aniimo-name="${esc(s.name)}" data-stage-name="${esc(stageName)}" data-model-id="${esc(firstId)}" data-dex="${esc(s.dex||'')}" data-stage="${esc(s.stage||'')}">
+     return `<div class="aniimoBrowseCard" data-aniimo-name="${esc(s.name)}" data-form-key="${esc(firstForm?.key||'')}" data-dex="${esc(s.dex||'')}" data-stage="${esc(s.stage||'')}">
        <button type="button" class="aniimoBrowseImage aniimoPreviewOpen" data-preview-open title="View ${esc(s.name)} larger">${firstSrc?`<img src="${esc(firstSrc)}" alt="${esc(s.name)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="aniimoBrowseFallback" style="display:none">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`:`<span class="aniimoBrowseFallback">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`}<span class="aniimoPreviewBadge">↗</span></button>
        <div class="aniimoBrowseInfo"><div class="aniimoBrowseName">${s.dex?'#'+esc(s.dex)+' · ':''}${esc(s.name)}</div><div class="small">${esc(s.stage||'')}${status?' · '+status:''}</div>
-       ${ids.length>1?`<label class="aniimoSelectLabel">Form<select class="aniimoFormSelect" data-aniimo-form-select>${formOpts}</select></label>`:''}
+       ${forms.length>1?`<label class="aniimoSelectLabel">Form<select class="aniimoFormSelect" data-aniimo-form-select>${formOpts}</select></label>`:''}
        <label class="aniimoSelectLabel">Appearance<select class="aniimoAppearanceSelect" data-aniimo-appearance-select ${firstApps.length?'':'disabled'}>${appOpts}</select></label>
        <button type="button" class="aniimoPreviewButton" data-preview-open>View Larger</button>
-       <div class="small aniimoImageCount">${ids.length>1?ids.length+' image forms · ':''}${firstApps.length?firstApps.length+' looks on selected form':''}</div></div>
+       <div class="small aniimoImageCount">${forms.length>1?forms.length+' image forms · ':''}${firstApps.length?firstApps.length+' looks on selected form':''}</div></div>
      </div>`;
    }).join('')}</div>
  </div>
@@ -158,33 +173,34 @@ function renderAniimosTab(){
  let modalCard=null;
 
  const cardState=card=>{
-   const stageName=card.dataset.stageName;
-   const data=stageIndex[stageName]||{};
+   const name=card.dataset.aniimoName||'';
+   const forms=formEntriesFor(name);
    const formSel=card.querySelector('[data-aniimo-form-select]');
    const appSel=card.querySelector('[data-aniimo-appearance-select]');
-   const id=formSel?.value||card.dataset.modelId||Object.keys(data)[0]||'';
-   const apps=data[id]||[];
+   const key=formSel?.value||card.dataset.formKey||forms[0]?.key||'';
+   const form=forms.find(x=>x.key===key)||forms[0]||null;
+   const apps=form?.apps||[];
    const appearance=appSel?.value||apps[0]||'';
-   return {stageName,data,formSel,appSel,id,apps,appearance};
+   return {forms,formSel,appSel,key,form,apps,appearance};
  };
  const syncCardImage=card=>{
    const st=cardState(card);
-   card.dataset.modelId=st.id;
+   card.dataset.formKey=st.key;
    const img=card.querySelector('.aniimoBrowseImage img');
-   const src=imagePath(st.stageName,st.id,st.appearance);
+   const src=st.form?imagePath(st.form.assetName,st.form.id,st.appearance):'';
    if(img&&src){img.style.display='';img.src=src;}
    const count=card.querySelector('.aniimoImageCount');
-   if(count){const totalForms=Object.keys(st.data).length;count.textContent=`${totalForms>1?totalForms+' image forms · ':''}${st.apps.length} looks on selected form`;}
+   if(count){const totalForms=st.forms.length;count.textContent=`${totalForms>1?totalForms+' image forms · ':''}${st.apps.length} looks on selected form`;}
  };
  const syncModal=()=>{
    if(!modalCard)return;
    const st=cardState(modalCard);
-   const src=imagePath(st.stageName,st.id,st.appearance);
+   const src=st.form?imagePath(st.form.assetName,st.form.id,st.appearance):'';
    modalImg.src=src;modalImg.alt=modalCard.dataset.aniimoName||'Aniimo';
    modalTitle.textContent=(modalCard.dataset.dex?'#'+modalCard.dataset.dex+' · ':'')+(modalCard.dataset.aniimoName||'Aniimo');
    modalMeta.textContent=modalCard.dataset.stage||'';
-   modalFormWrap.style.display=Object.keys(st.data).length>1?'grid':'none';
-   modalForm.innerHTML=Object.keys(st.data).map(id=>`<option value="${esc(id)}"${id===st.id?' selected':''}>${esc(formLabel(modalCard.dataset.aniimoName,id))}</option>`).join('');
+   modalFormWrap.style.display=st.forms.length>1?'grid':'none';
+   modalForm.innerHTML=st.forms.map(fm=>`<option value="${esc(fm.key)}"${fm.key===st.key?' selected':''}>${esc(fm.label)}</option>`).join('');
    modalAppearance.innerHTML=st.apps.map(a=>`<option value="${esc(a)}"${a===st.appearance?' selected':''}>${esc(appearanceLabel(a))}</option>`).join('');
    const ai=Math.max(0,st.apps.indexOf(st.appearance));
    modalCounter.textContent=st.apps.length?`${ai+1} / ${st.apps.length}`:'0 / 0';
@@ -212,9 +228,10 @@ function renderAniimosTab(){
  });
  modalForm?.addEventListener('change',()=>{
    if(!modalCard)return;const st=cardState(modalCard);
-   modalCard.dataset.modelId=modalForm.value;
+   modalCard.dataset.formKey=modalForm.value;
    if(st.formSel)st.formSel.value=modalForm.value;
-   const apps=st.data[modalForm.value]||[];
+   const chosen=st.forms.find(x=>x.key===modalForm.value);
+   const apps=chosen?.apps||[];
    st.appSel.innerHTML=apps.map(a=>`<option value="${esc(a)}">${esc(appearanceLabel(a))}</option>`).join('');
    st.appSel.disabled=!apps.length;
    syncCardImage(modalCard);syncModal();
@@ -227,11 +244,10 @@ function renderAniimosTab(){
  root.querySelectorAll('.aniimoBrowseCard').forEach(card=>{
    const formSel=card.querySelector('[data-aniimo-form-select]');
    const appSel=card.querySelector('[data-aniimo-appearance-select]');
-   const stageName=card.dataset.stageName;
-   const data=stageIndex[stageName]||{};
    formSel?.addEventListener('change',()=>{
-     card.dataset.modelId=formSel.value;
-     const apps=data[formSel.value]||[];
+     card.dataset.formKey=formSel.value;
+     const st=cardState(card);
+     const apps=st.apps;
      appSel.innerHTML=apps.map(a=>`<option value="${esc(a)}">${esc(appearanceLabel(a))}</option>`).join('');
      appSel.disabled=!apps.length;syncCardImage(card);
    });
