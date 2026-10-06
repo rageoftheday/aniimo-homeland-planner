@@ -81,7 +81,7 @@ jobs:
           test -s data/aniimo-stage-images.csv
           test -s js/assets.js
           grep -q '<!doctype html>' index.html
-          grep -q 'Aniimo Homeland Offline Planner v30.12.3' index.html
+          grep -q 'Aniimo Homeland Offline Planner v30.12.4' index.html
           grep -q 'css/app.css' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
@@ -100,6 +100,9 @@ jobs:
           grep -q 'const EMBEDDED_ANIIDEX_CATALOG=' data/embedded-aniidex-catalog.js
           node --check js/dom.js
           grep -q 'function catalogPortraitHTML' js/app.js
+          grep -q 'function appearancePreviewChoices' js/app.js
+          grep -q 'data-appearance-choice' js/app.js
+          grep -q 'appearancePreviewStrip' css/app.css
           grep -q 'catalogPortraitHTML(c)' js/app.js
           node --check js/app.js
           node --check js/importer.js
@@ -125,6 +128,8 @@ jobs:
           if(!global.AniimoAssets.portraitCandidates('Emberpup','Basic Form','Sparkling','Variant VI')[0].endsWith('Emberpup__1005100__ThreeQuarter__Sparkling-06.webp')) throw new Error('Stage Sparkling VI path missing');
           if(global.AniimoAssets.stageAppearanceLabel('Dazzling Sparkling','')!=='Sparkling-11') throw new Error('Dazzling mapping missing');
           if(global.AniimoAssets.stageAppearanceLabel('Shadow Sparkling','')!=='Sparkling-12') throw new Error('Shadow mapping missing');
+          if(global.AniimoAssets.form('Stellarys','Prismana Form')?.id!=='1001202') throw new Error('Prismana Form alias did not resolve');
+          console.log('Prismana alias resolution OK');
           console.log('Appearance asset model OK',id,c[0]);
           NODE
           grep -q 'databaseBrowserHead' js/views.js
