@@ -1,10 +1,11 @@
 function countImportedFacilities(facilities){let n=0;for(const lvls of Object.values(facilities||{}))for(const c of Object.values(lvls||{}))n+=Number(c)||0;return n}
 function aniidexCatalogParts(catalogData){
  const src=(catalogData&&Object.keys(catalogData).length)?catalogData:EMBEDDED_ANIIDEX_CATALOG;
- const hub=src?.hub||src?.homelandHub||src?.homeland||EMBEDDED_ANIIDEX_CATALOG.hub;
- const facts=hub?.facts||src?.facts||EMBEDDED_ANIIDEX_CATALOG.hub?.facts||null;
- const text=src?.text||src?.homelandText||src?.siteText||EMBEDDED_ANIIDEX_CATALOG.text;
- const planner=src?.planner||src?.homelandPlanner||EMBEDDED_ANIIDEX_CATALOG.planner;
+ const sourceHub=src?.hub||src?.homelandHub||src?.homeland||null;
+ const hub=sourceHub||EMBEDDED_ANIIDEX_CATALOG.hub;
+ const facts=sourceHub?.facts||src?.facts||EMBEDDED_ANIIDEX_CATALOG.hub?.facts||null;
+ const text=src?.text||src?.homelandText||src?.siteText||sourceHub?.text||EMBEDDED_ANIIDEX_CATALOG.text;
+ const planner=src?.planner||src?.homelandPlanner||sourceHub?.planner||EMBEDDED_ANIIDEX_CATALOG.planner;
  return {hub,facts,text,planner};
 }
 const aniidexFormIndexCache=new WeakMap();
