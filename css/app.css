@@ -290,3 +290,17 @@ textarea{width:100%;height:110px}.legend{padding:9px 11px;border-top:1px solid #
 .aniimoAppearanceSelect{width:100%;min-width:0}
 .aniimoBrowseInfo .sourceBadge{vertical-align:middle}
 .aniimoImageCount{opacity:.85}
+
+/* v30.13.3 Aniimo browser display controls */
+.aniimosBrowseTools{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
+.aniimosToolLabel,.aniimoSelectLabel{display:grid;gap:3px;font-size:10px;color:var(--muted)}
+.aniimosToolLabel select{min-width:130px}
+.aniimoSelectLabel select{color:inherit}
+#aniimosPane[data-image-fit="contain"] .aniimoBrowseImage img{object-fit:contain}
+#aniimosPane[data-image-fit="cover"] .aniimoBrowseImage img{object-fit:cover}
+#aniimosPane[data-image-size="small"] .aniimoBrowseCard{grid-template-columns:72px minmax(0,1fr)}
+#aniimosPane[data-image-size="small"] .aniimoBrowseImage{width:72px;height:72px}
+#aniimosPane[data-image-size="medium"] .aniimoBrowseCard{grid-template-columns:96px minmax(0,1fr)}
+#aniimosPane[data-image-size="medium"] .aniimoBrowseImage{width:96px;height:96px}
+#aniimosPane[data-image-size="large"] .aniimoBrowseCard{grid-template-columns:132px minmax(0,1fr)}
+#aniimosPane[data-image-size="large"] .aniimoBrowseImage{width:132px;height:132px}

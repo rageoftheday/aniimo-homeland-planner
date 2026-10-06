@@ -1,4 +1,6 @@
 let aniimosBrowseQuery='';
+let aniimosImageFit=localStorage.getItem('aniimosImageFit')||'contain';
+let aniimosImageSize=localStorage.getItem('aniimosImageSize')||'medium';
 // v30 tab shell and full-screen views
 let activeMainTab='map';
 function setMainTab(tab){
@@ -79,12 +81,29 @@ function renderAniimosTab(){
    }
    return humanize(a);
  };
+ root.dataset.imageFit=aniimosImageFit;
+ root.dataset.imageSize=aniimosImageSize;
  root.innerHTML=`<div class="aniimosBrowser">
    <div class="aniimosBrowserHead">
      <div><div class="v30Title">All Aniimos</div><div class="v30Sub">Every released Aniimo, plus image-backed unreleased / special entries. Form and appearance choices only show files we actually have.</div></div>
      <div class="aniimosBrowseStats">${species.length} shown / ${visible.length} visible</div>
    </div>
-   <div class="aniimosBrowseTools"><input id="aniimosBrowseSearch" value="${esc(aniimosBrowseQuery)}" placeholder="Search Aniimo name or Dex #"></div>
+   <div class="aniimosBrowseTools">
+     <input id="aniimosBrowseSearch" value="${esc(aniimosBrowseQuery)}" placeholder="Search Aniimo name or Dex #">
+     <label class="aniimosToolLabel">Image fit
+       <select id="aniimosImageFit">
+         <option value="contain"${aniimosImageFit==='contain'?' selected':''}>Fit whole image</option>
+         <option value="cover"${aniimosImageFit==='cover'?' selected':''}>Fill frame</option>
+       </select>
+     </label>
+     <label class="aniimosToolLabel">Image size
+       <select id="aniimosImageSize">
+         <option value="small"${aniimosImageSize==='small'?' selected':''}>Small</option>
+         <option value="medium"${aniimosImageSize==='medium'?' selected':''}>Medium</option>
+         <option value="large"${aniimosImageSize==='large'?' selected':''}>Large</option>
+       </select>
+     </label>
+   </div>
    <div class="aniimosGrid">${species.map(s=>{
      const stageName=stageNameFor(s.name);
      const stageForms=actualStageFor(s.name)||{};
@@ -99,14 +118,16 @@ function renderAniimosTab(){
      return `<div class="aniimoBrowseCard" data-aniimo-name="${esc(s.name)}" data-stage-name="${esc(stageName)}">
        <div class="aniimoBrowseImage">${firstSrc?`<img src="${esc(firstSrc)}" alt="${esc(s.name)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="aniimoBrowseFallback" style="display:none">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`:`<span class="aniimoBrowseFallback">${esc(String(s.name||'?').slice(0,2).toUpperCase())}</span>`}</div>
        <div class="aniimoBrowseInfo"><div class="aniimoBrowseName">${s.dex?'#'+esc(s.dex)+' · ':''}${esc(s.name)}</div><div class="small">${esc(s.stage||'')}${status?' · '+status:''}</div>
-       <select class="aniimoFormSelect" data-aniimo-form-select ${ids.length?'':'disabled'}>${formOpts}</select>
-       <select class="aniimoAppearanceSelect" data-aniimo-appearance-select ${firstApps.length?'':'disabled'}>${appOpts}</select>
+       <label class="aniimoSelectLabel">Form<select class="aniimoFormSelect" data-aniimo-form-select ${ids.length?'':'disabled'}>${formOpts}</select></label>
+       <label class="aniimoSelectLabel">Appearance<select class="aniimoAppearanceSelect" data-aniimo-appearance-select ${firstApps.length?'':'disabled'}>${appOpts}</select></label>
        <div class="small aniimoImageCount">${ids.length} image form${ids.length===1?'':'s'}${firstApps.length?' · '+firstApps.length+' looks on selected form':''}</div></div>
      </div>`;
    }).join('')}</div>
  </div>`;
  const search=root.querySelector('#aniimosBrowseSearch');
  if(search)search.addEventListener('input',e=>{aniimosBrowseQuery=e.target.value;renderAniimosTab();});
+ root.querySelector('#aniimosImageFit')?.addEventListener('change',e=>{aniimosImageFit=e.target.value;localStorage.setItem('aniimosImageFit',aniimosImageFit);root.dataset.imageFit=aniimosImageFit;});
+ root.querySelector('#aniimosImageSize')?.addEventListener('change',e=>{aniimosImageSize=e.target.value;localStorage.setItem('aniimosImageSize',aniimosImageSize);root.dataset.imageSize=aniimosImageSize;});
  root.querySelectorAll('.aniimoBrowseCard').forEach(card=>{
    const formSel=card.querySelector('[data-aniimo-form-select]');
    const appSel=card.querySelector('[data-aniimo-appearance-select]');
