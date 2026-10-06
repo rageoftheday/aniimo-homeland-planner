@@ -1,7 +1,7 @@
 {
   "format": "aniimo-official-wiki-homeland-v1",
   "source": "https://wiki.aniimo.com/",
-  "scrapedAt": "2026-10-06T21:28:37.368Z",
+  "scrapedAt": "2026-10-06T21:30:24.139Z",
   "scraper": {
     "requestCount": 207,
     "requestDelayMs": 160,
@@ -25,7 +25,8 @@
     "species": 86,
     "forms": 206,
     "formsWithAbilities": 206,
-    "unknownAbilityIds": 0
+    "unknownAbilityIds": 0,
+    "abilitiesMissingLevel": 0
   },
   "warnings": [],
   "species": [
@@ -46,17 +47,17 @@
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -72,12 +73,12 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -92,17 +93,74 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/001/highland-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1000,
+          "type": "Fire",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/001/highland-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/001/basic-form"
+            },
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/001/mountain-woods-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/001/highland-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/001/basic-form"
+            },
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/001/mountain-woods-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "002",
@@ -121,17 +179,17 @@
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -146,12 +204,12 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -166,17 +224,74 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 2
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1000,
+          "type": "Fire",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/002/highland-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/002/basic-form"
+            },
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/002/mountain-woods-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/002/highland-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/002/basic-form"
+            },
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/002/mountain-woods-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/002/highland-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "003",
@@ -192,17 +307,17 @@
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -217,12 +332,12 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -237,17 +352,17 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -262,12 +377,12 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 4
             }
           ]
         },
@@ -280,17 +395,66 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1000,
+          "type": "Fire",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/003/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/003/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/003/highland-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "thunderstorm-form",
+              "label": "Thunderstorm Form",
+              "url": "https://wiki.aniimo.com/item/003/thunderstorm-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "004",
@@ -306,17 +470,17 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 4
             }
           ]
         },
@@ -329,22 +493,59 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/004/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/004/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1000,
+          "type": "Fire",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/004/prismana-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "005",
@@ -362,17 +563,42 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/005/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/005/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "006",
@@ -390,17 +616,17 @@
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -415,12 +641,12 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -435,22 +661,71 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 4
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/006/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/006/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/006/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "rainstorm-form",
+              "label": "Rainstorm Form",
+              "url": "https://wiki.aniimo.com/item/006/rainstorm-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "007",
@@ -469,12 +744,12 @@
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -489,7 +764,7 @@
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -505,17 +780,64 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/007/highland-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "beach-form",
+              "label": "Beach Form",
+              "url": "https://wiki.aniimo.com/item/007/beach-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1006,
+          "type": "Wind",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "beach-form",
+              "label": "Beach Form",
+              "url": "https://wiki.aniimo.com/item/007/beach-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/007/basic-form"
+            },
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/007/highland-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "008",
@@ -533,12 +855,12 @@
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -553,7 +875,7 @@
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -568,17 +890,64 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1006,
+          "type": "Wind",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "beach-form",
+              "label": "Beach Form",
+              "url": "https://wiki.aniimo.com/item/008/beach-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/008/basic-form"
+            },
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/008/highland-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/008/highland-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "beach-form",
+              "label": "Beach Form",
+              "url": "https://wiki.aniimo.com/item/008/beach-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "009",
@@ -597,12 +966,12 @@
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -617,7 +986,7 @@
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -632,12 +1001,12 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 4
             }
           ]
         },
@@ -652,17 +1021,66 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1006,
+          "type": "Wind",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/009/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/009/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/009/highland-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "beach-form",
+              "label": "Beach Form",
+              "url": "https://wiki.aniimo.com/item/009/beach-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "010",
@@ -680,12 +1098,12 @@
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -700,7 +1118,7 @@
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -716,17 +1134,64 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1006,
+          "type": "Wind",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "beach-form",
+              "label": "Beach Form",
+              "url": "https://wiki.aniimo.com/item/010/beach-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/010/basic-form"
+            },
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/010/highland-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/010/highland-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "beach-form",
+              "label": "Beach Form",
+              "url": "https://wiki.aniimo.com/item/010/beach-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "011",
@@ -744,12 +1209,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -764,12 +1229,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -784,12 +1249,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -805,12 +1270,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -823,12 +1288,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -843,12 +1308,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -864,17 +1329,102 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/011/highland-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/011/basic-form"
+            },
+            {
+              "slug": "forest-form",
+              "label": "Forest Form",
+              "url": "https://wiki.aniimo.com/item/011/forest-form"
+            },
+            {
+              "slug": "grassland-form",
+              "label": "Grassland Form",
+              "url": "https://wiki.aniimo.com/item/011/grassland-form"
+            },
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/011/prismana-form"
+            },
+            {
+              "slug": "plateau-form",
+              "label": "Plateau Form",
+              "url": "https://wiki.aniimo.com/item/011/plateau-form"
+            },
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/011/mountain-woods-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/011/highland-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/011/basic-form"
+            },
+            {
+              "slug": "forest-form",
+              "label": "Forest Form",
+              "url": "https://wiki.aniimo.com/item/011/forest-form"
+            },
+            {
+              "slug": "grassland-form",
+              "label": "Grassland Form",
+              "url": "https://wiki.aniimo.com/item/011/grassland-form"
+            },
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/011/prismana-form"
+            },
+            {
+              "slug": "plateau-form",
+              "label": "Plateau Form",
+              "url": "https://wiki.aniimo.com/item/011/plateau-form"
+            },
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/011/mountain-woods-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "012",
@@ -892,12 +1442,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -912,12 +1462,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -932,12 +1482,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -952,12 +1502,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -970,12 +1520,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 4
             }
           ]
         },
@@ -990,12 +1540,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -1010,17 +1560,42 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/012/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/012/prismana-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "013",
@@ -1038,12 +1613,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -1060,12 +1635,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -1080,22 +1655,79 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/013/sea-of-flowers-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/013/basic-form"
+            },
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/013/snowfield-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/013/snowfield-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/013/sea-of-flowers-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/013/basic-form"
+            },
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/013/snowfield-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "014",
@@ -1113,12 +1745,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -1135,12 +1767,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -1155,22 +1787,79 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 2
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/014/sea-of-flowers-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/014/basic-form"
+            },
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/014/snowfield-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/014/sea-of-flowers-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/014/basic-form"
+            },
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/014/snowfield-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/014/snowfield-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "015",
@@ -1188,17 +1877,17 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -1211,17 +1900,17 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -1236,17 +1925,17 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -1261,22 +1950,81 @@
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1008,
               "type": "Light",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 4
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/015/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/015/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1008,
+          "type": "Light",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/015/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/015/sea-of-flowers-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/015/basic-form"
+            },
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/015/snowfield-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "016",
@@ -1294,22 +2042,59 @@
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/016/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/016/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/016/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "017",
@@ -1327,17 +2112,17 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -1352,12 +2137,12 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -1372,12 +2157,12 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -1392,22 +2177,101 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "plateau-form",
+              "label": "Plateau Form",
+              "url": "https://wiki.aniimo.com/item/017/plateau-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "rainstorm-form",
+              "label": "Rainstorm Form",
+              "url": "https://wiki.aniimo.com/item/017/rainstorm-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/017/basic-form"
+            },
+            {
+              "slug": "cloudmist-form",
+              "label": "Cloudmist Form",
+              "url": "https://wiki.aniimo.com/item/017/cloudmist-form"
+            },
+            {
+              "slug": "plateau-form",
+              "label": "Plateau Form",
+              "url": "https://wiki.aniimo.com/item/017/plateau-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "rainstorm-form",
+              "label": "Rainstorm Form",
+              "url": "https://wiki.aniimo.com/item/017/rainstorm-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1006,
+          "type": "Wind",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "rainstorm-form",
+              "label": "Rainstorm Form",
+              "url": "https://wiki.aniimo.com/item/017/rainstorm-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/017/basic-form"
+            },
+            {
+              "slug": "cloudmist-form",
+              "label": "Cloudmist Form",
+              "url": "https://wiki.aniimo.com/item/017/cloudmist-form"
+            },
+            {
+              "slug": "plateau-form",
+              "label": "Plateau Form",
+              "url": "https://wiki.aniimo.com/item/017/plateau-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "018",
@@ -1425,17 +2289,17 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -1450,12 +2314,12 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -1468,12 +2332,12 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -1488,17 +2352,17 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -1513,22 +2377,83 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/018/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1006,
+          "type": "Wind",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/018/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/018/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "plateau-form",
+              "label": "Plateau Form",
+              "url": "https://wiki.aniimo.com/item/018/plateau-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "rainstorm-form",
+              "label": "Rainstorm Form",
+              "url": "https://wiki.aniimo.com/item/018/rainstorm-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "019",
@@ -1544,17 +2469,42 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/019/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/019/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "020",
@@ -1573,7 +2523,7 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -1589,12 +2539,30 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "mountain-form",
+              "label": "Mountain Form",
+              "url": "https://wiki.aniimo.com/item/020/mountain-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/020/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "021",
@@ -1613,17 +2581,17 @@
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -1638,17 +2606,17 @@
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -1663,22 +2631,59 @@
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 4
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/021/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/021/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/021/prismana-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "022",
@@ -1694,17 +2699,17 @@
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -1717,17 +2722,64 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "mountain-form",
+              "label": "Mountain Form",
+              "url": "https://wiki.aniimo.com/item/022/mountain-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/022/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "mountain-form",
+              "label": "Mountain Form",
+              "url": "https://wiki.aniimo.com/item/022/mountain-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/022/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "mountain-form",
+              "label": "Mountain Form",
+              "url": "https://wiki.aniimo.com/item/022/mountain-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "023",
@@ -1745,12 +2797,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -1768,17 +2820,17 @@
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -1793,12 +2845,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -1813,17 +2865,84 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "mudflat-form",
+              "label": "Mudflat Form",
+              "url": "https://wiki.aniimo.com/item/023/mudflat-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/023/basic-form"
+            },
+            {
+              "slug": "beach-form",
+              "label": "Beach Form",
+              "url": "https://wiki.aniimo.com/item/023/beach-form"
+            },
+            {
+              "slug": "bay-form",
+              "label": "Bay Form",
+              "url": "https://wiki.aniimo.com/item/023/bay-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/023/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "mudflat-form",
+              "label": "Mudflat Form",
+              "url": "https://wiki.aniimo.com/item/023/mudflat-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/023/basic-form"
+            },
+            {
+              "slug": "beach-form",
+              "label": "Beach Form",
+              "url": "https://wiki.aniimo.com/item/023/beach-form"
+            },
+            {
+              "slug": "bay-form",
+              "label": "Bay Form",
+              "url": "https://wiki.aniimo.com/item/023/bay-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "024",
@@ -1841,12 +2960,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -1861,17 +2980,17 @@
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -1886,12 +3005,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -1906,17 +3025,84 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "mudflat-form",
+              "label": "Mudflat Form",
+              "url": "https://wiki.aniimo.com/item/024/mudflat-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/024/basic-form"
+            },
+            {
+              "slug": "beach-form",
+              "label": "Beach Form",
+              "url": "https://wiki.aniimo.com/item/024/beach-form"
+            },
+            {
+              "slug": "bay-form",
+              "label": "Bay Form",
+              "url": "https://wiki.aniimo.com/item/024/bay-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "mudflat-form",
+              "label": "Mudflat Form",
+              "url": "https://wiki.aniimo.com/item/024/mudflat-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/024/basic-form"
+            },
+            {
+              "slug": "beach-form",
+              "label": "Beach Form",
+              "url": "https://wiki.aniimo.com/item/024/beach-form"
+            },
+            {
+              "slug": "bay-form",
+              "label": "Bay Form",
+              "url": "https://wiki.aniimo.com/item/024/bay-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/024/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "025",
@@ -1932,17 +3118,42 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/025/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/025/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "026",
@@ -1961,7 +3172,7 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -1978,7 +3189,7 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -1995,7 +3206,7 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -2010,12 +3221,40 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 2
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1000,
+          "type": "Fire",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/026/highland-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/026/basic-form"
+            },
+            {
+              "slug": "forest-form",
+              "label": "Forest Form",
+              "url": "https://wiki.aniimo.com/item/026/forest-form"
+            },
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/026/sea-of-flowers-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "027",
@@ -2033,7 +3272,7 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -2048,7 +3287,7 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -2065,7 +3304,7 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -2078,12 +3317,40 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1000,
+          "type": "Fire",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/027/highland-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/027/basic-form"
+            },
+            {
+              "slug": "forest-form",
+              "label": "Forest Form",
+              "url": "https://wiki.aniimo.com/item/027/forest-form"
+            },
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/027/sea-of-flowers-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "028",
@@ -2101,17 +3368,17 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -2129,12 +3396,12 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -2149,17 +3416,17 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -2175,22 +3442,113 @@
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/028/nighttime-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/028/mountain-woods-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/028/sea-of-flowers-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/028/sea-of-flowers-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/028/basic-form"
+            },
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/028/nighttime-form"
+            },
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/028/mountain-woods-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1006,
+          "type": "Wind",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/028/sea-of-flowers-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/028/basic-form"
+            },
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/028/nighttime-form"
+            },
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/028/mountain-woods-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "029",
@@ -2206,17 +3564,17 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -2229,12 +3587,12 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -2247,17 +3605,17 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -2273,22 +3631,113 @@
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/029/sea-of-flowers-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/029/basic-form"
+            },
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/029/nighttime-form"
+            },
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/029/mountain-woods-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1006,
+          "type": "Wind",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/029/sea-of-flowers-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/029/basic-form"
+            },
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/029/nighttime-form"
+            },
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/029/mountain-woods-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/029/nighttime-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/029/mountain-woods-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/029/sea-of-flowers-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "031",
@@ -2306,17 +3755,42 @@
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/031/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1006,
+          "type": "Wind",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/031/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "032",
@@ -2334,17 +3808,42 @@
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/032/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1006,
+          "type": "Wind",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/032/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "033",
@@ -2362,12 +3861,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -2383,17 +3882,52 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "towerwood-form",
+              "label": "Towerwood Form",
+              "url": "https://wiki.aniimo.com/item/033/towerwood-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/033/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "towerwood-form",
+              "label": "Towerwood Form",
+              "url": "https://wiki.aniimo.com/item/033/towerwood-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/033/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "034",
@@ -2411,17 +3945,17 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -2436,12 +3970,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -2456,17 +3990,17 @@
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 4
             }
           ]
         },
@@ -2481,17 +4015,66 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/034/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/034/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/034/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "thunderstorm-form",
+              "label": "Thunderstorm Form",
+              "url": "https://wiki.aniimo.com/item/034/thunderstorm-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "035",
@@ -2507,17 +4090,17 @@
             {
               "abilityId": 1008,
               "type": "Light",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 4
             }
           ]
         },
@@ -2532,17 +4115,54 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/035/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/035/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1008,
+          "type": "Light",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/035/prismana-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "036",
@@ -2561,17 +4181,17 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -2586,12 +4206,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -2607,12 +4227,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -2628,17 +4248,84 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/036/snowfield-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/036/basic-form"
+            },
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/036/highland-form"
+            },
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/036/sea-of-flowers-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/036/snowfield-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/036/basic-form"
+            },
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/036/highland-form"
+            },
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/036/sea-of-flowers-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/036/snowfield-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "037",
@@ -2654,17 +4341,17 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -2679,12 +4366,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -2697,12 +4384,12 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -2715,17 +4402,84 @@
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/037/snowfield-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/037/basic-form"
+            },
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/037/highland-form"
+            },
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/037/sea-of-flowers-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/037/snowfield-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/037/basic-form"
+            },
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/037/highland-form"
+            },
+            {
+              "slug": "sea-of-flowers-form",
+              "label": "Sea of Flowers Form",
+              "url": "https://wiki.aniimo.com/item/037/sea-of-flowers-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/037/snowfield-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "038",
@@ -2744,22 +4498,59 @@
             {
               "abilityId": 1103,
               "type": "Perfumery",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/038/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/038/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1103,
+          "type": "Perfumery",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/038/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "039",
@@ -2777,22 +4568,59 @@
             {
               "abilityId": 1103,
               "type": "Perfumery",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/039/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/039/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1103,
+          "type": "Perfumery",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/039/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "040",
@@ -2810,17 +4638,17 @@
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -2835,12 +4663,12 @@
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -2856,22 +4684,91 @@
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "forest-form",
+              "label": "Forest Form",
+              "url": "https://wiki.aniimo.com/item/040/forest-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/040/basic-form"
+            },
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/040/highland-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "forest-form",
+              "label": "Forest Form",
+              "url": "https://wiki.aniimo.com/item/040/forest-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/040/basic-form"
+            },
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/040/highland-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1000,
+          "type": "Fire",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "highland-form",
+              "label": "Highland Form",
+              "url": "https://wiki.aniimo.com/item/040/highland-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "forest-form",
+              "label": "Forest Form",
+              "url": "https://wiki.aniimo.com/item/040/forest-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "041",
@@ -2889,17 +4786,17 @@
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1001,
               "type": "Grass",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -2914,12 +4811,12 @@
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -2934,17 +4831,17 @@
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 4
             }
           ]
         },
@@ -2960,22 +4857,71 @@
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/041/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/041/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1000,
+          "type": "Fire",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/041/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1001,
+          "type": "Grass",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "forest-form",
+              "label": "Forest Form",
+              "url": "https://wiki.aniimo.com/item/041/forest-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "042",
@@ -2993,17 +4939,17 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -3019,17 +4965,64 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/042/nighttime-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/042/nighttime-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/042/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/042/nighttime-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/042/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "043",
@@ -3047,17 +5040,17 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -3073,17 +5066,64 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 2
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/043/nighttime-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/043/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/043/nighttime-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/043/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/043/nighttime-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "044",
@@ -3099,17 +5139,17 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1008,
               "type": "Light",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 4
             }
           ]
         },
@@ -3124,12 +5164,12 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -3144,22 +5184,71 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 2
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/044/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/044/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1008,
+          "type": "Light",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/044/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/044/nighttime-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "045",
@@ -3177,12 +5266,12 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -3197,17 +5286,52 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/045/mountain-woods-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/045/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/045/mountain-woods-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/045/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "046",
@@ -3225,17 +5349,17 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -3250,12 +5374,12 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -3268,17 +5392,54 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/046/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/046/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/046/prismana-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "047",
@@ -3296,17 +5457,42 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/047/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1000,
+          "type": "Fire",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/047/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "048",
@@ -3324,17 +5510,42 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 2
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/048/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1000,
+          "type": "Fire",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/048/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "049",
@@ -3352,12 +5563,12 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -3372,17 +5583,52 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/049/nighttime-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/049/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/049/nighttime-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/049/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "050",
@@ -3398,12 +5644,12 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -3418,17 +5664,52 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 2
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/050/nighttime-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/050/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/050/nighttime-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/050/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "051",
@@ -3444,17 +5725,17 @@
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -3467,17 +5748,64 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/051/nighttime-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/051/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/051/nighttime-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/051/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "nighttime-form",
+              "label": "Nighttime Form",
+              "url": "https://wiki.aniimo.com/item/051/nighttime-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "052",
@@ -3493,12 +5821,12 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -3513,12 +5841,12 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -3533,17 +5861,42 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 4
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/052/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/052/prismana-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "053",
@@ -3563,17 +5916,42 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/053/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/053/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "054",
@@ -3591,17 +5969,42 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 2
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/054/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/054/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "055",
@@ -3619,17 +6022,17 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -3642,12 +6045,12 @@
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -3660,22 +6063,71 @@
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1008,
               "type": "Light",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1102,
               "type": "Leisure",
-              "level": null
+              "level": 4
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1102,
+          "type": "Leisure",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/055/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/055/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1008,
+          "type": "Light",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/055/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "thunderstorm-form",
+              "label": "Thunderstorm Form",
+              "url": "https://wiki.aniimo.com/item/055/thunderstorm-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "056",
@@ -3693,17 +6145,17 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -3718,17 +6170,64 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/056/snowfield-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/056/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/056/snowfield-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/056/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/056/snowfield-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "057",
@@ -3746,17 +6245,17 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -3771,12 +6270,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -3789,22 +6288,71 @@
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/057/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/057/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/057/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/057/snowfield-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "058",
@@ -3820,17 +6368,17 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -3845,17 +6393,64 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/058/snowfield-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/058/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/058/snowfield-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/058/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/058/snowfield-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "059",
@@ -3873,17 +6468,42 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/059/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/059/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "060",
@@ -3899,22 +6519,22 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1008,
               "type": "Light",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -3929,17 +6549,71 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/060/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/060/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/060/prismana-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/060/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1008,
+          "type": "Light",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/060/prismana-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "061",
@@ -3957,17 +6631,17 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -3982,12 +6656,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -4002,17 +6676,74 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/061/snowfield-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/061/basic-form"
+            },
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/061/mountain-woods-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/061/snowfield-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/061/basic-form"
+            },
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/061/mountain-woods-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/061/snowfield-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "062",
@@ -4028,17 +6759,17 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -4051,12 +6782,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -4069,12 +6800,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -4089,17 +6820,54 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 4
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/062/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/062/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/062/snowfield-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "063",
@@ -4117,17 +6885,17 @@
             {
               "abilityId": 1005,
               "type": "Ice",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -4142,12 +6910,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -4162,17 +6930,74 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/063/snowfield-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/063/basic-form"
+            },
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/063/mountain-woods-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/063/snowfield-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/063/basic-form"
+            },
+            {
+              "slug": "mountain-woods-form",
+              "label": "Mountain Woods Form",
+              "url": "https://wiki.aniimo.com/item/063/mountain-woods-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1005,
+          "type": "Ice",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "snowfield-form",
+              "label": "Snowfield Form",
+              "url": "https://wiki.aniimo.com/item/063/snowfield-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "064",
@@ -4190,12 +7015,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 1
             }
           ]
         },
@@ -4210,17 +7035,52 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "mountain-form",
+              "label": "Mountain Form",
+              "url": "https://wiki.aniimo.com/item/064/mountain-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/064/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1006,
+          "type": "Wind",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "mountain-form",
+              "label": "Mountain Form",
+              "url": "https://wiki.aniimo.com/item/064/mountain-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/064/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "065",
@@ -4238,12 +7098,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 2
             }
           ]
         },
@@ -4258,17 +7118,52 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 2
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "mountain-form",
+              "label": "Mountain Form",
+              "url": "https://wiki.aniimo.com/item/065/mountain-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/065/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1006,
+          "type": "Wind",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "mountain-form",
+              "label": "Mountain Form",
+              "url": "https://wiki.aniimo.com/item/065/mountain-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/065/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "066",
@@ -4286,12 +7181,12 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -4306,17 +7201,52 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "mountain-form",
+              "label": "Mountain Form",
+              "url": "https://wiki.aniimo.com/item/066/mountain-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/066/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1006,
+          "type": "Wind",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "mountain-form",
+              "label": "Mountain Form",
+              "url": "https://wiki.aniimo.com/item/066/mountain-form"
+            },
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/066/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "067",
@@ -4332,17 +7262,17 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1006,
               "type": "Wind",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -4355,17 +7285,54 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1000,
+          "type": "Fire",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/067/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/067/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1006,
+          "type": "Wind",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/067/prismana-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "068",
@@ -4383,17 +7350,42 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/068/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/068/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "069",
@@ -4411,17 +7403,17 @@
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -4436,17 +7428,54 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/069/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/069/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/069/prismana-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "070",
@@ -4464,17 +7493,42 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/070/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/070/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "071",
@@ -4492,22 +7546,59 @@
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 2
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1000,
+          "type": "Fire",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/071/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/071/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/071/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "072",
@@ -4525,17 +7616,17 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1007,
               "type": "Dark",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -4550,22 +7641,71 @@
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1000,
+          "type": "Fire",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/072/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/072/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1007,
+          "type": "Dark",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/072/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/072/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "073",
@@ -4581,17 +7721,42 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 2
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/073/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/073/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "074",
@@ -4607,17 +7772,42 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/074/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/074/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "075",
@@ -4635,17 +7825,42 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/075/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/075/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "076",
@@ -4663,17 +7878,42 @@
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1003,
               "type": "Earth",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1003,
+          "type": "Earth",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/076/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/076/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "077",
@@ -4691,17 +7931,42 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 1
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/077/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/077/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "078",
@@ -4719,17 +7984,42 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 2
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/078/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/078/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "079",
@@ -4747,17 +8037,17 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 2
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -4772,12 +8062,12 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             }
           ]
         },
@@ -4792,22 +8082,71 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1008,
               "type": "Light",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 4
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/079/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/079/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1008,
+          "type": "Light",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/079/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 2,
+          "forms": [
+            {
+              "slug": "rainstorm-form",
+              "label": "Rainstorm Form",
+              "url": "https://wiki.aniimo.com/item/079/rainstorm-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "080",
@@ -4825,12 +8164,25 @@
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/080/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "081",
@@ -4848,12 +8200,25 @@
             {
               "abilityId": 1002,
               "type": "Water",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1002,
+          "type": "Water",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/081/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "082",
@@ -4869,17 +8234,42 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 1
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/082/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 1,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/082/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "10002",
@@ -4895,17 +8285,42 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/10002/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/10002/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "10003",
@@ -4921,17 +8336,17 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 4
             },
             {
               "abilityId": 1008,
               "type": "Light",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 4
             }
           ]
         },
@@ -4944,17 +8359,54 @@
             {
               "abilityId": 1004,
               "type": "Lightning",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1101,
               "type": "Artisanship",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1101,
+          "type": "Artisanship",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/10003/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1004,
+          "type": "Lightning",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/10003/prismana-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1008,
+          "type": "Light",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/10003/prismana-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "11001",
@@ -4970,7 +8422,7 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 4
             }
           ]
         },
@@ -4983,12 +8435,25 @@
             {
               "abilityId": 1000,
               "type": "Fire",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1000,
+          "type": "Fire",
+          "level": 4,
+          "forms": [
+            {
+              "slug": "prismana-form",
+              "label": "Prismana Form",
+              "url": "https://wiki.aniimo.com/item/11001/prismana-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "99996",
@@ -5004,17 +8469,42 @@
             {
               "abilityId": 1008,
               "type": "Light",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/99996/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1008,
+          "type": "Light",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/99996/basic-form"
+            }
+          ]
+        }
+      ]
     },
     {
       "dex": "99998",
@@ -5030,17 +8520,42 @@
             {
               "abilityId": 1008,
               "type": "Light",
-              "level": null
+              "level": 3
             },
             {
               "abilityId": 1100,
               "type": "Hauling",
-              "level": null
+              "level": 3
             }
           ]
         }
       ],
-      "bestAbilities": []
+      "bestAbilities": [
+        {
+          "abilityId": 1100,
+          "type": "Hauling",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/99998/basic-form"
+            }
+          ]
+        },
+        {
+          "abilityId": 1008,
+          "type": "Light",
+          "level": 3,
+          "forms": [
+            {
+              "slug": "basic-form",
+              "label": "Basic Form",
+              "url": "https://wiki.aniimo.com/item/99998/basic-form"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
