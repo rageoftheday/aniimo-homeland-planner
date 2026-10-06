@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Aniimo Homeland Companion",
+  "version": "0.1.0",
+  "description": "Direct Aniidx sync bridge for Aniimo Homeland Planner.",
+  "permissions": ["tabs"],
+  "host_permissions": [
+    "https://aniidex.com/*",
+    "https://rageoftheday.github.io/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://rageoftheday.github.io/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*"
+      ],
+      "js": ["planner-bridge.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://aniidex.com/*"],
+      "js": ["aniidex-isolated.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://aniidex.com/*"],
+      "js": ["aniidex-main.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ]
+}
