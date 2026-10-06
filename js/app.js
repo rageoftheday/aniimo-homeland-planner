@@ -664,11 +664,13 @@ function catalogKey(c){return c.name+'|'+(c.form||'')}
 function wikiCatalogEntries(){
  const rows=[];
  const species=window.WikiHomeland?.speciesList?.()||[];
+ const releasedByDex=new Map((window.ANIIMO_SPECIES_DATA?.species||[]).map(x=>[String(x.dex),x.name]));
  for(const sp of species){
-   const family=familyIdForCatalog({name:sp.name});
+   const name=releasedByDex.get(String(sp.dex))||sp.name;
+   const family=familyIdForCatalog({name});
    for(const form of (sp.forms||[])){
      rows.push({
-       name:sp.name,
+       name,
        form:/^(basic|base) form$/i.test(form.label||'')?'Base':(form.label||''),
        family,
        abilities:(form.homelandAbilities||[]).map(a=>[a.type,Number(a.level)||1]),
