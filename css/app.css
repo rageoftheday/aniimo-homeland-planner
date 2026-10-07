@@ -487,3 +487,15 @@ header{align-items:center}
 .advisorWorkerCard{border:1px solid #30495d;border-radius:8px;padding:8px;background:#13222d}
 .advisorWorkerCard.working{border-color:#4f8b69}
 .advisorWorkerCard.inactive{border-color:#5d6f80}
+
+.homeSnapshotHead{display:flex;justify-content:space-between;gap:10px;align-items:end;margin-top:12px}
+.homeSnapshotGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:9px;margin:9px 0 10px}
+.homeSnapshotCard{border:1px solid #30495d;background:#111e28;border-radius:10px;padding:10px;display:grid;gap:4px}
+.homeSnapshotCard>span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.homeSnapshotCard>b{font-size:20px;line-height:1.15}
+.homeSnapshotCard>small{font-size:10px;color:#b8cad7;line-height:1.35}
+.homeSnapshotDetails{border:1px solid #30495d;background:#0f1b24;border-radius:10px;padding:9px;margin-bottom:12px}
+.homeSnapshotDetails summary{cursor:pointer;font-weight:700}
+.homeFacilityTable{margin-top:9px;max-height:300px}
+.homeSnapshotEmpty{margin:12px 0;border:1px dashed #3b5c73;background:#0f1b24;border-radius:10px;padding:11px;display:grid;gap:4px}
+.homeSnapshotEmpty span{font-size:11px;color:var(--muted)}
