@@ -374,7 +374,21 @@ function renderImportTab(targetId='dashboardImport',embedded=true){
  const directUid=esc(String(meta?.uid||''));
  root.innerHTML=`<div class="dashboardSyncHead"><div><div class="dashboardSyncEyebrow">${meta?'Homeland Sync':'Start Here'}</div><h3>${meta?'Import / Update Homeland':'Import / Sync Your Homeland'}</h3><div class="small">Sync a UID directly through the optional Aniimo Homeland Companion, or use the bookmarklet / saved sync-file fallbacks. The extension uses Aniidx's normal signed-in browser session and legitimate verification flow; it never exposes cookies or Turnstile tokens to the planner.</div></div></div>
  <div class="importSummary">${meta?`<span class="importChip">Last source: ${esc(meta.source||'Aniidx')}</span><span class="importChip">${esc(sum.name||'Player')} • RV ${sum.rv||'?'}</span><span class="importChip">${sum.aniimo||0} Homeland Aniimo</span><span class="importChip">${sum.caught||0} caught forms</span>`:'<span class="importChip">No Aniidx sync imported into this profile yet</span>'}</div>
- ${importUiMessage?`<div class="${/failed|not detected|invalid/i.test(importUiMessage)?'rightAlert':'rightGood'}" style="margin-top:10px">${esc(importUiMessage)}</div>`:''}
+ ${importUiMessage?`<div class="${/failed|not detected|invalid|paused|attention/i.test(importUiMessage)?'rightAlert':'rightGood'}" style="margin-top:10px">${esc(importUiMessage)}</div>`:''}
+ <div class="autoSyncPanel">
+   <div class="autoSyncInfo"><b>Quick Sync</b><span class="small">Last synced: <b>${esc(formatAniidexSyncTime(aniidexLastSyncAt||meta?.importedAt||0))}</b></span></div>
+   <div class="autoSyncControls">
+     <button class="primary" id="aniidexSyncNowBtn" ${aniidexSyncInFlight?'disabled':''}>Sync now</button>
+     <label class="small">Auto-sync
+       <select id="aniidexAutoSyncInterval">
+         ${[1,2,5,10].map(n=>`<option value="${n}" ${Number(aniidexAutoSyncMinutes)===n?'selected':''}>${n} min</option>`).join('')}
+       </select>
+     </label>
+     <button id="aniidexAutoSyncToggle" ${aniidexSyncInFlight?'disabled':''}>${aniidexAutoSyncRunning?'Stop auto-sync':'Start auto-sync'}</button>
+     <span class="${aniidexAutoSyncRunning?'okText':'small'}">${aniidexAutoSyncRunning?`Running every ${aniidexAutoSyncMinutes} min`:'Off by default'}</span>
+   </div>
+   ${aniidexAutoSyncRecovery?`<div class="autoSyncRecovery"><b>Aniidx sync needs attention.</b><span>Auto-sync is paused. Open Aniidx, make sure the player/Homeland page loads, then come back and use Sync now.</span><button id="aniidexRecoveryOpenBtn">Open Aniidx Sync Page</button></div>`:''}
+ </div>
  <div class="importGrid" style="margin-top:12px">
   <div class="importMethod"><h3>1. Direct Aniidx Sync (Companion)</h3><div class="small">Enter a UID here. The companion asks Aniidx to authorize the lookup, completes the normal <b>/api/player/pass</b> verification when required, then returns the player profile and Homeland snapshot directly to this planner. If Cloudflare requires interaction, the Aniidx tab is brought forward only for that verification.</div><div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-top:10px"><label style="min-width:230px">Aniimo UID<input id="aniidexCompanionUid" inputmode="numeric" autocomplete="off" value="${directUid}" placeholder="Enter Aniimo UID"></label><button class="primary" id="aniidexCompanionBtn">Import from Aniidx</button><span id="aniidexCompanionState" class="small">${aniidexCompanionDetected?'Companion detected ✓':'Companion extension required'}</span></div><div style="margin-top:12px;padding:10px;border:1px solid #31495d;border-radius:10px"><b>Install the Companion Extension</b><div class="small" style="margin-top:6px">1. Click <b>Download Companion Extension</b> below. This downloads <b>only the extension</b>, not the whole GitHub repository.<br>2. Extract <b>Aniimo_Homeland_Companion.zip</b>.<br>3. Run <b>Install_Companion.bat</b>. It copies the extension to <b>%LOCALAPPDATA%\\AniimoHomelandCompanion</b> and opens Explorer plus the Chrome/Edge extensions page when available.<br>4. Turn on <b>Developer mode</b>.<br>5. Click <b>Load unpacked</b> and select that permanent <b>AniimoHomelandCompanion</b> folder.<br>6. Return here and refresh the planner. This box should change to <b>Companion detected ✓</b>.<br>7. For later versions, run <b>Update_Companion.bat</b> from the new ZIP, then click <b>Reload</b> on the extension card.</div><div style="margin-top:10px"><a class="bookmarkletLink" href="extension/download.html" target="_blank" rel="noopener">Download Companion Extension</a></div></div></div>
   <div class="importMethod"><h3>2. Bookmarklet Fallback</h3><div class="small">The existing same-origin helper remains available if you do not want to install the companion. It runs on Aniidx and downloads one JSON sync file without copying cookies or passwords into the planner.</div><ol class="importSteps"><li>Drag the button below to your bookmarks bar, or copy it into a new bookmark's URL.</li><li>Open Aniidx → Homeland and let the page finish loading.</li><li>Click the bookmark and enter your UID.</li><li>Load the downloaded JSON using the sync-file box.</li></ol><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><a id="syncBookmarklet" class="bookmarkletLink" href="#" title="Drag this to your bookmarks bar. Clicking it here will only open Aniidx.">Drag to Bookmarks: Aniimo Homeland Sync</a><button id="openAniidexBtn">Open Aniidx Homeland</button><button id="copyBookmarkletBtn">Copy Bookmarklet</button><button id="downloadBookmarkletBtn">Download Instructions</button></div><details style="margin-top:10px"><summary>Show bookmarklet code</summary><textarea id="bookmarkletCode" class="bookmarkletCode" readonly></textarea></details></div>
@@ -382,7 +396,17 @@ function renderImportTab(targetId='dashboardImport',embedded=true){
   <div id="aniidexImportStatus" class="small" style="margin:10px 0"></div>
  </div>`;
  const bm=aniidexBookmarkletCode();el('syncBookmarklet').href=bm;el('bookmarkletCode').value=bm;el('syncBookmarklet').onclick=(e)=>{e.preventDefault();importUiMessage='Opened Aniidx Homeland. Once it finishes loading, click the Aniimo Homeland Sync bookmark from your browser bookmarks bar.';window.open('https://aniidex.com/homeland/','_blank');renderImportTab()};el('openAniidexBtn').onclick=()=>window.open('https://aniidex.com/homeland/','_blank');
- el('aniidexCompanionBtn').onclick=requestAniidexCompanionSync;
+ const syncNowBtn=el('aniidexSyncNowBtn');if(syncNowBtn)syncNowBtn.onclick=()=>requestAniidexCompanionSync('manual');
+ const autoInterval=el('aniidexAutoSyncInterval');if(autoInterval)autoInterval.onchange=()=>{aniidexAutoSyncMinutes=Math.max(1,Number(autoInterval.value)||5);if(aniidexAutoSyncRunning)scheduleAniidexAutoSync();renderImportTab();};
+ const autoToggle=el('aniidexAutoSyncToggle');if(autoToggle)autoToggle.onclick=()=>{
+   if(aniidexAutoSyncRunning){stopAniidexAutoSync('Auto-sync stopped.');renderImportTab();return;}
+   const uid=String(el('aniidexCompanionUid')?.value||aniidexImportMeta?.uid||'').trim();
+   if(!/^[1-9]\d{7,15}$/.test(uid)){setAniidexCompanionMessage('Enter a valid numeric Aniimo UID before starting auto-sync.',true);return;}
+   aniidexAutoSyncRunning=true;aniidexAutoSyncRecovery=false;importUiMessage=`Auto-sync started — refreshing every ${aniidexAutoSyncMinutes} minute${aniidexAutoSyncMinutes===1?'':'s'}.`;
+   renderImportTab();requestAniidexCompanionSync('auto');
+ };
+ const recoveryBtn=el('aniidexRecoveryOpenBtn');if(recoveryBtn)recoveryBtn.onclick=openAniidexSyncPage;
+ el('aniidexCompanionBtn').onclick=()=>requestAniidexCompanionSync('manual');
  el('aniidexCompanionUid').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();requestAniidexCompanionSync();}});
  el('copyBookmarkletBtn').onclick=async()=>{try{await navigator.clipboard.writeText(bm);importUiMessage='Bookmarklet copied. Create a bookmark and paste it into the URL/location field.';}catch{importUiMessage='Clipboard permission was blocked. Open “Show bookmarklet code” and copy it manually.';}renderImportTab()};
  el('downloadBookmarkletBtn').onclick=downloadBookmarkletText;
