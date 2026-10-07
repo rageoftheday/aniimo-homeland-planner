@@ -332,6 +332,7 @@ window.addEventListener('message',event=>{
      const confirmRefresh=aniidexSyncMode!=='auto'&&(!aniidexImportMeta||String(aniidexImportMeta.uid||'')!==incomingUid);
      const sum=applyAniidexImportedData(profileData,homeData,'Aniidx direct sync',aniidexBundleCatalog(data),confirmRefresh);
      if(!sum){setAniidexCompanionMessage('Aniidx sync received; import was cancelled.');return;}
+     if(aniidexImportMeta)aniidexImportMeta.rawBundle=data;
      aniidexLastSyncAt=Date.now();
      aniidexAutoSyncRecovery=false;
      setAniidexCompanionMessage(`${aniidexSyncMode==='auto'?'Auto-sync':'Direct Aniidx sync'} complete ✓ ${sum.name||'Player'} • RV ${sum.rv} • ${sum.aniimo} Homeland Aniimo • ${sum.facilities} facility pieces • ${sum.caught||0} caught forms`);
@@ -364,6 +365,7 @@ async function importAniidexSyncFile(file){
   else throw new Error('This does not look like an Aniimo Homeland sync or home-import file.');
   const sum=applyAniidexImportedData(profileData,homeData,'Aniիդex sync file',catalogData);
   if(!sum)return;
+  if(aniidexImportMeta)aniidexImportMeta.rawBundle=data;
   importUiMessage=`Sync file imported ✓ ${sum.name||'Player'} • RV ${sum.rv} • ${sum.aniimo} Homeland Aniimo • ${sum.facilities} facility pieces • ${sum.caught||0} caught forms`;
   renderImportTab();
  }catch(err){importUiMessage='Sync file import failed: '+(err?.message||err);if(status)status.textContent=importUiMessage;}
