@@ -337,6 +337,8 @@ jobs:
           grep -q 'edge://extensions' extension/Install_Companion.bat
           grep -q 'No supported browser is currently open.' extension/Update_Companion.bat
           grep -q 'AppActivate($p.Id)' extension/Install_Companion.bat
+          grep -q 'MainWindowHandle -ne 0' extension/Install_Companion.bat
+          grep -q 'MainWindowHandle -ne 0' extension/Update_Companion.bat
           grep -q "SendKeys('^t')" extension/Install_Companion.bat
           grep -q "SendKeys('chrome://extensions/')" extension/Install_Companion.bat
           grep -q "SendKeys('edge://extensions/')" extension/Install_Companion.bat
