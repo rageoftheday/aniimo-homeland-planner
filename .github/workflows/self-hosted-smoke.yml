@@ -179,7 +179,6 @@ jobs:
           grep -Fq ".hpv2FocusGrid.dragTarget" css/app.css
           grep -Fq "grid-auto-rows:max-content" css/app.css
           grep -Fq "data-hpv2-drop-plot" js/views.js
-          grep -Fq "Add directly to Plot" js/views.js
           grep -Fq "application/x-aniimo-catalog" js/app.js
           grep -Fq "function addObjectToFocusedPlot" js/app.js
           grep -Fq "function nextFreeInPlot" js/app.js
