@@ -242,8 +242,8 @@ function renderDashboardTab(){
  const root=el('dashboardPane');if(!root)return;
  const active=workers.filter(w=>w.active!==false).length,blocked=blockedFamilyJobs(),jobs=activeJobs(),open=[...openPlots].length;
  root.innerHTML=`<div class="v30Title">Homeland Dashboard</div><div class="v30Sub">Quick health check for this profile. Use Home Snapshot for the complete live Aniidx Homeland readout.</div>
- <div id="dashboardImport" class="dashboardImportHost"></div>
  <div class="snapshotJump"><div><b>Live Homeland Snapshot</b><span>Incubation, production, workers, abilities, facilities, food, modules, visitors, sync health and storage.</span></div><button type="button" onclick="setMainTab('snapshot')">Open Home Snapshot →</button></div>
+ <div id="dashboardImport" class="dashboardImportHost"></div>
  <div class="dashboardGrid">
   <div class="metricCard"><div class="label">RV</div><div class="metric">${esc(rvLevel.value)}</div><div class="small">${open} open production plots</div></div>
   <div class="metricCard"><div class="label">Production Zone</div><div class="metric">${active}</div><div class="small">${workers.length} Aniimo entered</div></div>
