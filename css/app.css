@@ -464,10 +464,17 @@ header{align-items:center}
  linear-gradient(to bottom,rgba(255,255,255,.22) 1px,transparent 1px),
  repeating-linear-gradient(25deg,rgba(54,103,49,.10) 0 1px,transparent 1px 9px);
  background-size:5% 100%,100% 6.6667%,auto;pointer-events:none}
-.hpv2Obj{position:absolute;min-width:5px;min-height:5px;border:1px solid #dfe7df;border-radius:3px;background:rgba(250,250,245,.95);color:#59616f;box-shadow:0 1px 2px rgba(0,0,0,.2);padding:0;overflow:hidden}
+.hpv2Obj{position:absolute;min-width:5px;min-height:5px;border:1px solid rgba(164,177,162,.8);border-radius:5px;background:linear-gradient(145deg,rgba(255,255,251,.97),rgba(246,248,239,.94));color:#59616f;box-shadow:0 2px 4px rgba(56,83,48,.22);padding:0;overflow:hidden}
+.hpv2Obj:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 0 42%,rgba(224,233,214,.32) 42% 58%,transparent 58%);pointer-events:none}
 .hpv2Obj.preview{pointer-events:none}
-.hpv2Obj span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800}
-.hpv2Obj.big{border-radius:7px}.hpv2Obj.big span{font-size:18px}.hpv2Obj.big b{position:absolute;left:3px;bottom:2px;font-size:9px;background:rgba(255,255,255,.8);padding:1px 3px;border-radius:4px}
+.hpv2Obj.big{border-radius:8px}
+.hpv2Visual{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;pointer-events:none}
+.hpv2IconCircle{position:relative;display:flex;align-items:center;justify-content:center;width:48%;aspect-ratio:1;border-radius:50%;background:rgba(92,94,105,.92);box-shadow:0 1px 2px rgba(0,0,0,.22),inset 0 0 0 1px rgba(255,255,255,.28)}
+.hpv2IconGlyph{position:static!important;inset:auto!important;display:block!important;font-size:clamp(7px,1.2vw,15px)!important;line-height:1!important;font-weight:700!important;filter:saturate(.9)}
+.hpv2LevelText{position:static!important;inset:auto!important;display:block!important;font-size:clamp(6px,.75vw,10px)!important;line-height:1!important;font-weight:800!important;color:#666b78;text-shadow:0 1px rgba(255,255,255,.8)}
+.hpv2Obj.big .hpv2IconCircle{width:min(40%,58px)}
+.hpv2Obj.big .hpv2IconGlyph{font-size:clamp(14px,2.1vw,28px)!important}
+.hpv2Obj.big .hpv2LevelText{font-size:clamp(10px,1.1vw,14px)!important;margin-top:1px}
 .hpv2Obj:hover{outline:2px solid #60c3ef;z-index:5}
 .hpv2FocusHead{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 0}.hpv2FocusHead h3{margin:0;font-size:18px}.hpv2FocusHead span,.hpv2FocusMeta{font-size:11px;color:#eaf5df}.hpv2FocusMeta{background:rgba(44,82,43,.52);padding:6px 8px;border-radius:999px}
 .hpv2FocusFoot{display:flex;justify-content:space-between;align-items:center;gap:10px;width:min(100%,1000px);margin:8px auto 0;padding:8px 10px;border-radius:10px;background:rgba(245,252,235,.82);font-size:11px;color:#53685c}
@@ -490,7 +497,7 @@ header{align-items:center}
 .hpv2PieceList{overflow:auto;padding:8px;display:grid;gap:7px}
 .hpv2PieceCard{display:grid;grid-template-columns:34px minmax(0,1fr) 34px;gap:8px;align-items:center;padding:8px;border:1px solid #2d4658;border-radius:9px;background:#10202c;cursor:grab}
 .hpv2PieceCard:hover{border-color:#6db6df;background:#153043}.hpv2PieceCard:active{cursor:grabbing}
-.hpv2PieceIcon{width:34px;height:34px;border-radius:8px;background:#1d3a4d;display:flex;align-items:center;justify-content:center;font-weight:800}
+.hpv2PieceIcon{width:34px;height:34px;border-radius:50%;background:#263b4b;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 .hpv2PieceInfo{display:grid;gap:2px;min-width:0}.hpv2PieceInfo b{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hpv2PieceInfo span,.hpv2PieceInfo small{font-size:9px;color:#9fb4c2}
 .hpv2PieceCard>button{width:32px;height:32px;padding:0;font-size:18px}
 @media(max-width:1050px){.hpv2BuilderShell{grid-template-columns:1fr}.hpv2PiecePalette{position:static;max-height:300px}.hpv2PieceList{grid-template-columns:repeat(2,minmax(0,1fr))}}
