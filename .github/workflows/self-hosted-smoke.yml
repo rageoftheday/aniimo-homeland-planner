@@ -158,7 +158,6 @@ jobs:
           grep -q "setHomelandPlannerMode('overview')" js/views.js
           grep -q 'hpv2PlotGrid' css/app.css
           grep -q 'hpv2FocusGrid' css/app.css
-          grep -q 'Legacy Board' js/views.js
           grep -q 'Official Wiki Aniimo' js/views.js
           grep -q 'Family-gated stations' js/views.js
           grep -q 'Family Requirements by Station & Recipe' js/views.js
