@@ -46,6 +46,17 @@
     return null;
   }
   function homeCoin(n){return Number(n||0).toLocaleString()+' HC'}
+  function foodEnergy(id){
+    const key=String(id??'');
+    const ref=window.ANIIMO_FOOD_ENERGY_REFERENCE?.entries?.[key];
+    const n=Number(ref?.energy);
+    return Number.isFinite(n)&&n>0?n:null;
+  }
+  function formatReserveMinutes(totalMinutes){
+    if(!Number.isFinite(totalMinutes)||totalMinutes<=0)return '—';
+    const m=Math.floor(totalMinutes),d=Math.floor(m/1440),h=Math.floor((m%1440)/60),n=m%60;
+    return [d?d+'d':'',h?h+'h':'',n?n+'m':''].filter(Boolean).join(' ');
+  }
   function remaining(sec){
     const ms=Number(sec||0)*1000-Date.now();if(ms<=0)return 'Ready now';
     const m=Math.max(1,Math.ceil(ms/60000)),d=Math.floor(m/1440),h=Math.floor((m%1440)/60),n=m%60;
@@ -78,7 +89,16 @@
       const id=String(e.item??''),ref=window.ANIIMO_EGG_REFERENCE?.entries?.[id]||{};
       return '<tr><td><b>'+esc(ref.name||itemName(id))+'</b>'+(ref.guarantee?'<div class="small">'+esc(ref.guarantee)+' guaranteed</div>':'')+'</td><td><code>'+esc(id)+'</code></td><td>'+String(e.piece??'—')+'</td><td>'+esc(hatchAt(e.ends))+'</td><td data-egg-end="'+String(e.ends||0)+'">'+esc(remaining(e.ends))+'</td></tr>';
     }).join('')||'<tr><td colspan="5">No active eggs.</td></tr>';
-    const foodRows=food.map(x=>'<tr><td>'+x.slot+'</td><td><b>'+esc(itemName(x.item))+'</b></td><td><code>'+esc(String(x.item))+'</code></td><td>'+Number(x.count||0).toLocaleString()+'</td></tr>').join('')||'<tr><td colspan="4">No food slots returned.</td></tr>';
+    let foodEnergyTotal=0,foodKnownUnits=0,foodUnknownUnits=0;
+    const foodRows=food.map(x=>{
+      const count=Number(x.count||0),energy=foodEnergy(x.item);
+      if(energy==null)foodUnknownUnits+=count;else{foodKnownUnits+=count;foodEnergyTotal+=energy*count;}
+      return '<tr><td>'+x.slot+'</td><td><b>'+esc(itemName(x.item))+'</b></td><td><code>'+esc(String(x.item))+'</code></td><td>'+count.toLocaleString()+'</td><td>'+(energy==null?'—':energy.toLocaleString())+'</td></tr>';
+    }).join('')||'<tr><td colspan="5">No food slots returned.</td></tr>';
+    const foodRate=Number(window.ANIIMO_FOOD_ENERGY_REFERENCE?.consumptionPerAniimoPerMinute||10);
+    const foodResidents=Math.max(0,Number(h.rosterCount||0));
+    const foodReserveMinutes=foodResidents>0&&foodRate>0?foodEnergyTotal/(foodResidents*foodRate):0;
+    const foodReserveLabel=foodEnergyTotal>0?(foodUnknownUnits>0?'≥ '+formatReserveMinutes(foodReserveMinutes)+' from known foods':formatReserveMinutes(foodReserveMinutes)):'Unknown';
     const qRows=queues.map(q=>{
       const out=Object.entries(q.output||{}).filter(([,v])=>Number(v)>0).map(([id,v])=>itemName(id)+' ×'+Number(v)).join(' • ');
       const p=Array.isArray(q.progress)?q.progress:[0,0],cur=Number(p[0]||0),tot=Number(p[1]||0),pct=tot?Math.round(cur/tot*100):0;
@@ -107,7 +127,7 @@
       '<div class="homeSnapshotCard"><span>Incubation</span><b>'+eggs.length+' eggs</b><small>'+eggs.length+' / '+h.hatchinators+' occupied • '+Math.max(0,h.hatchinators-eggs.length)+' free</small></div>'+
       '<div class="homeSnapshotCard"><span>Food</span><b>'+h.foodSlots+' filled</b><small>Food speed '+h.foodSpeed+'</small></div></div>'+
       '<section class="snapshotSection"><div class="sectionTitle">Incubation</div><div class="small snapshotSectionIntro">Egg IDs are preserved even when a friendly name is not mapped yet.</div><div class="tableWrap"><table class="dataTable"><thead><tr><th>Egg</th><th>Item ID</th><th>Hatchinator piece</th><th>Hatches at</th><th>Remaining</th></tr></thead><tbody>'+eggRows+'</tbody></table></div></section>'+
-      '<section class="snapshotSection"><div class="sectionTitle">Food Supply</div><div class="small snapshotSectionIntro">'+food.length+' filled slot'+(food.length===1?'':'s')+' • food speed '+Number(raw.food_speed||0)+' • <b>Time left: not exposed by Aniidx</b></div><div class="tableWrap"><table class="dataTable"><thead><tr><th>Slot</th><th>Food</th><th>Item ID</th><th>Count</th></tr></thead><tbody>'+foodRows+'</tbody></table></div></section>'+
+      '<section class="snapshotSection"><div class="sectionTitle">Food Supply</div><div class="snapshotStorageSummary"><div><span>Estimated food reserve</span><b>'+esc(foodReserveLabel)+'</b></div><div><span>Known food energy</span><b>'+foodEnergyTotal.toLocaleString()+'</b></div><div><span>Consumption basis</span><b>'+foodResidents+' Aniimo × '+foodRate+'/min</b></div></div><div class="small snapshotSectionIntro">'+food.length+' filled slot'+(food.length===1?'':'s')+' • food speed '+Number(raw.food_speed||0)+' • estimate uses the current synced resident count and verified food energy values; it is not a server-provided expiration timer.</div><div class="tableWrap"><table class="dataTable"><thead><tr><th>Slot</th><th>Food</th><th>Item ID</th><th>Count</th><th>Energy each</th></tr></thead><tbody>'+foodRows+'</tbody></table></div></section>'+
       abilityTable()+
       '<details class="homeSnapshotDetails" open><summary>Live production pieces ('+queues.length+')</summary><div class="tableWrap snapshotProductionTable"><table class="dataTable"><thead><tr><th>Facility</th><th>Recipe / item</th><th>Status</th><th>Progress</th><th>Output ready</th></tr></thead><tbody>'+qRows+'</tbody></table></div></details>'+
       '<details class="homeSnapshotDetails"><summary>Facility inventory ('+h.facilityPieces+' pieces / '+h.facilityRows.length+' types)</summary><div class="tableWrap homeFacilityTable"><table class="dataTable"><thead><tr><th>Facility</th><th>Total</th><th>Levels owned</th></tr></thead><tbody>'+facilityRows+'</tbody></table></div></details>'+
