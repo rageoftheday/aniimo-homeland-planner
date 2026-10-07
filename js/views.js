@@ -252,7 +252,68 @@ function renderDashboardTab(){
  </div>`;
  renderImportTab('dashboardImport',true);
 }
-function renderProductionTab(){const root=el('productionPane');if(!root)return;let rows=[];for(const [station,list] of Object.entries(recipeDB)){const sr=STATION_RULES[station]||{};for(const r of list)rows.push({station,r,sr})}rows.sort((a,b)=>a.station.localeCompare(b.station)||((a.r.rv||0)-(b.r.rv||0)));root.innerHTML=`<div class="productionBrowser"><div class="productionBrowserHead"><div class="v30Title">Recipes</div><div class="v30Sub">Full recipe browser for the loaded offline database. RV and module-aware production calculations continue to use the selected stations on the Homeland Planner.</div><div class="filterBar"><input id="prodSearch" placeholder="Search station, recipe or ingredient..."><select id="prodRvFilter"><option value="all">All RV levels</option><option value="current">Available at current RV</option></select></div></div><div id="prodRecipeTable" class="tableWrap productionRecipeTable"></div></div>`;const draw=()=>{const q=normalizeSearch(el('prodSearch').value),cur=el('prodRvFilter').value;const f=rows.filter(x=>(cur!=='current'||(x.r.rv||1)<=+rvLevel.value)&&(!q||normalizeSearch(x.station+' '+x.r.name+' '+(x.r.ingredients||'')).includes(q)));el('prodRecipeTable').innerHTML=`<table class="dataTable"><thead><tr><th>Station</th><th>Recipe</th><th>RV</th><th>Ability</th><th>Preferred trait</th><th>Ingredients</th><th>Work</th><th>Sell</th><th>Lock</th></tr></thead><tbody>${f.map(x=>{const fr=FAMILY_RECIPE_RULES[x.station+'|'+x.r.name];return `<tr><td>${esc(x.station)}</td><td><b>${esc(x.r.name)}</b></td><td>${x.r.rv||1}</td><td>${esc(x.sr.ability||'—')} Lv${x.r.rec||1}</td><td>${x.sr.personality?x.sr.personality+' — '+PERSONALITY_NAMES[x.sr.personality]:'—'}</td><td>${esc(x.r.ingredients||'—')}</td><td>${x.r.work||0}</td><td>${Number(x.r.sell||0).toLocaleString()}</td><td>${fr?`🔒 ${esc(WORKER_FAMILIES[fr.family]?.label||fr.family)}`:'—'}</td></tr>`}).join('')}</tbody></table>`};el('prodSearch').addEventListener('input',draw);el('prodRvFilter').addEventListener('change',draw);draw()}
+function recipeCatalogParts(){
+ const live=aniidexImportMeta?.catalog||null,embedded=typeof EMBEDDED_ANIIDEX_CATALOG!=='undefined'?EMBEDDED_ANIIDEX_CATALOG:null;
+ const pick=x=>x?.planner?.recipes||x?.recipes||x?.hub?.facts?.recipes||x?.facts?.recipes||[];
+ const recipes=pick(live)?.length?pick(live):pick(embedded);
+ const src=pick(live)?.length?'Aniidx live catalog':'embedded Aniidx catalog';
+ const text=(pick(live)?.length?(live?.text||live?.hub?.text):(embedded?.text||embedded?.hub?.text))||{};
+ const planner=(pick(live)?.length?(live?.planner||live):(embedded?.planner||embedded))||{};
+ const facts=(pick(live)?.length?(live?.hub?.facts||live?.facts):(embedded?.hub?.facts||embedded?.facts))||{};
+ return {recipes:Array.isArray(recipes)?recipes:Object.entries(recipes||{}).map(([id,v])=>({id:Number(id),...v})),text,planner,facts,src};
+}
+function recipeItemName(id,p){
+ const key=String(id??''),direct=p.text?.items?.[key]??p.text?.items?.[Number(key)];
+ if(typeof direct==='string')return direct;
+ if(direct?.name||direct?.label)return String(direct.name||direct.label);
+ const supplemental=window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE?.entries?.[key];
+ if(supplemental?.name)return String(supplemental.name);
+ const fact=p.facts?.items?.[key]??p.facts?.items?.[Number(key)];
+ if(fact?.name)return String(fact.name);
+ const slug=String(fact?.path||'').split('?')[0].replace(/\/+$/,'').split('/').pop()||'';
+ return slug?slug.replace(/[-_]+/g,' ').replace(/\b\w/g,m=>m.toUpperCase()):(key?'Item '+key:'Unknown');
+}
+function recipeFacilityName(id,p){
+ const key=String(id??''),direct=p.text?.facilities?.[key]??p.text?.facilities?.[Number(key)];
+ if(typeof direct==='string')return direct;
+ if(direct?.name||direct?.label)return String(direct.name||direct.label);
+ const f=(p.planner?.facilities||[]).find(x=>String(x.type)===key);
+ return f?.name||('Facility '+key);
+}
+function recipeFacilityRv(facilityId,minLevel,p){
+ const f=(p.planner?.facilities||[]).find(x=>String(x.type)===String(facilityId));
+ const level=(f?.levels||[]).find(x=>Number(x.level)===Number(minLevel));
+ return Number(level?.rv||1);
+}
+function fullRecipeRows(){
+ const p=recipeCatalogParts();
+ if(p.recipes.length){
+  return {source:p.src,rows:p.recipes.map(r=>{
+   const station=recipeFacilityName(r.facility,p),out=r.outputs?.[0]||{},name=recipeItemName(out.item??r.id,p);
+   const ingredients=(r.inputs||[]).length?(r.inputs||[]).map(x=>recipeItemName(x.item,p)+' ×'+Number(x.qty||1)).join(' + '):'—';
+   const ability=r.steps?.find(x=>x?.skill)?.skill||r.step?.skill||(Array.isArray(r.hands)&&r.hands.length?r.hands.join(' / '):'—');
+   const abilityLevel=r.steps?.find(x=>x?.skill)?.level||r.step?.level||'';
+   const sellRaw=p.facts?.items?.[String(out.item??r.id)]?.sell;
+   const supplementalSell=window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE?.entries?.[String(out.item??r.id)]?.sell;
+   const sell=sellRaw??supplementalSell??null;
+   return {id:r.id,station,name,rv:recipeFacilityRv(r.facility,r.minLevel,p),level:Number(r.minLevel||1),kind:r.kind||'work',ingredients,work:r.workload??r.time??0,ability,abilityLevel,sell,family:r.family||null};
+  })};
+ }
+ let rows=[];for(const [station,list] of Object.entries(recipeDB)){const sr=STATION_RULES[station]||{};for(const r of list)rows.push({station,name:r.name,rv:r.rv||1,level:1,kind:r.mode||'work',ingredients:r.ingredients||'—',work:r.work||0,ability:sr.ability||'—',abilityLevel:r.rec||1,sell:r.sell??null,family:FAMILY_RECIPE_RULES[station+'|'+r.name]?.family||null})}
+ return {source:'legacy planner recipeDB',rows};
+}
+function renderProductionTab(){
+ const root=el('productionPane');if(!root)return;
+ const data=fullRecipeRows(),rows=data.rows.sort((a,b)=>a.station.localeCompare(b.station)||a.rv-b.rv||a.name.localeCompare(b.name));
+ const kinds=[...new Set(rows.map(x=>x.kind))].sort();
+ root.innerHTML=`<div class="productionBrowser"><div class="productionBrowserHead"><div class="v30Title">Recipes</div><div class="v30Sub">${rows.length.toLocaleString()} loaded recipe records from ${esc(data.source)}. This browser is separate from the smaller planner recipe set used for placement calculations.</div><div class="filterBar"><input id="prodSearch" placeholder="Search station, recipe, ingredient, ID or ability..."><select id="prodRvFilter"><option value="all">All RV levels</option><option value="current">Available at current RV</option></select><select id="prodKindFilter"><option value="all">All recipe types</option>${kinds.map(k=>`<option value="${esc(k)}">${esc(k)}</option>`).join('')}</select></div></div><div id="prodRecipeTable" class="tableWrap productionRecipeTable"></div></div>`;
+ const draw=()=>{
+  const q=normalizeSearch(el('prodSearch').value),cur=el('prodRvFilter').value,kind=el('prodKindFilter').value;
+  const f=rows.filter(x=>(cur!=='current'||x.rv<=+rvLevel.value)&&(kind==='all'||x.kind===kind)&&(!q||normalizeSearch(x.station+' '+x.name+' '+x.ingredients+' '+x.id+' '+x.ability).includes(q)));
+  el('prodRecipeTable').innerHTML=`<div class="small" style="padding:7px 2px">${f.length.toLocaleString()} / ${rows.length.toLocaleString()} records</div><table class="dataTable"><thead><tr><th>ID</th><th>Station</th><th>Recipe / Output</th><th>Type</th><th>Facility Lv</th><th>RV</th><th>Ability</th><th>Ingredients</th><th>Work / Time</th><th>Sell</th></tr></thead><tbody>${f.map(x=>`<tr><td><code>${esc(String(x.id??'—'))}</code></td><td>${esc(x.station)}</td><td><b>${esc(x.name)}</b></td><td>${esc(x.kind)}</td><td>${x.level}</td><td>${x.rv}</td><td>${esc(x.ability||'—')}${x.abilityLevel?' Lv'+x.abilityLevel:''}</td><td>${esc(x.ingredients)}</td><td>${Number(x.work||0).toLocaleString()}</td><td>${x.sell===null||x.sell===undefined?'—':Number(x.sell).toLocaleString()+' HC'}</td></tr>`).join('')}</tbody></table>`;
+ };
+ el('prodSearch').addEventListener('input',draw);el('prodRvFilter').addEventListener('change',draw);el('prodKindFilter').addEventListener('change',draw);draw();
+}
 function rankLabel(f){if(!f||!f.eligible)return'Not eligible';if(f.trait&&f.lvl>=4)return'Best';if(f.lvl>=3&&f.trait)return'High';if(f.lvl>=2)return'Medium';return'Low End'}
 function renderSuggestionsTab(){const root=el('planSuggestions');if(!root)return;const jobs=activeJobs(),cov=abilityCoverage(),blocked=blockedFamilyJobs();const demand={};for(const j of jobs)demand[j.ability]=(demand[j.ability]||0)+(j.rec||1);let suggestions=[];for(const a of HOME_ABILITIES){const need=demand[a]||0,have=cov[a]||0;if(need&&have<=need)suggestions.push({pri:have<need?0:1,title:`${a} coverage is ${have<need?'short':'tight'}`,body:`Current active-job demand is about ${need} ability levels; your active roster totals ${have}. Use Imported Roster → By Ability to find ${a} candidates, then compare secondary abilities and personality fit.`})}for(const j of blocked)suggestions.unshift({pri:-1,title:`🔒 ${j.station}${j.recipe?' — '+j.recipe:''} production blocked`,body:`Missing ${WORKER_FAMILIES[j.family]?.label||j.family}. Add one accepted family member to the Production Zone. Preferred personality: ${j.personality?j.personality+' — '+PERSONALITY_NAMES[j.personality]:'none'}.`});for(const j of jobs){const fits=workers.map(w=>({w,f:workerFitForJob(w,j)})).filter(x=>x.f.eligible).sort((a,b)=>b.f.score-a.f.score);if(fits[0]&&!fits[0].f.trait&&j.personality)suggestions.push({pri:2,title:`${j.station}: personality improvement available`,body:`Best current fit is ${fits[0].w.name||'unnamed worker'}, but it does not have ${j.personality} — ${PERSONALITY_NAMES[j.personality]}. The job still works; a matching personality would add the station bonus.`})}suggestions.sort((a,b)=>a.pri-b.pri);root.innerHTML=`<div class="sectionTitle">Recommendations</div><div class="v30Sub">Actionable coaching based on this profile: blocked production first, then ability shortages, personality opportunities, and roster fit.</div><div class="suggestGrid">${suggestions.length?suggestions.slice(0,24).map((x,i)=>`<div class="fullCard"><h3>${esc(x.title)}</h3><div class="small">${x.body}</div></div>`).join(''):'<div class="fullCard"><h3>No urgent suggestion yet</h3><div class="small">Enter your roster and assign recipes to let the planner find shortages, family locks and personality opportunities.</div></div>'}</div>`}
 function renderProgressionTab(){const root=el('planProgression');if(!root)return;const rv=+rvLevel.value,next=rv+1;const upcoming=catalog.filter(x=>(x.rv||1)===next);root.innerHTML=`<div class="sectionTitle">Progression</div><div class="v30Sub">RV, module, plot and facility progression using loaded data only.</div><div class="progressGrid"><div class="fullCard"><h3>Current RV</h3><div class="metric">RV ${rv}</div><div class="small">Next: RV ${next}</div></div><div class="fullCard"><h3>Open plots</h3><div class="metric">${openPlots.size}</div><div class="small">Plot access follows what is actually open in your game.</div></div><div class="fullCard"><h3>Next-RV unlocks</h3><div class="small">${upcoming.length?upcoming.map(x=>esc(x.name)).join(' • '):'No loaded facility unlocks for RV '+next+'.'}</div></div></div><div class="sectionTitle">RV Module Levels</div><div class="tableWrap"><table class="dataTable"><thead><tr><th>Module</th><th>Current</th></tr></thead><tbody>${Object.keys(rvModules).map(k=>`<tr><td>${esc(k)}</td><td>Lv ${Number(moduleLevels[k]||0)}</td></tr>`).join('')}</tbody></table></div>`}
