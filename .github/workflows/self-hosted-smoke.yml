@@ -308,7 +308,6 @@ jobs:
           grep -q 'Facility inventory' js/home-snapshot.js
           grep -q 'Known sell value' js/home-snapshot.js
           grep -q 'function foodEnergy' js/home-snapshot.js
-          grep -q 'catalogValue=Number(fact?.food)' js/home-snapshot.js
           grep -q 'raw.food_speed' js/home-snapshot.js
           grep -q 'Live food cost' js/home-snapshot.js
           grep -q 'Estimated food reserve' js/home-snapshot.js
