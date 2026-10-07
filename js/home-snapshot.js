@@ -47,10 +47,10 @@
   }
   function homeCoin(n){return Number(n||0).toLocaleString()+' HC'}
   function foodEnergy(id){
-    const key=String(id??'');
-    const ref=window.ANIIMO_FOOD_ENERGY_REFERENCE?.entries?.[key];
-    const n=Number(ref?.energy);
-    return Number.isFinite(n)&&n>0?n:null;
+    const fact=itemFact(id),catalogValue=Number(fact?.food);
+    if(Number.isFinite(catalogValue)&&catalogValue>0)return catalogValue;
+    const key=String(id??''),ref=window.ANIIMO_FOOD_ENERGY_REFERENCE?.entries?.[key],fallback=Number(ref?.energy);
+    return Number.isFinite(fallback)&&fallback>0?fallback:null;
   }
   function formatReserveMinutes(totalMinutes){
     if(!Number.isFinite(totalMinutes)||totalMinutes<=0)return '—';
@@ -95,10 +95,10 @@
       if(energy==null)foodUnknownUnits+=count;else{foodKnownUnits+=count;foodEnergyTotal+=energy*count;}
       return '<tr><td>'+x.slot+'</td><td><b>'+esc(itemName(x.item))+'</b></td><td><code>'+esc(String(x.item))+'</code></td><td>'+count.toLocaleString()+'</td><td>'+(energy==null?'—':energy.toLocaleString())+'</td></tr>';
     }).join('')||'<tr><td colspan="5">No food slots returned.</td></tr>';
-    const foodRate=Number(window.ANIIMO_FOOD_ENERGY_REFERENCE?.consumptionPerAniimoPerMinute||10);
+    const foodRate=Math.max(0,Number(raw.food_speed||0));
     const foodResidents=Math.max(0,Number(h.rosterCount||0));
-    const foodReserveMinutes=foodResidents>0&&foodRate>0?foodEnergyTotal/(foodResidents*foodRate):0;
-    const foodReserveLabel=foodEnergyTotal>0?(foodUnknownUnits>0?'≥ '+formatReserveMinutes(foodReserveMinutes)+' from known foods':formatReserveMinutes(foodReserveMinutes)):'Unknown';
+    const foodReserveMinutes=foodRate>0?foodEnergyTotal/foodRate:0;
+    const foodReserveLabel=foodEnergyTotal>0&&foodRate>0?(foodUnknownUnits>0?'≥ '+formatReserveMinutes(foodReserveMinutes)+' from known foods':'≈ '+formatReserveMinutes(foodReserveMinutes)):'Unknown';
     const qRows=queues.map(q=>{
       const out=Object.entries(q.output||{}).filter(([,v])=>Number(v)>0).map(([id,v])=>itemName(id)+' ×'+Number(v)).join(' • ');
       const p=Array.isArray(q.progress)?q.progress:[0,0],cur=Number(p[0]||0),tot=Number(p[1]||0),pct=tot?Math.round(cur/tot*100):0;
@@ -127,7 +127,7 @@
       '<div class="homeSnapshotCard"><span>Incubation</span><b>'+eggs.length+' eggs</b><small>'+eggs.length+' / '+h.hatchinators+' occupied • '+Math.max(0,h.hatchinators-eggs.length)+' free</small></div>'+
       '<div class="homeSnapshotCard"><span>Food</span><b>'+h.foodSlots+' filled</b><small>Food speed '+h.foodSpeed+'</small></div></div>'+
       '<section class="snapshotSection"><div class="sectionTitle">Incubation</div><div class="small snapshotSectionIntro">Egg IDs are preserved even when a friendly name is not mapped yet.</div><div class="tableWrap"><table class="dataTable"><thead><tr><th>Egg</th><th>Item ID</th><th>Hatchinator piece</th><th>Hatches at</th><th>Remaining</th></tr></thead><tbody>'+eggRows+'</tbody></table></div></section>'+
-      '<section class="snapshotSection"><div class="sectionTitle">Food Supply</div><div class="snapshotStorageSummary"><div><span>Estimated food reserve</span><b>'+esc(foodReserveLabel)+'</b></div><div><span>Known food energy</span><b>'+foodEnergyTotal.toLocaleString()+'</b></div><div><span>Consumption basis</span><b>'+foodResidents+' Aniimo × '+foodRate+'/min</b></div></div><div class="small snapshotSectionIntro">'+food.length+' filled slot'+(food.length===1?'':'s')+' • food speed '+Number(raw.food_speed||0)+' • estimate uses the current synced resident count and verified food energy values; it is not a server-provided expiration timer.</div><div class="tableWrap"><table class="dataTable"><thead><tr><th>Slot</th><th>Food</th><th>Item ID</th><th>Count</th><th>Energy each</th></tr></thead><tbody>'+foodRows+'</tbody></table></div></section>'+
+      '<section class="snapshotSection"><div class="sectionTitle">Food Supply</div><div class="snapshotStorageSummary"><div><span>Estimated food reserve</span><b>'+esc(foodReserveLabel)+'</b></div><div><span>Known food energy</span><b>'+foodEnergyTotal.toLocaleString()+'</b></div><div><span>Consumption basis</span><b>'+foodResidents+' Aniimo × '+foodRate+'/min</b></div></div><div class="small snapshotSectionIntro">'+food.length+' filled slot'+(food.length===1?'':'s')+' • live cost '+foodRate+'/min • estimate uses Aniidx food-energy values and the live food cost. The active food item may be partially consumed, so the game can show a slightly lower exact total.</div><div class="tableWrap"><table class="dataTable"><thead><tr><th>Slot</th><th>Food</th><th>Item ID</th><th>Count</th><th>Energy each</th></tr></thead><tbody>'+foodRows+'</tbody></table></div></section>'+
       abilityTable()+
       '<details class="homeSnapshotDetails" open><summary>Live production pieces ('+queues.length+')</summary><div class="tableWrap snapshotProductionTable"><table class="dataTable"><thead><tr><th>Facility</th><th>Recipe / item</th><th>Status</th><th>Progress</th><th>Output ready</th></tr></thead><tbody>'+qRows+'</tbody></table></div></details>'+
       '<details class="homeSnapshotDetails"><summary>Facility inventory ('+h.facilityPieces+' pieces / '+h.facilityRows.length+' types)</summary><div class="tableWrap homeFacilityTable"><table class="dataTable"><thead><tr><th>Facility</th><th>Total</th><th>Levels owned</th></tr></thead><tbody>'+facilityRows+'</tbody></table></div></details>'+
