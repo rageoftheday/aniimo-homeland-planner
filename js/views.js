@@ -105,14 +105,39 @@ function abilityCoverage(){const out={};for(const a of HOME_ABILITIES)out[a]=0;f
 function familyCoverage(){const out={};for(const [id,f] of Object.entries(WORKER_FAMILIES))out[id]=workers.filter(w=>w.active!==false&&familyForWorker(w)===id).length;return out}
 function blockedFamilyJobs(){return activeJobs().filter(j=>j.family&&!workers.some(w=>w.active!==false&&familyForWorker(w)===j.family))}
 function renderRightQuickStats(){const root=el('rightQuickStats');if(!root)return;const jobs=activeJobs(),blocked=blockedFamilyJobs(),active=workers.filter(w=>w.active!==false).length;root.innerHTML=`<div class="quickStatRow"><span>Roster</span><b>${active} active / ${workers.length}</b></div><div class="quickStatRow"><span>Active jobs</span><b>${jobs.length}</b></div><div class="quickStatRow"><span>Placed objects</span><b>${objects.length}</b></div>${blocked.length?`<div class="rightAlert">🔒 ${blocked.length} production job${blocked.length===1?'':'s'} blocked by missing family worker.</div>`:'<div class="rightGood">No active family-locked production is blocked.</div>'}`}
-function dashboardAbilityNameForJob(jobId){
- const id=Number(jobId);if(!id)return '';
+function dashboardCatalogPlanner(){
  const src=aniidexImportMeta?.catalog||EMBEDDED_ANIIDEX_CATALOG||{};
  const hub=src?.hub||src?.homelandHub||src?.homeland||EMBEDDED_ANIIDEX_CATALOG?.hub||{};
- const facts=hub?.facts||src?.facts||EMBEDDED_ANIIDEX_CATALOG?.hub?.facts||{};
- const text=src?.text||src?.homelandText||src?.siteText||hub?.text||EMBEDDED_ANIIDEX_CATALOG?.text||{};
- for(const [key,a] of Object.entries(facts?.abilities||{})){
-   if(Number(a?.id)===id){const label=text?.abilities?.[id]??text?.abilities?.[String(id)]??key;return typeof label==='string'?label:(label?.name||label?.label||key);}
+ return src?.planner||src?.homelandPlanner||hub?.planner||EMBEDDED_ANIIDEX_CATALOG?.planner||{};
+}
+function dashboardFacilitySupportedAbilities(facilityId){
+ const id=Number(facilityId),planner=dashboardCatalogPlanner(),rows=Array.isArray(planner?.recipes)?planner.recipes:Object.values(planner?.recipes||{});
+ const found=[];
+ for(const r of rows){
+   if(Number(r?.facility)!==id)continue;
+   for(const step of (r?.steps||[])){const skill=String(step?.skill||'');if(skill&&HOME_ABILITIES.includes(skill)&&!found.includes(skill))found.push(skill);}
+   const watering=String(r?.watering?.skill||'');if(watering&&HOME_ABILITIES.includes(watering)&&!found.includes(watering))found.push(watering);
+ }
+ return found;
+}
+function dashboardAbilityNameForAssignment(w){
+ const facility=Number(w?.aniidex?.facility),job=Number(w?.aniidex?.job);
+ if(!facility)return '';
+ const planner=dashboardCatalogPlanner(),rows=Array.isArray(planner?.recipes)?planner.recipes:Object.values(planner?.recipes||{});
+ if(job){
+   for(const r of rows){
+     if(Number(r?.facility)!==facility)continue;
+     for(const step of (r?.steps||[]))if(Number(step?.id)===job&&HOME_ABILITIES.includes(String(step?.skill||'')))return String(step.skill);
+     if(Number(r?.watering?.id)===job&&HOME_ABILITIES.includes(String(r?.watering?.skill||'')))return String(r.watering.skill);
+   }
+ }
+ const deviceAbility={1040003:'Fire',1040004:'Ice',1040005:'Light'}[facility];if(deviceAbility)return deviceAbility;
+ const supported=dashboardFacilitySupportedAbilities(facility);
+ if(supported.length===1)return supported[0];
+ if(supported.length>1){
+   let best='',bestLevel=-1;
+   for(const ability of supported){const level=workerAbilityLevel(w,ability)||0;if(level>bestLevel){best=ability;bestLevel=level;}}
+   if(best)return best;
  }
  return '';
 }
@@ -120,10 +145,10 @@ function dashboardLiveAbilityUsage(){
  const out={};for(const a of HOME_ABILITIES)out[a]={workers:0,levels:0,names:[]};
  for(const w of workers){
    if(!w?.aniidex||w.aniidex.facility==null)continue;
-   const ability=dashboardAbilityNameForJob(w.aniidex.job);if(!ability)continue;
+   const ability=dashboardAbilityNameForAssignment(w);if(!ability)continue;
    const level=workerAbilityLevel(w,ability)||0;
    if(!out[ability])out[ability]={workers:0,levels:0,names:[]};
-   out[ability].workers++;out[ability].levels+=level;out[ability].names.push(`${w.name||'Unnamed'}${level?' Lv'+level:''}`);
+   out[ability].workers++;out[ability].levels+=level;out[ability].names.push(`${w.name||'Unnamed'}${level?' Lv'+level:''} — ${dashboardFacilityName(w.aniidex.facility)}`);
  }
  return out;
 }
