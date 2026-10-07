@@ -74,7 +74,9 @@ jobs:
           test -s js/dom.js
           test -s js/importer.js
           test -s js/views.js
+          test -s js/home-snapshot.js
           test -s data/embedded-aniidex-catalog.js
+          test -s data/egg-reference.js
           test -s data/homeland-reference-data.js
           test -s js/homeland-data.js
           test -s data/asset-manifest.js
@@ -88,8 +90,9 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.22.6' index.html
-          grep -q 'js/views.js?v=30.22.7' index.html
+          grep -q 'css/app.css?v=30.23.0' index.html
+          grep -q 'js/views.js?v=30.23.0' index.html
+          grep -q 'js/home-snapshot.js?v=1' index.html
           grep -q 'js/importer.js?v=30.15.3' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
@@ -100,6 +103,7 @@ jobs:
           grep -q 'data/aniimo-species.js' index.html
           grep -q 'js/assets.js' index.html
           grep -q 'data/embedded-aniidex-catalog.js' index.html
+          grep -q 'data/egg-reference.js?v=1' index.html
           grep -q 'data/official-wiki-homeland.js?v=30.16.0' index.html
           grep -q 'js/wiki-homeland.js?v=30.16.0' index.html
           test -s data/official-wiki-homeland.json
@@ -143,7 +147,7 @@ jobs:
           ! grep -q 'id="saveBtn"' index.html
           ! grep -q 'id="exportBtn"' index.html
           ! grep -q 'id="importBtn"' index.html
-          grep -q 'data-tab="dashboard" class="active">Dashboard</button><button data-tab="map">Homeland Planner</button><button data-tab="plan">Plan / Advice</button><button data-tab="roster">Imported Roster</button><button data-tab="aniimos">Aniimos</button><button data-tab="production">Recipes</button><button data-tab="database">Database</button><button data-tab="raw">Raw JSON</button>' index.html
+          grep -q 'data-tab="dashboard" class="active">Dashboard</button><button data-tab="map">Homeland Planner</button><button data-tab="snapshot">Home Snapshot</button><button data-tab="plan">Plan / Advice</button><button data-tab="roster">Imported Roster</button><button data-tab="aniimos">Aniimos</button><button data-tab="production">Recipes</button><button data-tab="database">Database</button><button data-tab="raw">Raw JSON</button>' index.html
           ! grep -q 'data-tab="import"' index.html
           ! grep -q 'id="importPane"' index.html
           grep -q 'Imported Roster / Job Advisor' index.html
@@ -164,6 +168,7 @@ jobs:
           node --check js/importer.js
           node --check js/app.js
           node --check js/views.js
+          node --check js/home-snapshot.js
           node - <<'NODE'
           const fs=require('fs'),vm=require('vm');
           const code=fs.readFileSync('data/embedded-aniidex-catalog.js','utf8')+';globalThis.__catalog=EMBEDDED_ANIIDEX_CATALOG;';
@@ -185,6 +190,8 @@ jobs:
           grep -q 'advisorWorkerGroups' css/app.css
           node --check js/app.js
           grep -q 'id="planPane"' index.html
+          grep -q 'data-tab="snapshot"' index.html
+          grep -q 'id="snapshotPane"' index.html
           grep -q 'id="planSuggestions"' index.html
           grep -q 'id="planAdvisorHost"' index.html
           grep -q 'id="planProgression"' index.html
@@ -225,24 +232,24 @@ jobs:
           grep -q 'function abilityContributors' js/views.js
           grep -q 'renderCatalog();updateClimateStarterState();renderAniimoCatalog()' js/app.js
           grep -q "Climate Starter 🔒 RV7" js/app.js
-          grep -q 'Home Ability Distribution' js/views.js
+          grep -q 'Home Ability Distribution' js/home-snapshot.js
           grep -q 'function dashboardHomeSnapshot' js/views.js
           grep -q 'function dashboardHomeSnapshotHTML' js/views.js
-          grep -q 'Profile habitability' js/views.js
-          grep -q 'Snapshot comfort' js/views.js
-          grep -q 'Production activity' js/views.js
-          grep -q 'Incubation' js/views.js
-          grep -q 'Facility inventory from latest sync' js/views.js
+          grep -q 'Habitability' js/home-snapshot.js
+          grep -q 'Snapshot comfort' js/home-snapshot.js
+          grep -q 'Live production pieces' js/home-snapshot.js
+          grep -q 'Incubation' js/home-snapshot.js
+          grep -q 'Facility inventory' js/home-snapshot.js
           grep -q 'homeSnapshotGrid' css/app.css
           node --check js/views.js
           grep -q 'dashboardImport' js/views.js
-          grep -q 'Aniimo</th><th>Total levels</th><th>Live work / planner demand' js/views.js
+          grep -q 'Aniimo</th><th>Total levels</th><th>Live work / planner demand' js/home-snapshot.js
           grep -q 'function dashboardLiveAbilityUsage' js/views.js
           grep -q 'function dashboardAbilityNameForAssignment' js/views.js
           grep -q 'function dashboardFacilitySupportedAbilities' js/views.js
           grep -q "1040003:'Fire',1040004:'Ice',1040005:'Light'" js/views.js
-          grep -q 'Working now' js/views.js
-          grep -q 'levels in use' js/views.js
+          grep -q 'Working now' js/home-snapshot.js
+          grep -q 'levels in use' js/home-snapshot.js
           node --check js/views.js
           grep -q 'productionRecipeTable' css/app.css
           grep -q 'dashboardImportHost' css/app.css
@@ -449,6 +456,7 @@ jobs:
           console.log('Stage image index OK',Object.keys(idx).length);
           NODE
           node --check data/embedded-aniidex-catalog.js
+          node --check data/egg-reference.js
           node --check data/homeland-reference-data.js
           node --check js/homeland-data.js
           node --check data/asset-manifest.js

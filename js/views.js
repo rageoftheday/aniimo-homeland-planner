@@ -123,6 +123,18 @@ function dashboardFacilitySupportedAbilities(facilityId){
 function dashboardAbilityNameForAssignment(w){
  const facility=Number(w?.aniidex?.facility),job=Number(w?.aniidex?.job);
  if(!facility)return '';
+ const src=aniidexImportMeta?.catalog||EMBEDDED_ANIIDEX_CATALOG||{};
+ const hub=src?.hub||src?.homelandHub||src?.homeland||EMBEDDED_ANIIDEX_CATALOG?.hub||{};
+ const facts=hub?.facts||src?.facts||EMBEDDED_ANIIDEX_CATALOG?.hub?.facts||{};
+ const text=src?.text||src?.homelandText||src?.siteText||hub?.text||EMBEDDED_ANIIDEX_CATALOG?.text||{};
+ if(job){
+   for(const [key,a] of Object.entries(facts?.abilities||{})){
+     if(Number(a?.id)!==job)continue;
+     const label=text?.abilities?.[job]??text?.abilities?.[String(job)]??key;
+     const direct=typeof label==='string'?label:(label?.name||label?.label||key);
+     if(HOME_ABILITIES.includes(String(direct)))return String(direct);
+   }
+ }
  const planner=dashboardCatalogPlanner(),rows=Array.isArray(planner?.recipes)?planner.recipes:Object.values(planner?.recipes||{});
  if(job){
    for(const r of rows){
@@ -228,32 +240,16 @@ function dashboardHomeSnapshotHTML(){
 }
 function renderDashboardTab(){
  const root=el('dashboardPane');if(!root)return;
- const active=workers.filter(w=>w.active!==false).length,cov=abilityCoverage(),blocked=blockedFamilyJobs(),jobs=activeJobs();
- const open=[...openPlots].length,plannerDemand={};for(const j of jobs)plannerDemand[j.ability]=(plannerDemand[j.ability]||0)+(j.rec||1);
- const liveUsage=dashboardLiveAbilityUsage(),hasLiveSync=!!aniidexImportMeta;
- const abilityRows=HOME_ABILITIES.map(a=>{
-   const contributors=abilityContributors(a),levels=cov[a]||0,planned=plannerDemand[a]||0,live=liveUsage[a]||{workers:0,levels:0,names:[]};
-   const status=live.workers>0?'Working now':planned>0?(levels<planned?'Planner short':levels===planned?'Planner tight':'Planner covered'):'Idle';
-   const cls=live.workers>0?'fitGood':planned>0?(levels<planned?'fitBad':levels===planned?'fitWarn':'fitGood'):'';
-   const hover=contributors.map(x=>`${x.w.name||'Unnamed'} — Lv${x.level}`).join('\n')||'No active Aniimo with this ability';
-   const detail=contributors.length?contributors.map(x=>`<button type="button" class="abilityContributor" onclick="setMainTab('roster')" title="Open Imported Roster"><b>${esc(x.w.name||'Unnamed')}</b><span>${esc(x.w.form||'Base')} · Lv${x.level}</span></button>`).join(''):'<span class="small">No active Imported Roster Aniimo have this ability.</span>';
-   const liveText=live.workers?`${live.workers} working • ${live.levels} levels in use`:hasLiveSync?'0 working':'Not synced';
-   const plannedText=planned?`${planned} planned level${planned===1?'':'s'}`:'—';
-   const liveTitle=live.names.length?live.names.join('\n'):'No synced workers currently using this ability';
-   return `<tr><td><b>${esc(a)}</b></td><td><button type="button" class="abilityCountBtn" title="${esc(hover)}" onclick="toggleAbilityContributors('${esc(a)}')">${contributors.length} Aniimo</button></td><td>${levels}</td><td title="${esc(liveTitle)}"><b>${esc(liveText)}</b><div class="small">Planner: ${esc(plannedText)}</div></td><td class="${cls}">${status}</td></tr><tr class="abilityContributorRow" data-ability-detail="${esc(a)}" hidden><td colspan="5"><div class="abilityContributorList"><div class="small"><b>${esc(a)} contributors</b> — highest level first</div><div class="abilityContributorGrid">${detail}</div></div></td></tr>`;
- }).join('');
- root.innerHTML=`<div class="v30Title">Homeland Dashboard</div><div class="v30Sub">Quick health check for this profile. Start with Import / Sync, then use Plan / Advice for recommendations, worker choices, and progression.</div>
+ const active=workers.filter(w=>w.active!==false).length,blocked=blockedFamilyJobs(),jobs=activeJobs(),open=[...openPlots].length;
+ root.innerHTML=`<div class="v30Title">Homeland Dashboard</div><div class="v30Sub">Quick health check for this profile. Use Home Snapshot for the complete live Aniidx Homeland readout.</div>
  <div id="dashboardImport" class="dashboardImportHost"></div>
- <div id="dashboardHomeSnapshot">${dashboardHomeSnapshotHTML()}</div>
+ <div class="snapshotJump"><div><b>Live Homeland Snapshot</b><span>Incubation, production, workers, abilities, facilities, food, modules, visitors, sync health and storage.</span></div><button type="button" onclick="setMainTab('snapshot')">Open Home Snapshot →</button></div>
  <div class="dashboardGrid">
   <div class="metricCard"><div class="label">RV</div><div class="metric">${esc(rvLevel.value)}</div><div class="small">${open} open production plots</div></div>
   <div class="metricCard"><div class="label">Production Zone</div><div class="metric">${active}</div><div class="small">${workers.length} Aniimo entered</div></div>
-  <div class="metricCard"><div class="label">Active jobs</div><div class="metric">${jobs.length}</div><div class="small">stations/recipes needing workers</div></div>
+  <div class="metricCard"><div class="label">Active planner jobs</div><div class="metric">${jobs.length}</div><div class="small">manually configured stations / recipes</div></div>
   <div class="metricCard"><div class="label">Family blocks</div><div class="metric">${blocked.length}</div><div class="small">locked recipes missing an accepted family</div></div>
- </div>
- <div class="sectionTitle">Home Ability Distribution</div>
- <div class="small" style="margin-bottom:8px">Aniimo count and Total levels come from your active Imported Roster. <b>Live work</b> comes from the latest Aniidx Homeland assignments, so mining, hauling, farming, and other assigned jobs still appear even when no recipe is running. Planner demand is shown separately inside the same cell.</div>
- <div class="tableWrap"><table class="dataTable abilityDistributionTable"><thead><tr><th>Ability</th><th>Aniimo</th><th>Total levels</th><th>Live work / planner demand</th><th>Status</th></tr></thead><tbody>${abilityRows}</tbody></table></div>`;
+ </div>`;
  renderImportTab('dashboardImport',true);
 }
 function renderProductionTab(){const root=el('productionPane');if(!root)return;let rows=[];for(const [station,list] of Object.entries(recipeDB)){const sr=STATION_RULES[station]||{};for(const r of list)rows.push({station,r,sr})}rows.sort((a,b)=>a.station.localeCompare(b.station)||((a.r.rv||0)-(b.r.rv||0)));root.innerHTML=`<div class="productionBrowser"><div class="productionBrowserHead"><div class="v30Title">Recipes</div><div class="v30Sub">Full recipe browser for the loaded offline database. RV and module-aware production calculations continue to use the selected stations on the Homeland Planner.</div><div class="filterBar"><input id="prodSearch" placeholder="Search station, recipe or ingredient..."><select id="prodRvFilter"><option value="all">All RV levels</option><option value="current">Available at current RV</option></select></div></div><div id="prodRecipeTable" class="tableWrap productionRecipeTable"></div></div>`;const draw=()=>{const q=normalizeSearch(el('prodSearch').value),cur=el('prodRvFilter').value;const f=rows.filter(x=>(cur!=='current'||(x.r.rv||1)<=+rvLevel.value)&&(!q||normalizeSearch(x.station+' '+x.r.name+' '+(x.r.ingredients||'')).includes(q)));el('prodRecipeTable').innerHTML=`<table class="dataTable"><thead><tr><th>Station</th><th>Recipe</th><th>RV</th><th>Ability</th><th>Preferred trait</th><th>Ingredients</th><th>Work</th><th>Sell</th><th>Lock</th></tr></thead><tbody>${f.map(x=>{const fr=FAMILY_RECIPE_RULES[x.station+'|'+x.r.name];return `<tr><td>${esc(x.station)}</td><td><b>${esc(x.r.name)}</b></td><td>${x.r.rv||1}</td><td>${esc(x.sr.ability||'—')} Lv${x.r.rec||1}</td><td>${x.sr.personality?x.sr.personality+' — '+PERSONALITY_NAMES[x.sr.personality]:'—'}</td><td>${esc(x.r.ingredients||'—')}</td><td>${x.r.work||0}</td><td>${Number(x.r.sell||0).toLocaleString()}</td><td>${fr?`🔒 ${esc(WORKER_FAMILIES[fr.family]?.label||fr.family)}`:'—'}</td></tr>`}).join('')}</tbody></table>`};el('prodSearch').addEventListener('input',draw);el('prodRvFilter').addEventListener('change',draw);draw()}
@@ -766,4 +762,4 @@ function renderRawJsonTab(){
  const copy=el('rawJsonCopy');if(copy)copy.onclick=async()=>{try{await navigator.clipboard.writeText(full);copy.textContent='Copied ✓';setTimeout(()=>{if(el('rawJsonCopy'))el('rawJsonCopy').textContent='Copy JSON'},1200)}catch{copy.textContent='Copy failed'}};
  const dl=el('rawJsonDownload');if(dl)dl.onclick=()=>{const blob=new Blob([full],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Aniimo_Homeland_'+String(bundle.uid||'sync')+'_raw.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);};
 }
-function renderV30Views(){renderRightQuickStats();if(activeMainTab==='map')renderHomelandPlannerV2();else if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='plan')renderPlanAdviceTab();else if(activeMainTab==='database')renderDatabaseTab();else if(activeMainTab==='raw')renderRawJsonTab();}
+function renderV30Views(){renderRightQuickStats();if(activeMainTab==='map')renderHomelandPlannerV2();else if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='snapshot')renderHomeSnapshotTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='plan')renderPlanAdviceTab();else if(activeMainTab==='database')renderDatabaseTab();else if(activeMainTab==='raw')renderRawJsonTab();}

@@ -6,7 +6,7 @@
 <title>Aniimo Homeland Planner</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=1"/>
 <meta name="theme-color" content="#173447"/>
-<link rel="stylesheet" href="css/app.css?v=30.22.6"/>
+<link rel="stylesheet" href="css/app.css?v=30.23.0"/>
 </head>
 <body>
 <header>
@@ -60,11 +60,12 @@
 
 <section id="workspaceWrap" class="panel workspaceShell">
 <div id="mainTabs" class="mainTabs">
-  <button data-tab="dashboard" class="active">Dashboard</button><button data-tab="map">Homeland Planner</button><button data-tab="plan">Plan / Advice</button><button data-tab="roster">Imported Roster</button><button data-tab="aniimos">Aniimos</button><button data-tab="production">Recipes</button><button data-tab="database">Database</button><button data-tab="raw">Raw JSON</button>
+  <button data-tab="dashboard" class="active">Dashboard</button><button data-tab="map">Homeland Planner</button><button data-tab="snapshot">Home Snapshot</button><button data-tab="plan">Plan / Advice</button><button data-tab="roster">Imported Roster</button><button data-tab="aniimos">Aniimos</button><button data-tab="production">Recipes</button><button data-tab="database">Database</button><button data-tab="raw">Raw JSON</button>
 </div>
 <div id="tabStage" class="tabStage">
   <div id="dashboardPane" class="tabPane active"></div>
   <div id="mapPane" class="tabPane"><div id="mapViewport" class="mapViewport"></div></div>
+  <div id="snapshotPane" class="tabPane"></div>
   <div id="productionPane" class="tabPane"></div>
   <div id="aniimosPane" class="tabPane"></div>
   <div id="rosterPane" class="tabPane"></div>
@@ -247,10 +248,12 @@
 <script src="js/assets.js?v=30.12.4"></script>
 <script src="js/homeland-data.js?v=30.12.4"></script>
 <script src="data/embedded-aniidex-catalog.js?v=30.12.4"></script>
+<script src="data/egg-reference.js?v=1"></script>
 <script src="data/official-wiki-homeland.js?v=30.16.0"></script>
 <script src="js/wiki-homeland.js?v=30.16.0"></script>
 <script src="js/importer.js?v=30.15.3"></script>
-<script src="js/views.js?v=30.22.7"></script>
+<script src="js/views.js?v=30.23.0"></script>
+<script src="js/home-snapshot.js?v=1"></script>
 <script src="js/app.js?v=30.21.5"></script>
 </body>
 </html>
