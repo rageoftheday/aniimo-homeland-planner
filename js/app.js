@@ -1269,15 +1269,32 @@ function advisorReferenceForms(){
    return {...f,name:label?.name||f?.name||'',form:label?.form||f?.form||'',variant};
  }).filter(f=>f.name);
 }
+function advisorOwnedStatusForRankForm(f){
+ const variant=String(f?.variant??'');
+ const formName=String(f?.form||'').trim().toLowerCase();
+ const name=String(f?.name||'').trim().toLowerCase();
+ const matches=workers.filter(w=>{
+   if(!w?.aniidex)return false;
+   if(variant&&String(w.aniidex.form??'')===variant)return true;
+   return String(w.name||'').trim().toLowerCase()===name&&(!formName||String(w.form||'').trim().toLowerCase()===formName);
+ });
+ if(!matches.length)return {owned:false,available:false,working:false,count:0};
+ const available=matches.some(w=>w.aniidex?.facility==null);
+ const working=matches.some(w=>w.aniidex?.facility!=null);
+ return {owned:true,available,working,count:matches.length};
+}
 function advisorRankNames(ability,level,prismanaOnly=false){
  const seen=new Set(),out=[];
  for(const f of advisorReferenceForms()){
    if(Number(f?.skills?.[ability]||0)!==Number(level))continue;
    if(prismanaOnly&&!f.prismana)continue;
-   const name=String(f.name||'').trim();if(!name||seen.has(name))continue;
-   seen.add(name);out.push({name,form:f.form||'',prismana:!!f.prismana});
+   const name=String(f.name||'').trim();if(!name)continue;
+   const form=String(f.form||'').trim();
+   const variant=String(f.variant??'');
+   const dedupe=variant||name+'|'+form;if(seen.has(dedupe))continue;seen.add(dedupe);
+   out.push({name,form,variant,prismana:!!f.prismana,...advisorOwnedStatusForRankForm(f)});
  }
- return out.sort((a,b)=>a.name.localeCompare(b.name));
+ return out.sort((a,b)=>(b.available-a.available)||(b.working-a.working)||a.name.localeCompare(b.name)||a.form.localeCompare(b.form));
 }
 function advisorStationsForAbility(ability){
  return Object.entries(STATION_RULES).filter(([,r])=>r.ability===ability).map(([name])=>name);
@@ -1293,7 +1310,7 @@ function renderAdvisorRankMatrix(){
      {label:'Rank 4',sub:'Lv4',rows:advisorRankNames(ability,4)},
      {label:'Rank 5',sub:'Prismana / BIS',rows:advisorRankNames(ability,4,true),best:true}
    ];
-   return `<section class="advisorAbilityCard"><div class="advisorAbilityHead"><div><b>${esc(ability)}</b><div class="small">${jobs.length?'Jobs: '+jobs.map(esc).join(' • '):'No current station rule uses this ability directly.'}</div></div></div><div class="advisorRankGrid">${tiers.map(t=>`<div class="advisorRankTier${t.best?' bestTier':''}"><div class="advisorRankTierHead"><b>${t.label}</b><span>${t.sub}</span></div><div class="advisorRankNames">${t.rows.length?t.rows.map(x=>`<span class="advisorAniimoPill${x.prismana?' prismana':''}">${esc(x.name)}${t.best?' ✦':''}</span>`).join(''):'<span class="advisorEmpty">—</span>'}</div></div>`).join('')}</div></section>`;
+   return `<section class="advisorAbilityCard"><div class="advisorAbilityHead"><div><b>${esc(ability)}</b><div class="small">${jobs.length?'Jobs: '+jobs.map(esc).join(' • '):'No current station rule uses this ability directly.'}</div><div class="advisorRankLegend"><span class="advisorLegendAvailable">Owned & available</span><span class="advisorLegendWorking">Owned & working</span><span>Reference only</span></div></div></div><div class="advisorRankGrid">${tiers.map(t=>`<div class="advisorRankTier${t.best?' bestTier':''}"><div class="advisorRankTierHead"><b>${t.label}</b><span>${t.sub}</span></div><div class="advisorRankNames">${t.rows.length?t.rows.map(x=>{const state=x.available?' available':x.working?' working':'';const badge=x.available?' ✓ available':x.working?' • working':'';const form=x.form?' — '+esc(x.form):'';return `<span class="advisorAniimoPill${x.prismana?' prismana':''}${state}" title="${x.available?'You own this form and at least one copy is inactive / available.':x.working?'You own this form, but synced copies are currently working.':'Reference form not found in the synced roster.'}">${esc(x.name)}${form}${t.best?' ✦':''}${badge}</span>`}).join(''):'<span class="advisorEmpty">—</span>'}</div></div>`).join('')}</div></section>`;
  }).join('');
 }
 function renderAdvisor(){
