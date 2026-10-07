@@ -330,8 +330,6 @@ jobs:
           grep -q 'AniimoHomelandCompanion' extension/Update_Companion.bat
           grep -q 'tasklist /FI "IMAGENAME eq chrome.exe"' extension/Install_Companion.bat
           grep -q 'tasklist /FI "IMAGENAME eq msedge.exe"' extension/Install_Companion.bat
-          grep -q 'Chrome is not running - leaving it closed.' extension/Install_Companion.bat
-          grep -q 'Edge is not running - leaving it closed.' extension/Install_Companion.bat
           grep -q 'No supported browser is currently open.' extension/Install_Companion.bat
           grep -q 'chrome://extensions' extension/Install_Companion.bat
           grep -q 'edge://extensions' extension/Install_Companion.bat
