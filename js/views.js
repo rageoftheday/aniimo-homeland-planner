@@ -676,6 +676,28 @@ function renderDatabaseTab(){
  </div>
  </div></div>`;
 }
+function rawAniidexBundle(){
+ if(!aniidexImportMeta)return null;
+ return aniidexImportMeta.rawBundle||{format:'aniimo-homeland-planner-retained-sync',capturedAt:new Date(aniidexImportMeta.importedAt||Date.now()).toISOString(),source:aniidexImportMeta.source||'Aniidx',uid:aniidexImportMeta.uid||'',profile:aniidexImportMeta.profile||{},homeland:aniidexImportMeta.home||{},planner:aniidexImportMeta.catalog||null};
+}
+function rawJsonDisplayText(bundle,query=''){
+ const full=JSON.stringify(bundle,null,2);
+ const q=String(query||'').trim().toLowerCase();if(!q)return full;
+ const lines=full.split('\n'),hits=[];
+ for(let i=0;i<lines.length;i++)if(lines[i].toLowerCase().includes(q)){for(let j=Math.max(0,i-2);j<=Math.min(lines.length-1,i+2);j++)hits.push({i:j,line:lines[j]});}
+ const seen=new Set(),out=[];for(const h of hits){if(seen.has(h.i))continue;seen.add(h.i);out.push(h.line);}return out.length?out.join('\n'):'No matching JSON lines.';
+}
+function renderRawJsonTab(){
+ const root=el('rawjsonPane');if(!root)return;
+ const bundle=rawAniidexBundle();
+ if(!bundle){root.innerHTML='<div class="v30Title">Raw JSON</div><div class="v30Sub">Latest Aniidx sync payload retained by the planner.</div><div class="fullCard"><b>No sync data loaded.</b><div class="small">Run Sync now on the Dashboard first.</div></div>';return;}
+ root.innerHTML=`<div class="rawJsonBrowser"><div class="rawJsonHead"><div><div class="v30Title">Raw JSON</div><div class="v30Sub">Read-only view of the latest retained Aniidx sync bundle. Use this when you want to inspect fields the planner does not yet visualize.</div></div><div class="rawJsonActions"><input id="rawJsonSearch" placeholder="Search keys or values..."><button id="rawJsonCopyBtn">Copy JSON</button><button id="rawJsonDownloadBtn">Download JSON</button></div></div><div id="rawJsonStatus" class="small"></div><pre id="rawJsonPre" class="rawJsonPre"></pre></div>`;
+ const pre=el('rawJsonPre'),search=el('rawJsonSearch'),status=el('rawJsonStatus');
+ const draw=()=>{const q=search?.value||'';pre.textContent=rawJsonDisplayText(bundle,q);status.textContent=q?`Showing matching lines with nearby context for “${q}”.`:`${JSON.stringify(bundle).length.toLocaleString()} characters in latest retained sync.`;};
+ search?.addEventListener('input',draw);draw();
+ el('rawJsonCopyBtn')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(JSON.stringify(bundle,null,2));status.textContent='Raw JSON copied to clipboard.';}catch{status.textContent='Clipboard copy was blocked by the browser.';}});
+ el('rawJsonDownloadBtn')?.addEventListener('click',()=>{const blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`Aniimo_Homeland_${aniidexImportMeta?.uid||'sync'}_${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+}
 let activePlanAdviceSection='suggestions';
 function setPlanAdviceSection(section){
  if(!['suggestions','advisor','progression'].includes(section))section='suggestions';
@@ -688,4 +710,4 @@ function renderPlanAdviceTab(){
  renderProgressionTab();
  setPlanAdviceSection(activePlanAdviceSection);
 }
-function renderV30Views(){renderRightQuickStats();if(activeMainTab==='map')renderHomelandPlannerV2();else if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='plan')renderPlanAdviceTab();else if(activeMainTab==='database')renderDatabaseTab();}
+function renderV30Views(){renderRightQuickStats();if(activeMainTab==='map')renderHomelandPlannerV2();else if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='plan')renderPlanAdviceTab();else if(activeMainTab==='database')renderDatabaseTab();else if(activeMainTab==='rawjson')renderRawJsonTab();}
