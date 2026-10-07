@@ -205,17 +205,17 @@ jobs:
           grep -Fq "embeddedValue=Number(embeddedFact?.food)" js/home-snapshot.js
           grep -Fq "liveValue=Number(liveFact?.food)" js/home-snapshot.js
           node - <<'NODE'
-const fs=require('fs');
-const s=fs.readFileSync('data/embedded-aniidex-catalog.js','utf8');
-const rows=[...s.matchAll(/"(\d+)":\{([^{}]*?"food":\s*(\d+)[^{}]*?)\}/g)].filter(m=>Number(m[3])>0);
-if(rows.length<63) throw new Error('Expected at least 63 embedded food-energy items; got '+rows.length);
-const required={'4010053':26740,'4010073':6370};
-for(const [id,energy] of Object.entries(required)){
-  const m=s.match(new RegExp('"'+id+'":\\{[^{}]*?"food":\\s*'+energy+'(?:[,}])'));
-  if(!m)throw new Error('Missing embedded food energy '+id+' = '+energy);
-}
-console.log('Embedded food-energy coverage OK:',rows.length);
-NODE
+          const fs=require('fs');
+          const s=fs.readFileSync('data/embedded-aniidex-catalog.js','utf8');
+          const rows=[...s.matchAll(/"(\d+)":\{([^{}]*?"food":\s*(\d+)[^{}]*?)\}/g)].filter(m=>Number(m[3])>0);
+          if(rows.length<63) throw new Error('Expected at least 63 embedded food-energy items; got '+rows.length);
+          const required={'4010053':26740,'4010073':6370};
+          for(const [id,energy] of Object.entries(required)){
+            const m=s.match(new RegExp('"'+id+'":\\{[^{}]*?"food":\\s*'+energy+'(?:[,}])'));
+            if(!m)throw new Error('Missing embedded food energy '+id+' = '+energy);
+          }
+          console.log('Embedded food-energy coverage OK:',rows.length);
+          NODE
           grep -q "snapshotProductionTable '+(productionGroupMode==='grouped'?'grouped':'individual')" js/home-snapshot.js
           grep -q 'snapshotProductionTable.grouped' css/app.css
           grep -q 'snapshotProductionTable.individual' css/app.css
