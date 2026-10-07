@@ -426,3 +426,39 @@ header{align-items:center}
  .aniimoDetailFormImage{width:86px;height:86px}
  .aniimoDetailHero{align-items:flex-start;flex-direction:column}
 }
+
+
+/* Homeland Planner v2 wireframe */
+#homelandPlannerV2{height:100%;overflow:auto;padding:12px;background:
+ radial-gradient(circle at 78% 18%,rgba(255,255,255,.12),transparent 24%),
+ radial-gradient(circle at 18% 72%,rgba(255,255,255,.08),transparent 28%),
+ linear-gradient(135deg,#6fa95c,#a8ce77 48%,#81b461);color:#18343f}
+.hpv2ModeBar{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:10px 12px;margin-bottom:10px;border:1px solid rgba(255,255,255,.5);border-radius:14px;background:rgba(245,252,235,.88);box-shadow:0 6px 20px rgba(38,78,43,.16)}
+.hpv2ModeBar>div:first-child{display:grid;gap:2px}.hpv2ModeBar b{font-size:17px}.hpv2ModeBar span{font-size:11px;color:#547060}
+.hpv2ModeActions{display:flex;gap:6px;flex-wrap:wrap}.hpv2ModeActions button,.hpv2FocusHead button,.hpv2FocusFoot button{background:#f7fbef;color:#27516a;border:1px solid #90bca2}
+.hpv2ModeActions button.active{background:#dff2d0;border-color:#5fa878;box-shadow:0 0 0 2px rgba(93,168,120,.18) inset}
+.hpv2Summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;margin-bottom:10px;border-radius:12px;background:rgba(240,249,226,.76);border:1px solid rgba(255,255,255,.45)}
+.hpv2Summary>div:first-child{display:grid;gap:2px}.hpv2Summary span,.hpv2SummaryHint{font-size:11px;color:#58705d}
+.hpv2PlotGrid{display:grid;grid-template-columns:repeat(4,minmax(170px,1fr));gap:10px;max-width:1180px;margin:0 auto}
+.hpv2PlotCard{position:relative;min-height:168px;padding:8px;border-radius:14px;overflow:hidden;text-align:left}
+.hpv2PlotCard.open{background:rgba(248,252,239,.94);border:2px solid rgba(255,255,255,.9);box-shadow:0 7px 16px rgba(46,81,42,.18)}
+.hpv2PlotCard.open:hover{transform:translateY(-1px);border-color:#78c1d8}
+.hpv2PlotCard.locked{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;background:rgba(58,103,45,.72);border:1px solid rgba(240,255,220,.38);color:#edf7df;text-align:center}
+.hpv2PlotCard.locked:before{content:"";position:absolute;inset:0;background:linear-gradient(45deg,transparent 35%,rgba(255,255,255,.04) 35% 45%,transparent 45% 65%,rgba(255,255,255,.035) 65% 72%,transparent 72%);pointer-events:none}
+.hpv2Lock{font-size:25px}.hpv2PlotCard.locked b{font-size:15px}.hpv2PlotCard.locked span{font-size:11px;font-weight:700}
+.hpv2PlotTitle,.hpv2PlotFoot{display:flex;justify-content:space-between;align-items:center;gap:6px}.hpv2PlotTitle{padding:0 2px 6px;color:#378ec8}.hpv2PlotTitle span{font-size:10px;color:#7c8794}.hpv2PlotFoot{padding:6px 2px 0;font-size:10px;color:#6d7890}.hpv2PlotFoot strong{color:#378ec8}
+.hpv2MiniGrid,.hpv2FocusGrid{position:relative;overflow:hidden;background:#8fc26d;border:1px solid #75a75d}
+.hpv2MiniGrid{aspect-ratio:4/3;border-radius:8px}
+.hpv2FocusGrid{width:min(100%,1000px);aspect-ratio:4/3;margin:0 auto;border-radius:14px;border:2px solid #d8f4cc;box-shadow:0 10px 25px rgba(39,81,42,.22)}
+.hpv2GridLines{position:absolute;inset:0;background-image:
+ linear-gradient(to right,rgba(255,255,255,.22) 1px,transparent 1px),
+ linear-gradient(to bottom,rgba(255,255,255,.22) 1px,transparent 1px),
+ repeating-linear-gradient(25deg,rgba(54,103,49,.10) 0 1px,transparent 1px 9px);
+ background-size:5% 100%,100% 6.6667%,auto;pointer-events:none}
+.hpv2Obj{position:absolute;min-width:5px;min-height:5px;border:1px solid #dfe7df;border-radius:3px;background:rgba(250,250,245,.95);color:#59616f;box-shadow:0 1px 2px rgba(0,0,0,.2);padding:0;overflow:hidden}
+.hpv2Obj span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800}
+.hpv2Obj.big{border-radius:7px}.hpv2Obj.big span{font-size:18px}.hpv2Obj.big b{position:absolute;left:3px;bottom:2px;font-size:9px;background:rgba(255,255,255,.8);padding:1px 3px;border-radius:4px}
+.hpv2Obj:hover{outline:2px solid #60c3ef;z-index:5}
+.hpv2FocusHead{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 0}.hpv2FocusHead h3{margin:0;font-size:18px}.hpv2FocusHead span,.hpv2FocusMeta{font-size:11px;color:#eaf5df}.hpv2FocusMeta{background:rgba(44,82,43,.52);padding:6px 8px;border-radius:999px}
+.hpv2FocusFoot{display:flex;justify-content:space-between;align-items:center;gap:10px;width:min(100%,1000px);margin:8px auto 0;padding:8px 10px;border-radius:10px;background:rgba(245,252,235,.82);font-size:11px;color:#53685c}
+@media(max-width:900px){.hpv2PlotGrid{grid-template-columns:repeat(2,minmax(150px,1fr))}.hpv2ModeBar,.hpv2Summary,.hpv2FocusFoot{align-items:flex-start;flex-direction:column}.hpv2FocusHead{grid-template-columns:1fr}.hpv2FocusMeta{width:max-content}}
