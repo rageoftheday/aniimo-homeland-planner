@@ -48,8 +48,8 @@ set "BROWSER_OPENED=0"
 
 tasklist /FI "IMAGENAME eq chrome.exe" 2>nul | find /I "chrome.exe" >nul
 if not errorlevel 1 (
-  echo [INFO] Chrome is running.
-  echo        Open a new tab and go to: chrome://extensions
+  echo [INFO] Chrome is running. Attempting to open extensions tab...
+  powershell -c "$w=New-Object -ComObject Wscript.Shell; if ($w.AppActivate('Chrome')) { Start-Sleep -m 150; $w.SendKeys('^t'); Start-Sleep -m 150; $w.SendKeys('chrome://extensions/{ENTER}') }"
   set "BROWSER_OPENED=1"
 ) else (
   echo [INFO] Chrome is not running - skipping.
@@ -57,8 +57,8 @@ if not errorlevel 1 (
 
 tasklist /FI "IMAGENAME eq msedge.exe" 2>nul | find /I "msedge.exe" >nul
 if not errorlevel 1 (
-  echo [INFO] Edge is running.
-  echo        Open a new tab and go to: edge://extensions
+  echo [INFO] Edge is running. Attempting to open extensions tab...
+  powershell -c "$w=New-Object -ComObject Wscript.Shell; if ($w.AppActivate('Edge')) { Start-Sleep -m 150; $w.SendKeys('^t'); Start-Sleep -m 150; $w.SendKeys('edge://extensions/{ENTER}') }"
   set "BROWSER_OPENED=1"
 ) else (
   echo [INFO] Edge is not running - skipping.
@@ -70,10 +70,11 @@ if "%BROWSER_OPENED%"=="0" (
   echo Open Chrome or Edge when you are ready, then go to:
   echo   Chrome: chrome://extensions
   echo   Edge:   edge://extensions
-  echo Turn on Developer mode, click Load unpacked, and select:
-  echo   %TARGET%
+  echo Click Reload on Aniimo Homeland Companion.
 )
 
+echo.
+echo [DONE] Extension files are updated.
 echo.
 pause
 endlocal
