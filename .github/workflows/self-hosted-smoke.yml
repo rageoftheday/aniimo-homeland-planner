@@ -88,7 +88,7 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.22.2' index.html
+          grep -q 'css/app.css?v=30.22.3' index.html
           grep -q 'js/views.js?v=30.22.3' index.html
           grep -q 'js/importer.js?v=30.15.3' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
@@ -133,7 +133,7 @@ jobs:
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
-          grep -q 'js/app.js?v=30.21.2' index.html
+          grep -q 'js/app.js?v=30.21.3' index.html
           grep -q 'data-tab="aniimos"' index.html
           grep -q 'id="aniimosPane"' index.html
           grep -q 'Backup ▾' index.html
@@ -148,6 +148,14 @@ jobs:
           ! grep -q 'id="importPane"' index.html
           grep -q 'Imported Roster / Job Advisor' index.html
           grep -q 'id="advisorRankMatrix"' index.html
+          grep -q 'id="advisorLiveWorkers"' index.html
+          grep -q 'Inactive / available' js/app.js
+          grep -q 'function advisorLiveAssignments' js/app.js
+          grep -q 'function advisorInactiveImportedWorkers' js/app.js
+          grep -q 'function advisorCandidateWorkers' js/app.js
+          grep -q 'Currently working in synced Homeland' js/app.js
+          grep -q 'advisorWorkerGroups' css/app.css
+          node --check js/app.js
           grep -q 'id="planPane"' index.html
           grep -q 'id="planSuggestions"' index.html
           grep -q 'id="planAdvisorHost"' index.html
