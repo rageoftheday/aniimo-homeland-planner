@@ -1,0 +1,26 @@
+// Supplemental Aniimo item names verified against public game-table-backed references.
+// Used only when live/embedded Aniidx data does not include a friendly name.
+// Raw IDs are always preserved in the UI.
+window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE={
+  updated:"2026-10-07",
+  entries:{
+    "400001":{name:"Sunny Daisy",source:"https://aniimo.guide/en/items/sunny-daisy"},
+    "400002":{name:"Lunar Daisy",source:"https://aniimo.guide/en/items/lunar-daisy"},
+    "400003":{name:"Azure Grass",source:"https://aniimo.guide/en/items/azure-grass"},
+    "400004":{name:"Red Cap",source:"https://aniimo.guide/en/items/red-cap"},
+    "400005":{name:"Orange Cap",source:"https://aniimo.guide/en/items/orange-cap"},
+    "400006":{name:"Blue Cap",source:"https://aniimo.guide/en/items/blue-cap"},
+    "4010121":{name:"Pearl-Strung Blossom",source:"https://aniimo.guide/en/items/pearl-strung-blossom"},
+    "4010122":{name:"Stardust Agate",source:"https://aniimo.guide/en/items/stardust-agate"},
+    "4010123":{name:"Morning Star Bloom",source:"https://aniimo.guide/en/items/morning-star-bloom"},
+    "4010124":{name:"Chromaflare Peony",source:"https://aniimo.guide/en/items/chromaflare-peony"},
+    "4010125":{name:"Flufftail Grass",source:"https://aniimo.guide/en/items/flufftail-grass"},
+    "4010126":{name:"Turtleback Ore",source:"https://aniimo.guide/en/items/turtleback-ore"},
+    "4010127":{name:"Sweetfern Nut",source:"https://aniimo.guide/en/items/sweetfern-nut"},
+    "4010128":{name:"Dreamtide Bloom",source:"https://aniimo.guide/en/items/dreamtide-bloom"},
+    "4010129":{name:"Spiked Herb",source:"https://aniimo.guide/en/items/spiked-herb"},
+    "4010130":{name:"Tartball",source:"https://aniimo.guide/en/items/tartball"},
+    "4010131":{name:"Threadstar Plant",source:"https://aniimo.guide/en/items/threadstar-plant"},
+    "4010132":{name:"Chroma Ore",source:"https://aniimo.guide/en/items/chroma-ore"}
+  }
+};
