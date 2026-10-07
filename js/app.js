@@ -15,6 +15,21 @@ function normalizeLegacyNames(){
 }
 
 const U=18; let SNAP=.5; let boardScale=1;
+let HOMELAND_BUILDER_SNAP=localStorage.getItem('homelandBuilderSnap')||'.5';
+function homelandBuilderSnapStep(){
+ const v=String(HOMELAND_BUILDER_SNAP||'.5');
+ if(v==='free')return 0;
+ const n=Number(v);return Number.isFinite(n)&&n>0?n:.5;
+}
+function setHomelandBuilderSnap(value){
+ const v=['1','.5','.25','free'].includes(String(value))?String(value):'.5';
+ HOMELAND_BUILDER_SNAP=v;localStorage.setItem('homelandBuilderSnap',v);
+}
+function snapHomelandBuilderCoord(value,max){
+ const n=Math.max(0,Math.min(Number(max)||0,Number(value)||0)),step=homelandBuilderSnapStep();
+ if(!step)return n;
+ return Math.max(0,Math.min(Number(max)||0,Math.round(n/step)*step));
+}
 const workspace=document.getElementById('workspace'), boardOuter=document.getElementById('boardOuter');
 let mapViewport=null;
 
@@ -1767,8 +1782,8 @@ function addObjectToFocusedPlot(item,localX=null,localY=null){
    if(!spot){if(startupStatus){startupStatus.textContent='No legal free space is available in Plot '+n+'.';startupStatus.style.color='#ffcb6b';}return false}
    [x,y]=spot;
  }else{
-   const lx=Math.max(0,Math.min(20-dims.w,Math.round((Number(localX)||0)/.5)*.5));
-   const ly=Math.max(0,Math.min(15-dims.h,Math.round((Number(localY)||0)/.5)*.5));
+   const lx=snapHomelandBuilderCoord(localX,20-dims.w);
+   const ly=snapHomelandBuilderCoord(localY,15-dims.h);
    x=p.x+lx;y=p.y+ly;
    const t={id:-1,x,y,w:dims.w,h:dims.h};
    if(collide(t)){if(startupStatus){startupStatus.textContent='That spot in Plot '+n+' is occupied. Try another square.';startupStatus.style.color='#ffcb6b';}return false}
@@ -1780,8 +1795,8 @@ function addObjectToFocusedPlot(item,localX=null,localY=null){
 function moveObjectInFocusedPlot(objectId,localX,localY){
  const n=focusedPlotNumber(),p=plotDefs.find(x=>x.n===Number(n)),o=objects.find(x=>x.id===Number(objectId));
  if(!p||!o||!isPlotOpen(p.n))return false;
- const lx=Math.max(0,Math.min(20-o.w,Math.round((Number(localX)||0)/.5)*.5));
- const ly=Math.max(0,Math.min(15-o.h,Math.round((Number(localY)||0)/.5)*.5));
+ const lx=snapHomelandBuilderCoord(localX,20-o.w);
+ const ly=snapHomelandBuilderCoord(localY,15-o.h);
  const nx=p.x+lx,ny=p.y+ly,t={id:o.id,x:nx,y:ny,w:o.w,h:o.h};
  if(collide(t)){if(startupStatus){startupStatus.textContent='That spot in Plot '+n+' is occupied. Try another square.';startupStatus.style.color='#ffcb6b';}return false}
  o.x=nx;o.y=ny;selected=o.id;render();
