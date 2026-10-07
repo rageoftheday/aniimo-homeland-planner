@@ -10,6 +10,7 @@ let aniimosRankMin=Number(localStorage.getItem('aniimosRankMin')||1);
 let aniimosRankScope=localStorage.getItem('aniimosRankScope')||'all';
 // v30 tab shell and full-screen views
 let activeMainTab='dashboard';
+let rawJsonQuery='';
 let homelandPlannerMode=localStorage.getItem('homelandPlannerMode')||'overview';
 if(!['overview','plot'].includes(homelandPlannerMode))homelandPlannerMode='overview';
 let homelandFocusedPlot=Number(localStorage.getItem('homelandFocusedPlot')||1);
@@ -688,4 +689,30 @@ function renderPlanAdviceTab(){
  renderProgressionTab();
  setPlanAdviceSection(activePlanAdviceSection);
 }
-function renderV30Views(){renderRightQuickStats();if(activeMainTab==='map')renderHomelandPlannerV2();else if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='plan')renderPlanAdviceTab();else if(activeMainTab==='database')renderDatabaseTab();}
+function rawAniidexBundleForView(){
+ const meta=aniidexImportMeta||null;if(!meta)return null;
+ const rm=meta.rawMeta||{};
+ return {
+   format:rm.format||'aniimo-homeland-sync-view',
+   capturedAt:rm.capturedAt||new Date(meta.importedAt||Date.now()).toISOString(),
+   source:rm.source||meta.source||'Aniidx',
+   uid:meta.uid||'',
+   profile:meta.profile||{},
+   homeland:meta.home||{},
+   planner:meta.catalog||null,
+   warnings:Array.isArray(rm.warnings)?rm.warnings:[]
+ };
+}
+function renderRawJsonTab(){
+ const root=el('rawPane');if(!root)return;
+ const bundle=rawAniidexBundleForView();
+ if(!bundle){root.innerHTML='<div class="v30Title">Raw JSON</div><div class="v30Sub">No Aniidx sync has been loaded yet.</div><div class="fullCard">Use Dashboard → Import / Sync first. The latest synced profile, Homeland snapshot, and planner reference data will appear here.</div>';return;}
+ const full=JSON.stringify(bundle,null,2),lines=full.split('\n');
+ const q=String(rawJsonQuery||'').trim().toLowerCase();
+ const shown=q?lines.filter(line=>line.toLowerCase().includes(q)):lines;
+ root.innerHTML=`<div class="rawJsonBrowser"><div class="rawJsonHead"><div><div class="v30Title">Raw JSON</div><div class="v30Sub">Latest synced Aniidx data retained by the planner. This is a read-only diagnostic/reference view.</div></div><div class="rawJsonActions"><input id="rawJsonSearch" value="${esc(rawJsonQuery)}" placeholder="Search JSON..."><button id="rawJsonCopy">Copy JSON</button><button id="rawJsonDownload">Download JSON</button></div><div class="small">${q?shown.length+' matching line'+(shown.length===1?'':'s')+' • ':''}${lines.length.toLocaleString()} total lines • ${full.length.toLocaleString()} characters</div></div><pre id="rawJsonPre" class="rawJsonPre">${esc(shown.join('\n'))}</pre></div>`;
+ const search=el('rawJsonSearch');if(search)search.addEventListener('input',()=>{rawJsonQuery=search.value;renderRawJsonTab();setTimeout(()=>el('rawJsonSearch')?.focus(),0);});
+ const copy=el('rawJsonCopy');if(copy)copy.onclick=async()=>{try{await navigator.clipboard.writeText(full);copy.textContent='Copied ✓';setTimeout(()=>{if(el('rawJsonCopy'))el('rawJsonCopy').textContent='Copy JSON'},1200)}catch{copy.textContent='Copy failed'}};
+ const dl=el('rawJsonDownload');if(dl)dl.onclick=()=>{const blob=new Blob([full],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Aniimo_Homeland_'+String(bundle.uid||'sync')+'_raw.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);};
+}
+function renderV30Views(){renderRightQuickStats();if(activeMainTab==='map')renderHomelandPlannerV2();else if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='plan')renderPlanAdviceTab();else if(activeMainTab==='database')renderDatabaseTab();else if(activeMainTab==='raw')renderRawJsonTab();}

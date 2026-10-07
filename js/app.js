@@ -1257,8 +1257,17 @@ function renderAdvisorSyncedWorkers(){
  root.innerHTML=`<div class="advisorWorkerGroup"><div class="advisorWorkerGroupHead"><b>Working now</b><span>${working.length}</span></div><div class="advisorWorkerGrid">${workingHtml}</div></div><div class="advisorWorkerGroup"><div class="advisorWorkerGroupHead"><b>Inactive / available</b><span>${inactive.length}</span></div><div class="advisorWorkerGrid">${inactiveHtml}</div></div>`;
 }
 function advisorReferenceForms(){
- const forms=EMBEDDED_ANIIDEX_CATALOG?.hub?.facts?.forms;
- return Array.isArray(forms)?forms:Object.values(forms||{});
+ const catalog=aniidexImportMeta?.catalog||EMBEDDED_ANIIDEX_CATALOG||{};
+ const hub=catalog?.hub||catalog?.homelandHub||catalog?.homeland||EMBEDDED_ANIIDEX_CATALOG?.hub||{};
+ const facts=hub?.facts||catalog?.facts||EMBEDDED_ANIIDEX_CATALOG?.hub?.facts||{};
+ const text=catalog?.text||catalog?.homelandText||catalog?.siteText||hub?.text||EMBEDDED_ANIIDEX_CATALOG?.text||{};
+ const forms=facts?.forms||{};
+ const rows=Array.isArray(forms)?forms.map((f,i)=>[String(i),f]):Object.entries(forms);
+ return rows.map(([key,f])=>{
+   const variant=String(f?.variant??key);
+   const label=text?.forms?.[variant]??text?.forms?.[Number(variant)]??{};
+   return {...f,name:label?.name||f?.name||'',form:label?.form||f?.form||'',variant};
+ }).filter(f=>f.name);
 }
 function advisorRankNames(ability,level,prismanaOnly=false){
  const seen=new Set(),out=[];
