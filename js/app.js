@@ -1888,7 +1888,7 @@ function createProfile(name,type='Custom',copyState=true){snapshotIntoCurrentPro
 function initProfileUI(){loadProfileStore();const p=profileStore.profiles[profileStore.current];if(p&&p.state){applyPlannerState(JSON.parse(JSON.stringify(p.state)))}else if(p){p.state=currentPlannerState();saveProfileStore()}renderProfileBar()}
 
 el('aniidexQuickSyncTopBtn')?.addEventListener('click',quickAniidexSyncFromHeader);
-el('homelandImportTopBtn')?.addEventListener('click',focusHomelandImporter);
+el('homelandImportTopBtn')?.addEventListener('click',quickAniidexSyncFromHeader);
 el('profileSelect')?.addEventListener('change',e=>switchProfile(e.target.value));
 el('profileType')?.addEventListener('change',e=>{const p=profileStore.profiles[profileStore.current];if(p){p.type=e.target.value;saveProfileStore();renderProfileBar()}});
 el('newProfileBtn')?.addEventListener('click',()=>{const n=prompt('New profile name:','New Profile');if(n)createProfile(n,'Custom',false)});
