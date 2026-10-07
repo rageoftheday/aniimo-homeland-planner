@@ -234,6 +234,7 @@ let aniidexAutoSyncMinutes=5;
 let aniidexAutoSyncRunning=false;
 let aniidexAutoSyncTimer=null;
 let aniidexLastSyncAt=0;
+let aniidexPendingUid='';
 let aniidexAutoSyncRecovery=false;
 
 function formatAniidexSyncTime(ts){
@@ -272,7 +273,8 @@ function setAniidexCompanionMessage(message,isError=false){
 function requestAniidexCompanionSync(mode='manual'){
  if(aniidexSyncInFlight)return;
  const input=el('aniidexCompanionUid');
- const uid=String(input?.value||aniidexImportMeta?.uid||'').trim();
+ const uid=String(input?.value||aniidexPendingUid||aniidexImportMeta?.uid||'').trim();
+ aniidexPendingUid=uid;
  if(!/^[1-9]\d{7,15}$/.test(uid)){
    if(mode==='auto'){failAniidexAutoSync('A valid Aniimo UID is required.');return;}
    setAniidexCompanionMessage('Enter a valid numeric Aniimo UID first.',true);
@@ -326,7 +328,9 @@ window.addEventListener('message',event=>{
      const data=msg.bundle||{};
      const profileData=data.profile||{};
      const homeData=data.homeland||{};
-     const sum=applyAniidexImportedData(profileData,homeData,'Aniidx direct sync',aniidexBundleCatalog(data),aniidexSyncMode!=='auto');
+     const incomingUid=String(data.uid||profileData?.profile?.uid||profileData?.uid||homeData?.home?.uid||homeData?.uid||'');
+     const confirmRefresh=aniidexSyncMode!=='auto'&&(!aniidexImportMeta||String(aniidexImportMeta.uid||'')!==incomingUid);
+     const sum=applyAniidexImportedData(profileData,homeData,'Aniidx direct sync',aniidexBundleCatalog(data),confirmRefresh);
      if(!sum){setAniidexCompanionMessage('Aniidx sync received; import was cancelled.');return;}
      aniidexLastSyncAt=Date.now();
      aniidexAutoSyncRecovery=false;
@@ -371,7 +375,7 @@ function downloadBookmarkletText(){
 function renderImportTab(targetId='dashboardImport',embedded=true){
  const root=el(targetId);if(!root)return;
  const meta=aniidexImportMeta, sum=meta?.summary||{};
- const directUid=esc(String(meta?.uid||''));
+ const directUid=esc(String(aniidexPendingUid||meta?.uid||''));
  root.innerHTML=`<div class="dashboardSyncHead"><div><div class="dashboardSyncEyebrow">${meta?'Homeland Sync':'Start Here'}</div><h3>${meta?'Import / Update Homeland':'Import / Sync Your Homeland'}</h3><div class="small">Sync a UID directly through the optional Aniimo Homeland Companion, or use the bookmarklet / saved sync-file fallbacks. The extension uses Aniidx's normal signed-in browser session and legitimate verification flow; it never exposes cookies or Turnstile tokens to the planner.</div></div></div>
  <div class="importSummary">${meta?`<span class="importChip">Last source: ${esc(meta.source||'Aniidx')}</span><span class="importChip">${esc(sum.name||'Player')} • RV ${sum.rv||'?'}</span><span class="importChip">${sum.aniimo||0} Homeland Aniimo</span><span class="importChip">${sum.caught||0} caught forms</span>`:'<span class="importChip">No Aniidx sync imported into this profile yet</span>'}</div>
  ${importUiMessage?`<div class="${/failed|not detected|invalid|paused|attention/i.test(importUiMessage)?'rightAlert':'rightGood'}" style="margin-top:10px">${esc(importUiMessage)}</div>`:''}
@@ -400,14 +404,16 @@ function renderImportTab(targetId='dashboardImport',embedded=true){
  const autoInterval=el('aniidexAutoSyncInterval');if(autoInterval)autoInterval.onchange=()=>{aniidexAutoSyncMinutes=Math.max(1,Number(autoInterval.value)||5);if(aniidexAutoSyncRunning)scheduleAniidexAutoSync();renderImportTab();};
  const autoToggle=el('aniidexAutoSyncToggle');if(autoToggle)autoToggle.onclick=()=>{
    if(aniidexAutoSyncRunning){stopAniidexAutoSync('Auto-sync stopped.');renderImportTab();return;}
-   const uid=String(el('aniidexCompanionUid')?.value||aniidexImportMeta?.uid||'').trim();
+   const uid=String(el('aniidexCompanionUid')?.value||aniidexPendingUid||aniidexImportMeta?.uid||'').trim();
+   aniidexPendingUid=uid;
    if(!/^[1-9]\d{7,15}$/.test(uid)){setAniidexCompanionMessage('Enter a valid numeric Aniimo UID before starting auto-sync.',true);return;}
    aniidexAutoSyncRunning=true;aniidexAutoSyncRecovery=false;importUiMessage=`Auto-sync started — refreshing every ${aniidexAutoSyncMinutes} minute${aniidexAutoSyncMinutes===1?'':'s'}.`;
    renderImportTab();requestAniidexCompanionSync('auto');
  };
  const recoveryBtn=el('aniidexRecoveryOpenBtn');if(recoveryBtn)recoveryBtn.onclick=openAniidexSyncPage;
  el('aniidexCompanionBtn').onclick=()=>requestAniidexCompanionSync('manual');
- el('aniidexCompanionUid').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();requestAniidexCompanionSync();}});
+ el('aniidexCompanionUid').addEventListener('input',e=>{aniidexPendingUid=String(e.target.value||'').trim();});
+ el('aniidexCompanionUid').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();aniidexPendingUid=String(e.target.value||'').trim();requestAniidexCompanionSync('manual');}});
  el('copyBookmarkletBtn').onclick=async()=>{try{await navigator.clipboard.writeText(bm);importUiMessage='Bookmarklet copied. Create a bookmark and paste it into the URL/location field.';}catch{importUiMessage='Clipboard permission was blocked. Open “Show bookmarklet code” and copy it manually.';}renderImportTab()};
  el('downloadBookmarkletBtn').onclick=downloadBookmarkletText;
  el('aniidexSyncFile').onchange=e=>importAniidexSyncFile(e.target.files?.[0]);
