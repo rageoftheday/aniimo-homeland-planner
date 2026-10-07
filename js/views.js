@@ -26,7 +26,7 @@ function homelandPlotObjects(n){
 }
 function homelandObjectTitle(o){return o.cropName||o.recipeName||o.label||o.name}
 function homelandPlotRole(n){
- const rows=homelandPlotObjects(n);if(!rows.length)return 'Free';
+ const rows=homelandPlotObjects(n);if(!rows.length)return 'Purchased';
  const farms=rows.filter(o=>o.name==='Farmland').length,woods=rows.filter(o=>o.name==='Woodland').length,mines=rows.filter(o=>o.name==='Mine').length;
  const stations=rows.filter(o=>recipeDB[o.name]?.length).length;
  if(farms>=Math.max(2,rows.length*.45))return 'Fields';
@@ -61,7 +61,7 @@ function renderHomelandPlannerV2(){
    const cards=plotDefs.map(p=>{
      const open=isPlotOpen(p.n),rows=homelandPlotObjects(p.n),u=HOMELAND_PLOT_UNLOCKS[p.n]||{},role=homelandPlotRole(p.n);
      if(!open)return `<button class="hpv2PlotCard locked" data-hpv2-locked="${p.n}"><div class="hpv2Lock">🔒</div><b>Plot ${p.n}</b><span>RV ${u.rv||'—'} · ${Number(u.cost||0).toLocaleString()} HC</span></button>`;
-     return `<button class="hpv2PlotCard open" data-hpv2-plot="${p.n}"><div class="hpv2PlotTitle"><b>Plot ${p.n}</b><span>${esc(role)}</span></div><div class="hpv2MiniGrid"><div class="hpv2GridLines"></div>${rows.slice(0,50).map(o=>homelandMiniObject(o,p)).join('')}</div><div class="hpv2PlotFoot"><span>${rows.length?rows.length+' placed':'Nothing planned'}</span><strong>Open ›</strong></div></button>`;
+     return `<button class="hpv2PlotCard open" data-hpv2-plot="${p.n}"><div class="hpv2PlotTitle"><b>Plot ${p.n}</b><span>${esc(role)}</span></div><div class="hpv2MiniGrid"><div class="hpv2GridLines"></div>${rows.slice(0,50).map(o=>homelandMiniObject(o,p)).join('')}</div><div class="hpv2PlotFoot"><span>${rows.length?rows.length+' placed':'Purchased · nothing planned'}</span><strong>Open ›</strong></div></button>`;
    }).join('');
    root.innerHTML=modeBar+`<div class="hpv2Summary"><div><b>Home Overview</b><span>RV ${rvLevel.value} · ${openPlots.size} / 16 plots open · ${objects.length} placed objects</span></div><div class="hpv2SummaryHint">Locked cards show the reference RV + Home Coin unlock.</div></div><div class="hpv2PlotGrid">${cards}</div>`;
  }
