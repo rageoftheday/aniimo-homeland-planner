@@ -48,6 +48,13 @@ function homelandMiniObject(o,p,big=false){
  const title=homelandObjectTitle(o),lv=o.facilityLevel||o.placedLevel||'';
  return `<button type="button" class="hpv2Obj${big?' big':''}" data-hpv2-object="${o.id}" title="${esc(title)}${lv?' · Lv'+lv:''}" style="left:${l/20*100}%;top:${t/15*100}%;width:${Math.min(o.w,20)/20*100}%;height:${Math.min(o.h,15)/15*100}%"><span>${esc((title||o.name||'?').slice(0,1))}</span>${big&&lv?`<b>Lv${lv}</b>`:''}</button>`;
 }
+function homelandPlotAddOptions(){
+ const rv=+rvLevel.value;
+ return catalog.filter(item=>{
+   const d=effectiveDims(item),placed=objects.filter(o=>o.name===item.name).length;
+   return isUnlocked(item)&&d.w>0&&d.h>0&&placed<maxCount(item,rv);
+ }).sort((a,b)=>a.cat.localeCompare(b.cat)||a.name.localeCompare(b.name));
+}
 function renderHomelandPlannerV2(){
  const map=el('mapPane');if(!map)return;
  let root=el('homelandPlannerV2');
@@ -57,9 +64,10 @@ function renderHomelandPlannerV2(){
  const modeBar=`<div class="hpv2ModeBar"><div><b>Homeland Planner</b><span>Overview first · click an open plot to focus its 20×15 workspace.</span></div><div class="hpv2ModeActions"><button class="${homelandPlannerMode==='overview'?'active':''}" onclick="setHomelandPlannerMode('overview')">All Plots</button><button class="${homelandPlannerMode==='plot'?'active':''}" onclick="setHomelandPlannerMode('plot',homelandFocusedPlot)">Plot Editor</button></div></div>`;
  if(homelandPlannerMode==='plot'){
    const n=homelandFocusedPlot,p=homelandPlotDef(n)||homelandPlotDef(1),rows=homelandPlotObjects(n),unlock=HOMELAND_PLOT_UNLOCKS[n]||{};
-   root.innerHTML=modeBar+`<div class="hpv2FocusHead"><button onclick="setHomelandPlannerMode('overview')">← All Plots</button><div><h3>Plot ${n} · ${esc(homelandPlotRole(n))}</h3><span>${rows.length} placed object${rows.length===1?'':'s'} · 20×15 squares</span></div><div class="hpv2FocusMeta">RV ${unlock.rv||'—'} · ${Number(unlock.cost||0).toLocaleString()} HC unlock</div></div><div class="hpv2FocusGrid"><div class="hpv2GridLines"></div>${rows.map(o=>homelandMiniObject(o,p,true)).join('')}</div><div class="hpv2FocusFoot"><span>Click a tile to select it in the existing Details inspector.</span></div>`;
+   const addOptions=homelandPlotAddOptions();
+   root.innerHTML=modeBar+`<div class="hpv2FocusHead"><button onclick="setHomelandPlannerMode('overview')">← All Plots</button><div><h3>Plot ${n} · ${esc(homelandPlotRole(n))}</h3><span>${rows.length} placed object${rows.length===1?'':'s'} · 20×15 squares</span></div><div class="hpv2FocusMeta">RV ${unlock.rv||'—'} · ${Number(unlock.cost||0).toLocaleString()} HC unlock</div></div><div class="hpv2PlotAddBar"><label><span>Add directly to Plot ${n}</span><select id="hpv2AddSelect"><option value="">Choose unlocked item…</option>${addOptions.map(x=>`<option value="${esc(x.name)}">${esc(x.cat)} — ${esc(x.name)}</option>`).join('')}</select></label><button type="button" id="hpv2AddBtn">+ Add to Plot</button><span>Or drag an unlocked item from Inventory and drop it on the grid.</span></div><div class="hpv2FocusGrid" data-hpv2-drop-plot="${n}"><div class="hpv2GridLines"></div>${rows.map(o=>homelandMiniObject(o,p,true)).join('')}</div><div class="hpv2FocusFoot"><span>Click a tile to select it. Drag from Inventory to place at a specific square.</span></div>`;
  }else{
-   const cards=plotDefs.map(p=>{
+   const cards=plotDefs.slice().sort((a,b)=>a.n-b.n).map(p=>{
      const open=isPlotOpen(p.n),rows=homelandPlotObjects(p.n),u=HOMELAND_PLOT_UNLOCKS[p.n]||{},role=homelandPlotRole(p.n);
      if(!open)return `<button class="hpv2PlotCard locked" data-hpv2-locked="${p.n}"><div class="hpv2Lock">🔒</div><b>Plot ${p.n}</b><span>RV ${u.rv||'—'} · ${Number(u.cost||0).toLocaleString()} HC</span></button>`;
      return `<button class="hpv2PlotCard open" data-hpv2-plot="${p.n}"><div class="hpv2PlotTitle"><b>Plot ${p.n}</b><span>${esc(role)}</span></div><div class="hpv2MiniGrid"><div class="hpv2GridLines"></div>${rows.slice(0,50).map(o=>homelandMiniObject(o,p)).join('')}</div><div class="hpv2PlotFoot"><span>${rows.length?rows.length+' placed':'Purchased · nothing planned'}</span><strong>Open ›</strong></div></button>`;
@@ -69,6 +77,25 @@ function renderHomelandPlannerV2(){
  root.querySelectorAll('[data-hpv2-plot]').forEach(b=>b.addEventListener('click',()=>setHomelandPlannerMode('plot',b.dataset.hpv2Plot)));
  root.querySelectorAll('[data-hpv2-object]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();selected=Number(b.dataset.hpv2Object);render();}));
  root.querySelectorAll('[data-hpv2-locked]').forEach(b=>b.addEventListener('click',()=>{const n=Number(b.dataset.hpv2Locked),u=HOMELAND_PLOT_UNLOCKS[n]||{};b.title=`Plot ${n}: unlock reference RV ${u.rv||'—'}, ${Number(u.cost||0).toLocaleString()} HC`;}));
+ const addSel=el('hpv2AddSelect'),addBtn=el('hpv2AddBtn');
+ addBtn?.addEventListener('click',()=>{
+   const item=catalog.find(x=>x.name===addSel?.value);
+   if(item)addObjectToFocusedPlot(item);
+ });
+ const dropGrid=root.querySelector('[data-hpv2-drop-plot]');
+ if(dropGrid){
+   dropGrid.addEventListener('dragover',e=>{e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect='copy';dropGrid.classList.add('dragTarget')});
+   dropGrid.addEventListener('dragleave',e=>{if(!dropGrid.contains(e.relatedTarget))dropGrid.classList.remove('dragTarget')});
+   dropGrid.addEventListener('drop',e=>{
+     e.preventDefault();dropGrid.classList.remove('dragTarget');
+     const name=e.dataTransfer?.getData('application/x-aniimo-catalog')||e.dataTransfer?.getData('text/plain')||'';
+     const item=catalog.find(x=>x.name===name);if(!item)return;
+     const rect=dropGrid.getBoundingClientRect();
+     const localX=(e.clientX-rect.left)/Math.max(1,rect.width)*20;
+     const localY=(e.clientY-rect.top)/Math.max(1,rect.height)*15;
+     addObjectToFocusedPlot(item,localX,localY);
+   });
+ }
 }
 function setMainTab(tab){
  activeMainTab=tab;document.querySelectorAll('#mainTabs [data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));document.querySelectorAll('.tabPane').forEach(p=>p.classList.toggle('active',p.id===tab+'Pane'));
