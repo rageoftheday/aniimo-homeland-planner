@@ -209,11 +209,11 @@ jobs:
           grep -Fq "Refresh this planner tab" js/importer.js
           node --check js/app.js
           node --check js/views.js
+          grep -Fq "function homelandObjectLevel" js/views.js
           grep -Fq ".hpv2Obj.big .hpv2IconCircle" css/app.css
           grep -Fq ".hpv2LevelText" css/app.css
           grep -Fq ".hpv2IconCircle" css/app.css
           grep -Fq "homelandVisualIconForName(item.name)" js/views.js
-          grep -Fq "Lv.${lv}" js/views.js
           grep -Fq "function homelandObjectVisualHTML" js/views.js
           grep -Fq "const HOMELAND_FACILITY_ICONS" js/views.js
           grep -Fq "const HOMELAND_CROP_ICONS" js/views.js
