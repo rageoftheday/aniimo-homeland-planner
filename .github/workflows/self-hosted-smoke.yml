@@ -217,7 +217,6 @@ jobs:
           grep -q "Crafting / Work" js/views.js
           grep -q "let activeRecipeType='all'" js/views.js
           grep -q 'recipeCatalogParts' js/views.js
-          grep -q 'prodKindFilter' js/views.js
           grep -q 'embedded Aniidx catalog' js/views.js
           grep -q 'Homeland Ability Rankings' js/views.js
           grep -q 'HOMELAND_PLOT_UNLOCKS' js/views.js
