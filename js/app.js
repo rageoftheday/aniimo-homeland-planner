@@ -1199,8 +1199,9 @@ function workerFitForJob(w,job){
  if(others[0]&&demandTypes.has(others[0].type))score+=others[0].level*8;
  if(others[1]&&demandTypes.has(others[1].type))score+=others[1].level*3;
  const occupied=assignedObjectForWorker(w.id);if(occupied&&occupied.id!==job.object.id)score-=35;
+ const liveOccupied=!!(w.aniidex&&w.aniidex.facility!=null);if(liveOccupied&&!occupied)score-=35;
  const req=job.rec||1;let fit=lvl>=req?'Perfect':'Works';if(lvl<req)score-=25*(req-lvl);
- return {eligible:true,score,lvl,trait,fit,occupied,others};
+ return {eligible:true,score,lvl,trait,fit,occupied,liveOccupied,others};
 }
 function activeJobs(){
  const jobs=[];
@@ -1215,6 +1216,46 @@ function activeJobs(){
  return jobs;
 }
 function fitLabel(f){if(!f.eligible)return '<span class="fitPoor">Not eligible</span>';if(f.fit==='Perfect'&&f.trait)return '<span class="fitPerfect">Perfect</span>';if(f.fit==='Perfect')return '<span class="fitWorks">Works well</span>';return '<span class="fitWorks">Works</span>'}
+function advisorAniidexParts(){
+ const src=aniidexImportMeta?.catalog||EMBEDDED_ANIIDEX_CATALOG||{};
+ const hub=src?.hub||src?.homelandHub||src?.homeland||EMBEDDED_ANIIDEX_CATALOG?.hub||{};
+ const facts=hub?.facts||src?.facts||EMBEDDED_ANIIDEX_CATALOG?.hub?.facts||{};
+ const text=src?.text||src?.homelandText||src?.siteText||hub?.text||EMBEDDED_ANIIDEX_CATALOG?.text||{};
+ return {facts,text};
+}
+function advisorImportedAbilityName(jobId){
+ const id=Number(jobId);if(!id)return '';
+ const {facts,text}=advisorAniidexParts();
+ for(const [key,a] of Object.entries(facts?.abilities||{})){
+   if(Number(a?.id)===id){const label=text?.abilities?.[id]??text?.abilities?.[String(id)]??key;return typeof label==='string'?label:(label?.name||label?.label||key);}
+ }
+ return '';
+}
+function advisorImportedFacilityName(facilityId){
+ const id=String(facilityId??'');if(!id)return '';
+ const {text}=advisorAniidexParts();
+ return String(text?.facilities?.[id]??text?.facilities?.[Number(id)]??('Facility '+id));
+}
+function advisorLiveAssignments(){
+ return workers.filter(w=>w.aniidex?.facility!=null).map(w=>({
+   w,facility:advisorImportedFacilityName(w.aniidex.facility),facilityLevel:Number(w.aniidex.facilityLevel||0),
+   ability:advisorImportedAbilityName(w.aniidex.job),piece:w.aniidex.piece
+ })).sort((a,b)=>a.facility.localeCompare(b.facility)||String(a.w.name||'').localeCompare(String(b.w.name||'')));
+}
+function advisorInactiveImportedWorkers(){
+ return workers.filter(w=>w.aniidex&&w.aniidex.facility==null).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
+}
+function advisorCandidateWorkers(){
+ return workers.filter(w=>w.aniidex?true:w.active!==false);
+}
+function renderAdvisorSyncedWorkers(){
+ const root=el('advisorLiveWorkers');if(!root)return;
+ const working=advisorLiveAssignments(),inactive=advisorInactiveImportedWorkers();
+ if(!aniidexImportMeta){root.innerHTML='<div class="small">Sync Aniidx to show the Aniimo currently working in Homeland and the inactive Aniimo available for reassignment.</div>';return;}
+ const workingHtml=working.length?working.map(x=>`<div class="advisorWorkerCard working"><div><b>${esc(x.w.name||'Unnamed')}</b>${x.w.form?' — '+esc(x.w.form):''}</div><div class="small">${esc(x.facility)}${x.facilityLevel?' Lv'+x.facilityLevel:''}${x.ability?' • '+esc(x.ability)+' Lv'+workerAbilityLevel(x.w,x.ability):''}</div></div>`).join(''):'<div class="small">No synced Aniimo are currently assigned to a facility.</div>';
+ const inactiveHtml=inactive.length?inactive.map(w=>`<div class="advisorWorkerCard inactive"><div><b>${esc(w.name||'Unnamed')}</b>${w.form?' — '+esc(w.form):''}</div><div class="small">Available • ${(w.abilities||[]).filter(a=>a.type).map(a=>esc(a.type)+' Lv'+(Number(a.level)||1)).join(' • ')||'No decoded abilities'}</div></div>`).join(''):'<div class="small">No inactive synced Aniimo.</div>';
+ root.innerHTML=`<div class="advisorWorkerGroup"><div class="advisorWorkerGroupHead"><b>Working now</b><span>${working.length}</span></div><div class="advisorWorkerGrid">${workingHtml}</div></div><div class="advisorWorkerGroup"><div class="advisorWorkerGroupHead"><b>Inactive / available</b><span>${inactive.length}</span></div><div class="advisorWorkerGrid">${inactiveHtml}</div></div>`;
+}
 function advisorReferenceForms(){
  const forms=EMBEDDED_ANIIDEX_CATALOG?.hub?.facts?.forms;
  return Array.isArray(forms)?forms:Object.values(forms||{});
@@ -1248,26 +1289,26 @@ function renderAdvisorRankMatrix(){
 }
 function renderAdvisor(){
  const root=el('advisorList'),head=el('advisorHeadline');if(!root||!head)return;const jobs=activeJobs();
- renderAdvisorRankMatrix();
- const active=workers.filter(w=>w.active!==false);head.textContent=`${jobs.length} active job${jobs.length===1?'':'s'} • ${active.length} active roster worker${active.length===1?'':'s'}`;
+ renderAdvisorRankMatrix();renderAdvisorSyncedWorkers();
+ const working=advisorLiveAssignments(),inactive=advisorInactiveImportedWorkers(),candidates=advisorCandidateWorkers();head.textContent=`${working.length} working now • ${inactive.length} inactive / available • ${jobs.length} planner job${jobs.length===1?'':'s'}`;
  if(!jobs.length){root.innerHTML='<div class="small">Assign production recipes or place Heat/Cooling/Sun devices to generate owned-worker recommendations. The full ability rank guide is still available below.</div>';return}
  root.innerHTML='';
  for(const job of jobs){
-   const candidates=active.map(w=>({w,f:workerFitForJob(w,job)})).filter(x=>x.f.eligible).sort((a,b)=>b.f.score-a.f.score);
+   const ranked=candidates.map(w=>({w,f:workerFitForJob(w,job)})).filter(x=>x.f.eligible).sort((a,b)=>b.f.score-a.f.score);
    const card=document.createElement('div');card.className='adviceCard'+(job.family?' locked':'');
    const title=`${job.station}${job.recipe?' — '+job.recipe:''}`;
-   if(!candidates.length){
+   if(!ranked.length){
      card.classList.add('blocked');
      const famText=job.family?` Missing required <b>${WORKER_FAMILIES[job.family].label}</b>: ${WORKER_FAMILIES[job.family].members.join(' / ')}.`:'';
      card.innerHTML=`<div><b>🔒 ${esc(title)} Production Blocked</b></div><div class="jobReason">Need ${job.ability} Lv${job.rec}+.${famText}${job.personality?` Preferred trait: <b>${job.personality} — ${PERSONALITY_NAMES[job.personality]}</b> (+20% when matched).`:''}</div>`;
    }else{
-     const best=candidates[0],alt=candidates.slice(1,4);
+     const best=ranked[0],alt=ranked.slice(1,4);
      const lock=job.family?'<span class="badge lock">🔒 Locked-In Choice</span>':'';
      const traitTxt=job.personality?`${job.personality} — ${PERSONALITY_NAMES[job.personality]}`:'No personality bonus';
      const current=job.object.workerId?workers.find(w=>w.id===job.object.workerId):null;
      const curFit=current?workerFitForJob(current,job):null;
      let curLine='';if(current){curLine=`<div class="jobReason">Currently assigned: <b>${esc(current.name||'Unnamed')}</b> — ${fitLabel(curFit)}${job.personality&&!curFit.trait?` • wants ${traitTxt}`:''}</div>`}
-     card.innerHTML=`<div>${lock}<b>${esc(title)}</b></div><div class="jobReason">Main need: <b>${job.ability} Lv${job.rec}+</b>${job.personality?` • preferred <b>${traitTxt}</b>`:''}${job.family?` • ${WORKER_FAMILIES[job.family].label} required`:''}</div>${curLine}<div style="margin-top:6px"><span class="jobRank">Best:</span> <b>${esc(best.w.name||'Unnamed')}</b>${best.w.form?' — '+esc(best.w.form):''} • ${job.ability} Lv${best.f.lvl} • ${best.f.trait&&job.personality?job.personality+' ✓':job.personality?job.personality+' ✕':''} • ${fitLabel(best.f)}</div><div class="jobReason">${best.f.others.length?'Other abilities: '+best.f.others.map(a=>`${a.type} Lv${a.level}`).join(', '):'Specialist: no extra ability needed for this recommendation.'}${best.f.occupied&&best.f.occupied.id!==job.object.id?` • Currently used at ${esc(best.f.occupied.name)}; reassignment has an opportunity cost.`:''}</div>${alt.length?`<div class="jobReason">Alternatives: ${alt.map((x,i)=>`${i===0?'High':i===1?'Medium':'Low End'} — <b>${esc(x.w.name||'Unnamed')}</b> (${job.ability} Lv${x.f.lvl}${job.personality?', '+job.personality+(x.f.trait?' ✓':' ✕'):''})`).join(' • ')}</div>`:''}`;
+     card.innerHTML=`<div>${lock}<b>${esc(title)}</b></div><div class="jobReason">Main need: <b>${job.ability} Lv${job.rec}+</b>${job.personality?` • preferred <b>${traitTxt}</b>`:''}${job.family?` • ${WORKER_FAMILIES[job.family].label} required`:''}</div>${curLine}<div style="margin-top:6px"><span class="jobRank">Best:</span> <b>${esc(best.w.name||'Unnamed')}</b>${best.w.form?' — '+esc(best.w.form):''} • ${job.ability} Lv${best.f.lvl} • ${best.f.trait&&job.personality?job.personality+' ✓':job.personality?job.personality+' ✕':''} • ${fitLabel(best.f)}</div><div class="jobReason">${best.f.others.length?'Other abilities: '+best.f.others.map(a=>`${a.type} Lv${a.level}`).join(', '):'Specialist: no extra ability needed for this recommendation.'}${best.f.occupied&&best.f.occupied.id!==job.object.id?` • Currently used at ${esc(best.f.occupied.name)}; reassignment has an opportunity cost.`:best.f.liveOccupied?` • Currently working in synced Homeland; reassignment has an opportunity cost.`:''}</div>${alt.length?`<div class="jobReason">Alternatives: ${alt.map((x,i)=>`${i===0?'High':i===1?'Medium':'Low End'} — <b>${esc(x.w.name||'Unnamed')}</b> (${job.ability} Lv${x.f.lvl}${job.personality?', '+job.personality+(x.f.trait?' ✓':' ✕'):''})`).join(' • ')}</div>`:''}`;
    }
    root.appendChild(card);
  }

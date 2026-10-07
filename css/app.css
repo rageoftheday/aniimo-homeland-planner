@@ -478,3 +478,12 @@ header{align-items:center}
 .planAdviceSection{display:none}
 .planAdviceSection.active{display:block}
 #planAdvisorHost>.rosterBox{margin-top:0!important}
+
+.advisorWorkerGroups{display:grid;gap:10px;margin-top:8px}
+.advisorWorkerGroup{border:1px solid #30495d;background:#101c26;border-radius:10px;padding:9px}
+.advisorWorkerGroupHead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px}
+.advisorWorkerGroupHead span{font-size:11px;color:var(--muted)}
+.advisorWorkerGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:7px}
+.advisorWorkerCard{border:1px solid #30495d;border-radius:8px;padding:8px;background:#13222d}
+.advisorWorkerCard.working{border-color:#4f8b69}
+.advisorWorkerCard.inactive{border-color:#5d6f80}
