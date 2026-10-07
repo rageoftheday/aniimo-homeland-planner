@@ -269,26 +269,31 @@ function setAniidexCompanionMessage(message,isError=false){
  }
 }
 
-function requestAniidexCompanionSync(){
+function requestAniidexCompanionSync(mode='manual'){
+ if(aniidexSyncInFlight)return;
  const input=el('aniidexCompanionUid');
- const uid=String(input?.value||'').trim();
+ const uid=String(input?.value||aniidexImportMeta?.uid||'').trim();
  if(!/^[1-9]\d{7,15}$/.test(uid)){
+   if(mode==='auto'){failAniidexAutoSync('A valid Aniimo UID is required.');return;}
    setAniidexCompanionMessage('Enter a valid numeric Aniimo UID first.',true);
    return;
  }
- const btn=el('aniidexCompanionBtn');
- if(btn)btn.disabled=true;
- setAniidexCompanionMessage(aniidexCompanionDetected?'Connecting to Aniidx…':'Looking for the Aniimo Homeland Companion extension…');
+ aniidexSyncMode=mode==='auto'?'auto':'manual';
+ aniidexSyncInFlight=true;
+ const btn=el('aniidexCompanionBtn');if(btn)btn.disabled=true;
+ const syncNow=el('aniidexSyncNowBtn');if(syncNow)syncNow.disabled=true;
+ setAniidexCompanionMessage(aniidexSyncMode==='auto'?'Auto-syncing from Aniidx…':(aniidexCompanionDetected?'Connecting to Aniidx…':'Looking for the Aniimo Homeland Companion extension…'));
  window.postMessage({channel:'aniimo-homeland-planner',type:'ANIIMO_SYNC_REQUEST',uid},location.origin);
  clearTimeout(aniidexCompanionTimer);
  aniidexCompanionTimer=setTimeout(()=>{
    if(!aniidexCompanionDetected){
-     if(btn)btn.disabled=false;
-     setAniidexCompanionMessage('Aniimo Homeland Companion was not detected. Install/load the extension from this repository, then refresh the planner.',true);
+     aniidexSyncInFlight=false;
+     if(btn)btn.disabled=false;if(syncNow)syncNow.disabled=false;
+     if(aniidexSyncMode==='auto')failAniidexAutoSync('Aniimo Homeland Companion was not detected.');
+     else setAniidexCompanionMessage('Aniimo Homeland Companion was not detected. Install/load the extension from this repository, then refresh the planner.',true);
    }
  },1600);
 }
-
 window.addEventListener('message',event=>{
  if(event.source!==window||event.origin!==location.origin)return;
  const msg=event.data||{};
