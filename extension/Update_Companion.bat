@@ -52,7 +52,7 @@ if not exist "%CHROME%" set "CHROME=%LOCALAPPDATA%\Google\Chrome\Application\chr
 tasklist /FI "IMAGENAME eq chrome.exe" 2>nul | find /I "chrome.exe" >nul
 if not errorlevel 1 if exist "%CHROME%" (
   echo [INFO] Chrome is already open - opening chrome://extensions
-  start "" "%CHROME%" "chrome://extensions/"
+  start "" "%CHROME%" --new-tab "chrome://extensions/"
   set "BROWSER_OPENED=1"
 ) else (
   echo [INFO] Chrome is not running - leaving it closed.
@@ -64,7 +64,7 @@ if not exist "%EDGE%" set "EDGE=%LOCALAPPDATA%\Microsoft\Edge\Application\msedge
 tasklist /FI "IMAGENAME eq msedge.exe" 2>nul | find /I "msedge.exe" >nul
 if not errorlevel 1 if exist "%EDGE%" (
   echo [INFO] Edge is already open - opening edge://extensions
-  start "" "%EDGE%" "edge://extensions/"
+  start "" "%EDGE%" --new-tab "edge://extensions/"
   set "BROWSER_OPENED=1"
 ) else (
   echo [INFO] Edge is not running - leaving it closed.
