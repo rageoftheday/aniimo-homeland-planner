@@ -159,9 +159,10 @@ jobs:
           node --check js/app.js
           node --check js/views.js
           node - <<'NODE'
-          global.window=global;
-          require('./data/embedded-aniidex-catalog.js');
-          const c=global.EMBEDDED_ANIIDEX_CATALOG;
+          const fs=require('fs'),vm=require('vm');
+          const code=fs.readFileSync('data/embedded-aniidex-catalog.js','utf8')+';globalThis.__catalog=EMBEDDED_ANIIDEX_CATALOG;';
+          const ctx={};vm.createContext(ctx);vm.runInContext(code,ctx);
+          const c=ctx.__catalog;
           const forms=c?.hub?.facts?.forms||{};
           const text=c?.text?.forms||{};
           const rows=Object.entries(forms).map(([key,f])=>({name:(text[String(f?.variant??key)]||{}).name||'',skills:f?.skills||{}})).filter(x=>x.name);
