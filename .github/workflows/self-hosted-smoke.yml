@@ -88,9 +88,9 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.22.4' index.html
-          grep -q 'js/views.js?v=30.22.4' index.html
-          grep -q 'js/importer.js?v=30.15.3' index.html
+          grep -q 'css/app.css?v=30.22.5' index.html
+          grep -q 'js/views.js?v=30.22.5' index.html
+          grep -q 'js/importer.js?v=30.15.4' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
@@ -133,7 +133,7 @@ jobs:
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
-          grep -q 'js/app.js?v=30.21.3' index.html
+          grep -q 'js/app.js?v=30.21.4' index.html
           grep -q 'data-tab="aniimos"' index.html
           grep -q 'id="aniimosPane"' index.html
           grep -q 'Backup ▾' index.html
@@ -143,11 +143,23 @@ jobs:
           ! grep -q 'id="saveBtn"' index.html
           ! grep -q 'id="exportBtn"' index.html
           ! grep -q 'id="importBtn"' index.html
-          grep -q 'data-tab="dashboard" class="active">Dashboard</button><button data-tab="map">Homeland Planner</button><button data-tab="plan">Plan / Advice</button><button data-tab="roster">Imported Roster</button><button data-tab="aniimos">Aniimos</button><button data-tab="production">Recipes</button><button data-tab="database">Database</button>' index.html
+          grep -q 'data-tab="dashboard" class="active">Dashboard</button><button data-tab="map">Homeland Planner</button><button data-tab="plan">Plan / Advice</button><button data-tab="roster">Imported Roster</button><button data-tab="aniimos">Aniimos</button><button data-tab="production">Recipes</button><button data-tab="database">Database</button><button data-tab="rawjson">Raw JSON</button>' index.html
           ! grep -q 'data-tab="import"' index.html
           ! grep -q 'id="importPane"' index.html
           grep -q 'Imported Roster / Job Advisor' index.html
           grep -q 'id="advisorRankMatrix"' index.html
+          grep -q "src?.planner?.forms" js/app.js
+          grep -q 'id="rawjsonPane"' index.html
+          grep -q 'function renderRawJsonTab' js/views.js
+          grep -q "activeMainTab==='rawjson'" js/views.js
+          grep -q 'dashboardHomeSnapshotHTML' js/views.js
+          grep -q 'Profile habitability' js/views.js
+          grep -q 'Incubation' js/views.js
+          grep -q 'rawBundle=data' js/importer.js
+          grep -q 'rawJsonPre' css/app.css
+          grep -q 'homeSnapshotGrid' css/app.css
+          node --check js/importer.js
+          node --check js/views.js
           grep -q 'id="advisorLiveWorkers"' index.html
           grep -q 'Inactive / available' js/app.js
           grep -q 'function advisorLiveAssignments' js/app.js
