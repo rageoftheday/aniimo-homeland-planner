@@ -228,6 +228,37 @@ The companion does not export your Aniidx cookies or Turnstile token to the plan
 let importUiMessage='';
 let aniidexCompanionDetected=false;
 let aniidexCompanionTimer=null;
+let aniidexSyncInFlight=false;
+let aniidexSyncMode='manual';
+let aniidexAutoSyncMinutes=5;
+let aniidexAutoSyncRunning=false;
+let aniidexAutoSyncTimer=null;
+let aniidexLastSyncAt=0;
+let aniidexAutoSyncRecovery=false;
+
+function formatAniidexSyncTime(ts){
+ if(!ts)return 'Never';
+ try{return new Date(ts).toLocaleTimeString([],{hour:'numeric',minute:'2-digit',second:'2-digit'});}catch{return 'Unknown';}
+}
+function clearAniidexAutoSyncTimer(){if(aniidexAutoSyncTimer){clearTimeout(aniidexAutoSyncTimer);aniidexAutoSyncTimer=null;}}
+function scheduleAniidexAutoSync(){
+ clearAniidexAutoSyncTimer();
+ if(!aniidexAutoSyncRunning)return;
+ aniidexAutoSyncTimer=setTimeout(()=>requestAniidexCompanionSync('auto'),Math.max(1,Number(aniidexAutoSyncMinutes)||5)*60000);
+}
+function stopAniidexAutoSync(reason=''){
+ aniidexAutoSyncRunning=false;
+ clearAniidexAutoSyncTimer();
+ if(reason)importUiMessage=reason;
+}
+function failAniidexAutoSync(message){
+ aniidexSyncInFlight=false;
+ stopAniidexAutoSync();
+ aniidexAutoSyncRecovery=true;
+ importUiMessage='Auto-sync paused — Aniidx sync needs attention. '+String(message||'The refresh failed.')+' Open the Aniidx sync page, make sure your player data loads, then return here and click Sync now.';
+ renderImportTab();
+}
+function openAniidexSyncPage(){window.open('https://aniidex.com/homeland/','_blank','noopener');}
 
 function setAniidexCompanionMessage(message,isError=false){
  importUiMessage=String(message||'');
