@@ -26,6 +26,39 @@ function homelandPlotObjects(n){
  return objects.filter(o=>{const cx=o.x+o.w/2,cy=o.y+o.h/2;return cx>=p.x&&cx<p.x+20&&cy>=p.y&&cy<p.y+15});
 }
 function homelandObjectTitle(o){return o.cropName||o.recipeName||o.label||o.name}
+const HOMELAND_CROP_ICONS={
+ 'wheat':'🌾','sugarcane':'🎋','potato':'🥔','rice':'🌾','cotton':'☁️','strawberry':'🍓','lavender':'🪻',
+ 'soybean':'🫘','grapes':'🍇','grape':'🍇','cocoa':'🍫','agave':'🌵','rose':'🌹','cranberry':'🔴','ginseng':'🌿',
+ 'bamboo':'🎋','willow wood':'🌳','natural rubber':'🌳','maple syrup':'🍁','palm bark':'🌴','apple':'🍎',
+ 'cherry blossom':'🌸','orange flower':'🌼','lemon':'🍋','coconut':'🥥','walnut':'🌰','chestnut':'🌰',
+ 'moondew radish':'🥕','waxing moon pepper':'🌶️','captain spud':'🥔','sweet potato':'🍠'
+};
+const HOMELAND_FACILITY_ICONS={
+ 'farmland':'🌱','woodland':'🌳','mine':'🪨','well':'💧','storage unit':'📦','hatchinator':'🥚',
+ 'nimbus bed':'🛏️','dewy house':'🏠','starfall hammock':'🛏️','tidewhisper sandcastle':'🏖️','floral windmill':'🌬️',
+ 'heat furnace':'🔥','cooling unit':'❄️','sunlamp':'☀️','crackle generator':'⚡','crackle power pole':'⚡',
+ 'carousel mill':'⚙️','crafting table':'🛠️','jukebox dryer':'🎵','claw game cooker':'🍳','joy wheel loom':'🧵',
+ 'phonolfactory table':'🧪','bouncy brew keg':'🛢️','simmering pot':'🍲','blazing stove':'🔥','woodworking bench':'🪚',
+ 'chimney kiln':'🏺','pickling jar':'🫙','aniipod maker':'⚙️','dance pad polisher':'💎'
+};
+function homelandVisualIconForName(name){
+ const key=String(name||'').trim().toLowerCase();
+ return HOMELAND_CROP_ICONS[key]||HOMELAND_FACILITY_ICONS[key]||'◈';
+}
+function homelandObjectVisualIcon(o){
+ if(o?.cropName)return homelandVisualIconForName(o.cropName);
+ if(o?.name==='Mine'&&o?.recipeName)return '⛏️';
+ if(o?.name==='Well')return '💧';
+ return homelandVisualIconForName(o?.name||o?.label||'');
+}
+function homelandObjectLevel(o){
+ const v=Number(o?.facilityLevel||o?.placedLevel||0);
+ return Number.isFinite(v)&&v>0?v:null;
+}
+function homelandObjectVisualHTML(o,big=false){
+ const icon=homelandObjectVisualIcon(o),lv=homelandObjectLevel(o);
+ return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true"><span class="hpv2IconGlyph">${esc(icon)}</span></span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}</span>`;
+}
 function homelandPlotRole(n){
  const rows=homelandPlotObjects(n);if(!rows.length)return 'Purchased';
  const farms=rows.filter(o=>o.name==='Farmland').length,woods=rows.filter(o=>o.name==='Woodland').length,mines=rows.filter(o=>o.name==='Mine').length;
@@ -45,10 +78,11 @@ function setHomelandPlannerMode(mode,plot){
 }
 function homelandMiniObject(o,p,big=false){
  const l=Math.max(0,o.x-p.x),t=Math.max(0,o.y-p.y);
- const title=homelandObjectTitle(o),lv=o.facilityLevel||o.placedLevel||'';
+ const title=homelandObjectTitle(o),lv=homelandObjectLevel(o);
  const style=`left:${l/20*100}%;top:${t/15*100}%;width:${Math.min(o.w,20)/20*100}%;height:${Math.min(o.h,15)/15*100}%`;
- if(!big)return `<div class="hpv2Obj preview" aria-hidden="true" title="${esc(title)}${lv?' · Lv'+lv:''}" style="${style}"><span>${esc((title||o.name||'?').slice(0,1))}</span></div>`;
- return `<button type="button" class="hpv2Obj big" data-hpv2-object="${o.id}" draggable="true" title="${esc(title)}${lv?' · Lv'+lv:''}" style="${style}"><span>${esc((title||o.name||'?').slice(0,1))}</span>${lv?`<b>Lv${lv}</b>`:''}</button>`;
+ const visual=homelandObjectVisualHTML(o,big);
+ if(!big)return `<div class="hpv2Obj preview" aria-hidden="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</div>`;
+ return `<button type="button" class="hpv2Obj big" data-hpv2-object="${o.id}" draggable="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</button>`;
 }
 function homelandPlotAddOptions(){
  const rv=+rvLevel.value;
@@ -62,7 +96,7 @@ function homelandPiecePaletteHTML(items){
  return items.map(item=>{
    const d=effectiveDims(item),placed=objects.filter(o=>o.name===item.name).length,limit=maxCount(item,rv);
    const search=normalizeSearch(item.cat+' '+item.name+' '+d.w+'x'+d.h);
-   return `<div class="hpv2PieceCard" draggable="true" data-hpv2-piece="${esc(item.name)}" data-piece-search="${esc(search)}"><div class="hpv2PieceIcon">${esc(item.name.slice(0,1))}</div><div class="hpv2PieceInfo"><b>${esc(item.name)}</b><span>${esc(item.cat)} · ${d.w}×${d.h}</span><small>${placed} placed / ${limit} max</small></div><button type="button" data-hpv2-piece-add="${esc(item.name)}" title="Add to first legal free spot in this plot">+</button></div>`;
+   return `<div class="hpv2PieceCard" draggable="true" data-hpv2-piece="${esc(item.name)}" data-piece-search="${esc(search)}"><div class="hpv2PieceIcon">${esc(homelandVisualIconForName(item.name))}</div><div class="hpv2PieceInfo"><b>${esc(item.name)}</b><span>${esc(item.cat)} · ${d.w}×${d.h}</span><small>${placed} placed / ${limit} max</small></div><button type="button" data-hpv2-piece-add="${esc(item.name)}" title="Add to first legal free spot in this plot">+</button></div>`;
  }).join('');
 }
 function renderHomelandPlannerV2(){
