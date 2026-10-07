@@ -103,18 +103,18 @@ function homelandMiniObject(o,p,big=false){
  return `<button type="button" class="hpv2Obj big" data-hpv2-object="${o.id}" draggable="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</button>`;
 }
 function homelandPlotAddOptions(){
- const rv=+rvLevel.value;
  return catalog.filter(item=>{
-   const d=effectiveDims(item),placed=objects.filter(o=>o.name===item.name).length;
-   return isUnlocked(item)&&d.w>0&&d.h>0&&placed<maxCount(item,rv);
+   const d=effectiveDims(item);
+   return isUnlocked(item)&&d.w>0&&d.h>0;
  }).sort((a,b)=>a.cat.localeCompare(b.cat)||a.name.localeCompare(b.name));
 }
 function homelandPiecePaletteHTML(items){
- const rv=+rvLevel.value;
+ const rv=+rvLevel.value,focused=homelandPlotObjects(homelandFocusedPlot);
  return items.map(item=>{
-   const d=effectiveDims(item),placed=objects.filter(o=>o.name===item.name).length,limit=maxCount(item,rv);
+   const d=effectiveDims(item),placed=objects.filter(o=>o.name===item.name).length,focusedPlaced=focused.filter(o=>o.name===item.name).length,limit=maxCount(item,rv);
    const search=normalizeSearch(item.cat+' '+item.name+' '+d.w+'x'+d.h);
-   return `<div class="hpv2PieceCard" draggable="true" data-hpv2-piece="${esc(item.name)}" data-piece-search="${esc(search)}"><div class="hpv2PieceIcon">${esc(homelandVisualIconForName(item.name))}</div><div class="hpv2PieceInfo"><b>${esc(item.name)}</b><span>${esc(item.cat)} · ${d.w}×${d.h}</span><small>${placed} placed / ${limit} max</small></div><button type="button" data-hpv2-piece-add="${esc(item.name)}" title="Add to first legal free spot in this plot">+</button></div>`;
+   const addDisabled=placed>=limit?' disabled':'',removeDisabled=focusedPlaced<=0?' disabled':'';
+   return `<div class="hpv2PieceCard" draggable="true" data-hpv2-piece="${esc(item.name)}" data-piece-search="${esc(search)}"><div class="hpv2PieceIcon">${esc(homelandVisualIconForName(item.name))}</div><div class="hpv2PieceInfo"><b>${esc(item.name)}</b><span>${esc(item.cat)} · ${d.w}×${d.h}</span><small>${placed} placed / ${limit} max · ${focusedPlaced} in this plot</small></div><div class="hpv2PieceActions"><button type="button" data-hpv2-piece-remove="${esc(item.name)}" title="Remove one from this plot"${removeDisabled}>−</button><button type="button" data-hpv2-piece-add="${esc(item.name)}" title="Add to first legal free spot in this plot"${addDisabled}>+</button></div></div>`;
  }).join('');
 }
 function renderHomelandPlannerV2(){
@@ -148,6 +148,9 @@ function renderHomelandPlannerV2(){
  }));
  root.querySelectorAll('[data-hpv2-piece-add]').forEach(btn=>btn.addEventListener('click',()=>{
    const item=catalog.find(x=>x.name===btn.dataset.hpv2PieceAdd);if(item)addObjectToFocusedPlot(item);
+ }));
+ root.querySelectorAll('[data-hpv2-piece-remove]').forEach(btn=>btn.addEventListener('click',()=>{
+   removeObjectFromFocusedPlotByName(btn.dataset.hpv2PieceRemove||'');
  }));
  const pieceSearch=el('hpv2PieceSearch');
  pieceSearch?.addEventListener('input',()=>{
