@@ -109,7 +109,7 @@ function aniidexRvModuleLevels(profileData,homeData){
  for(const [id,name] of Object.entries(ids))out[name]=Math.max(0,Number(raw[id]??raw[String(id)]??0)||0);
  return {raw,levels:out,count:Object.values(out).filter(v=>v>0).length};
 }
-function applyAniidexImportedData(profileData,homeData,sourceLabel='Aniidex',catalogData=null,confirmImport=true){
+function applyAniidexImportedData(profileData,homeData,sourceLabel='Aniidex',catalogData=null,confirmImport=true,rawBundle=null){
  const sum=summarizeAniidexImport(profileData,homeData);
  const ok=!confirmImport||confirm(`${sourceLabel} import is ready.\n\n${sum.name||'Player'}\nRV ${sum.rv}\n${sum.aniimo} Homeland Aniimo (${sum.working} placed at facilities)\n${sum.facilities} facility pieces in snapshot\n${sum.caught||0} caught forms\n${aniidexRvModuleLevels(profileData,homeData).count} installed RV modules\n\nImport into the CURRENT profile?\n\nRaw imported data will also be retained for later ID decoding.`);
  if(!ok)return false;
@@ -119,7 +119,7 @@ function applyAniidexImportedData(profileData,homeData,sourceLabel='Aniidex',cat
  moduleLevels={...importedModules.levels};
  const normalPlots=(rawHome.plots||[]).filter(n=>n>=1&&n<=16);if(normalPlots.length)openPlots=new Set(normalPlots);
  const rawAniimo=rawHome.aniimo||[];workers=rawAniimo.map(a=>importedWorkerFromAniidex(a,catalogData));workerIdCounter=Math.max(1,...workers.map(w=>(Number(w.id)||0)+1));
- aniidexImportMeta={uid:String(rawHome.uid||profileData?.profile?.uid||profileData?.uid||''),importedAt:Date.now(),summary:sum,profile:profileData,home:homeData,catalog:catalogData,source:sourceLabel};
+ aniidexImportMeta={uid:String(rawHome.uid||profileData?.profile?.uid||profileData?.uid||''),importedAt:Date.now(),summary:sum,profile:profileData,home:homeData,catalog:catalogData,source:sourceLabel,raw:rawBundle||{profile:profileData,homeland:homeData}};
  const p=profileStore?.profiles?.[profileStore.current];if(p&&sum.name&&(/^Main Account$/i.test(p.name)||!p.name))p.name=sum.name;
  render();snapshotIntoCurrentProfile();renderProfileBar();
  return sum;
@@ -330,7 +330,7 @@ window.addEventListener('message',event=>{
      const homeData=data.homeland||{};
      const incomingUid=String(data.uid||profileData?.profile?.uid||profileData?.uid||homeData?.home?.uid||homeData?.uid||'');
      const confirmRefresh=aniidexSyncMode!=='auto'&&(!aniidexImportMeta||String(aniidexImportMeta.uid||'')!==incomingUid);
-     const sum=applyAniidexImportedData(profileData,homeData,'Aniidx direct sync',aniidexBundleCatalog(data),confirmRefresh);
+     const sum=applyAniidexImportedData(profileData,homeData,'Aniidx direct sync',aniidexBundleCatalog(data),confirmRefresh,data);
      if(!sum){setAniidexCompanionMessage('Aniidx sync received; import was cancelled.');return;}
      aniidexLastSyncAt=Date.now();
      aniidexAutoSyncRecovery=false;
@@ -362,7 +362,7 @@ async function importAniidexSyncFile(file){
   else if(data?.profile&&data?.home){profileData=data;homeData=data.home;catalogData=data.catalog||EMBEDDED_ANIIDEX_CATALOG;}
   else if(data?.home&&Array.isArray(data.home.aniimo)){profileData={};homeData=data;catalogData=EMBEDDED_ANIIDEX_CATALOG;}
   else throw new Error('This does not look like an Aniimo Homeland sync or home-import file.');
-  const sum=applyAniidexImportedData(profileData,homeData,'Aniիդex sync file',catalogData);
+  const sum=applyAniidexImportedData(profileData,homeData,'Aniիդex sync file',catalogData,true,data);
   if(!sum)return;
   importUiMessage=`Sync file imported ✓ ${sum.name||'Player'} • RV ${sum.rv} • ${sum.aniimo} Homeland Aniimo • ${sum.facilities} facility pieces • ${sum.caught||0} caught forms`;
   renderImportTab();
