@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Aniimo Homeland Companion",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Direct Aniidx sync bridge for Aniimo Homeland Planner.",
   "permissions": ["tabs"],
   "host_permissions": [

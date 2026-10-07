@@ -115,7 +115,12 @@
   window.addEventListener('message',event=>{
     if(event.source!==window||event.origin!==location.origin)return;
     const msg=event.data||{};
-    if(msg.channel!==CONTROL||msg.type!=='ANIIMO_RUN_SYNC')return;
+    if(msg.channel!==CONTROL)return;
+    if(msg.type==='ANIIMO_PAGE_PING'){
+      emit('ANIIMO_PAGE_READY');
+      return;
+    }
+    if(msg.type!=='ANIIMO_RUN_SYNC')return;
     const requestId=String(msg.requestId||'');
     const uid=String(msg.uid||'').trim();
     syncUid(uid,requestId).then(bundle=>{
@@ -126,4 +131,6 @@
       emit('ANIIMO_PAGE_RESULT',{requestId,ok:false,error:hint});
     });
   });
+
+  emit('ANIIMO_PAGE_READY');
 })();
