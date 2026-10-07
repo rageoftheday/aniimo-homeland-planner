@@ -75,6 +75,7 @@ jobs:
           test -s js/importer.js
           test -s js/views.js
           test -s data/embedded-aniidex-catalog.js
+          test -s data/egg-reference.js
           test -s data/homeland-reference-data.js
           test -s js/homeland-data.js
           test -s data/asset-manifest.js
@@ -88,8 +89,8 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.22.6' index.html
-          grep -q 'js/views.js?v=30.22.7' index.html
+          grep -q 'css/app.css?v=30.23.0' index.html
+          grep -q 'js/views.js?v=30.23.0' index.html
           grep -q 'js/importer.js?v=30.15.3' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
@@ -100,6 +101,7 @@ jobs:
           grep -q 'data/aniimo-species.js' index.html
           grep -q 'js/assets.js' index.html
           grep -q 'data/embedded-aniidex-catalog.js' index.html
+          grep -q 'data/egg-reference.js?v=1' index.html
           grep -q 'data/official-wiki-homeland.js?v=30.16.0' index.html
           grep -q 'js/wiki-homeland.js?v=30.16.0' index.html
           test -s data/official-wiki-homeland.json
@@ -449,6 +451,7 @@ jobs:
           console.log('Stage image index OK',Object.keys(idx).length);
           NODE
           node --check data/embedded-aniidex-catalog.js
+          node --check data/egg-reference.js
           node --check data/homeland-reference-data.js
           node --check js/homeland-data.js
           node --check data/asset-manifest.js
