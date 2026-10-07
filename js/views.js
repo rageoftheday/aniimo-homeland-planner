@@ -105,6 +105,28 @@ function abilityCoverage(){const out={};for(const a of HOME_ABILITIES)out[a]=0;f
 function familyCoverage(){const out={};for(const [id,f] of Object.entries(WORKER_FAMILIES))out[id]=workers.filter(w=>w.active!==false&&familyForWorker(w)===id).length;return out}
 function blockedFamilyJobs(){return activeJobs().filter(j=>j.family&&!workers.some(w=>w.active!==false&&familyForWorker(w)===j.family))}
 function renderRightQuickStats(){const root=el('rightQuickStats');if(!root)return;const jobs=activeJobs(),blocked=blockedFamilyJobs(),active=workers.filter(w=>w.active!==false).length;root.innerHTML=`<div class="quickStatRow"><span>Roster</span><b>${active} active / ${workers.length}</b></div><div class="quickStatRow"><span>Active jobs</span><b>${jobs.length}</b></div><div class="quickStatRow"><span>Placed objects</span><b>${objects.length}</b></div>${blocked.length?`<div class="rightAlert">🔒 ${blocked.length} production job${blocked.length===1?'':'s'} blocked by missing family worker.</div>`:'<div class="rightGood">No active family-locked production is blocked.</div>'}`}
+function dashboardAbilityNameForJob(jobId){
+ const id=Number(jobId);if(!id)return '';
+ const src=aniidexImportMeta?.catalog||EMBEDDED_ANIIDEX_CATALOG||{};
+ const hub=src?.hub||src?.homelandHub||src?.homeland||EMBEDDED_ANIIDEX_CATALOG?.hub||{};
+ const facts=hub?.facts||src?.facts||EMBEDDED_ANIIDEX_CATALOG?.hub?.facts||{};
+ const text=src?.text||src?.homelandText||src?.siteText||hub?.text||EMBEDDED_ANIIDEX_CATALOG?.text||{};
+ for(const [key,a] of Object.entries(facts?.abilities||{})){
+   if(Number(a?.id)===id){const label=text?.abilities?.[id]??text?.abilities?.[String(id)]??key;return typeof label==='string'?label:(label?.name||label?.label||key);}
+ }
+ return '';
+}
+function dashboardLiveAbilityUsage(){
+ const out={};for(const a of HOME_ABILITIES)out[a]={workers:0,levels:0,names:[]};
+ for(const w of workers){
+   if(!w?.aniidex||w.aniidex.facility==null)continue;
+   const ability=dashboardAbilityNameForJob(w.aniidex.job);if(!ability)continue;
+   const level=workerAbilityLevel(w,ability)||0;
+   if(!out[ability])out[ability]={workers:0,levels:0,names:[]};
+   out[ability].workers++;out[ability].levels+=level;out[ability].names.push(`${w.name||'Unnamed'}${level?' Lv'+level:''}`);
+ }
+ return out;
+}
 function abilityContributors(ability){
  return workers.filter(w=>w.active!==false).map(w=>{
    let level=0;
@@ -182,14 +204,18 @@ function dashboardHomeSnapshotHTML(){
 function renderDashboardTab(){
  const root=el('dashboardPane');if(!root)return;
  const active=workers.filter(w=>w.active!==false).length,cov=abilityCoverage(),blocked=blockedFamilyJobs(),jobs=activeJobs();
- const open=[...openPlots].length,demand={};for(const j of jobs)demand[j.ability]=(demand[j.ability]||0)+(j.rec||1);
+ const open=[...openPlots].length,plannerDemand={};for(const j of jobs)plannerDemand[j.ability]=(plannerDemand[j.ability]||0)+(j.rec||1);
+ const liveUsage=dashboardLiveAbilityUsage(),hasLiveSync=!!aniidexImportMeta;
  const abilityRows=HOME_ABILITIES.map(a=>{
-   const contributors=abilityContributors(a),levels=cov[a]||0,need=demand[a]||0;
-   const status=need===0?'No demand':levels<need?'Short':levels===need?'Tight':'Covered';
-   const cls=need===0?'':levels<need?'fitBad':levels===need?'fitWarn':'fitGood';
+   const contributors=abilityContributors(a),levels=cov[a]||0,planned=plannerDemand[a]||0,live=liveUsage[a]||{workers:0,levels:0,names:[]};
+   const status=live.workers>0?'Working now':planned>0?(levels<planned?'Planner short':levels===planned?'Planner tight':'Planner covered'):'Idle';
+   const cls=live.workers>0?'fitGood':planned>0?(levels<planned?'fitBad':levels===planned?'fitWarn':'fitGood'):'';
    const hover=contributors.map(x=>`${x.w.name||'Unnamed'} — Lv${x.level}`).join('\n')||'No active Aniimo with this ability';
    const detail=contributors.length?contributors.map(x=>`<button type="button" class="abilityContributor" onclick="setMainTab('roster')" title="Open Imported Roster"><b>${esc(x.w.name||'Unnamed')}</b><span>${esc(x.w.form||'Base')} · Lv${x.level}</span></button>`).join(''):'<span class="small">No active Imported Roster Aniimo have this ability.</span>';
-   return `<tr><td><b>${esc(a)}</b></td><td><button type="button" class="abilityCountBtn" title="${esc(hover)}" onclick="toggleAbilityContributors('${esc(a)}')">${contributors.length} Aniimo</button></td><td>${levels}</td><td>${need||'—'}</td><td class="${cls}">${status}</td></tr><tr class="abilityContributorRow" data-ability-detail="${esc(a)}" hidden><td colspan="5"><div class="abilityContributorList"><div class="small"><b>${esc(a)} contributors</b> — highest level first</div><div class="abilityContributorGrid">${detail}</div></div></td></tr>`;
+   const liveText=live.workers?`${live.workers} working • ${live.levels} levels in use`:hasLiveSync?'0 working':'Not synced';
+   const plannedText=planned?`${planned} planned level${planned===1?'':'s'}`:'—';
+   const liveTitle=live.names.length?live.names.join('\n'):'No synced workers currently using this ability';
+   return `<tr><td><b>${esc(a)}</b></td><td><button type="button" class="abilityCountBtn" title="${esc(hover)}" onclick="toggleAbilityContributors('${esc(a)}')">${contributors.length} Aniimo</button></td><td>${levels}</td><td title="${esc(liveTitle)}"><b>${esc(liveText)}</b><div class="small">Planner: ${esc(plannedText)}</div></td><td class="${cls}">${status}</td></tr><tr class="abilityContributorRow" data-ability-detail="${esc(a)}" hidden><td colspan="5"><div class="abilityContributorList"><div class="small"><b>${esc(a)} contributors</b> — highest level first</div><div class="abilityContributorGrid">${detail}</div></div></td></tr>`;
  }).join('');
  root.innerHTML=`<div class="v30Title">Homeland Dashboard</div><div class="v30Sub">Quick health check for this profile. Start with Import / Sync, then use Plan / Advice for recommendations, worker choices, and progression.</div>
  <div id="dashboardImport" class="dashboardImportHost"></div>
@@ -201,8 +227,8 @@ function renderDashboardTab(){
   <div class="metricCard"><div class="label">Family blocks</div><div class="metric">${blocked.length}</div><div class="small">locked recipes missing an accepted family</div></div>
  </div>
  <div class="sectionTitle">Home Ability Distribution</div>
- <div class="small" style="margin-bottom:8px">Aniimo count matches the game-style distribution. Total levels adds the ability levels from your active Imported Roster. Hover a count for names, or click it to expand the contributors.</div>
- <div class="tableWrap"><table class="dataTable abilityDistributionTable"><thead><tr><th>Ability</th><th>Aniimo</th><th>Total levels</th><th>Current job demand</th><th>Status</th></tr></thead><tbody>${abilityRows}</tbody></table></div>`;
+ <div class="small" style="margin-bottom:8px">Aniimo count and Total levels come from your active Imported Roster. <b>Live work</b> comes from the latest Aniidx Homeland assignments, so mining, hauling, farming, and other assigned jobs still appear even when no recipe is running. Planner demand is shown separately inside the same cell.</div>
+ <div class="tableWrap"><table class="dataTable abilityDistributionTable"><thead><tr><th>Ability</th><th>Aniimo</th><th>Total levels</th><th>Live work / planner demand</th><th>Status</th></tr></thead><tbody>${abilityRows}</tbody></table></div>`;
  renderImportTab('dashboardImport',true);
 }
 function renderProductionTab(){const root=el('productionPane');if(!root)return;let rows=[];for(const [station,list] of Object.entries(recipeDB)){const sr=STATION_RULES[station]||{};for(const r of list)rows.push({station,r,sr})}rows.sort((a,b)=>a.station.localeCompare(b.station)||((a.r.rv||0)-(b.r.rv||0)));root.innerHTML=`<div class="productionBrowser"><div class="productionBrowserHead"><div class="v30Title">Recipes</div><div class="v30Sub">Full recipe browser for the loaded offline database. RV and module-aware production calculations continue to use the selected stations on the Homeland Planner.</div><div class="filterBar"><input id="prodSearch" placeholder="Search station, recipe or ingredient..."><select id="prodRvFilter"><option value="all">All RV levels</option><option value="current">Available at current RV</option></select></div></div><div id="prodRecipeTable" class="tableWrap productionRecipeTable"></div></div>`;const draw=()=>{const q=normalizeSearch(el('prodSearch').value),cur=el('prodRvFilter').value;const f=rows.filter(x=>(cur!=='current'||(x.r.rv||1)<=+rvLevel.value)&&(!q||normalizeSearch(x.station+' '+x.r.name+' '+(x.r.ingredients||'')).includes(q)));el('prodRecipeTable').innerHTML=`<table class="dataTable"><thead><tr><th>Station</th><th>Recipe</th><th>RV</th><th>Ability</th><th>Preferred trait</th><th>Ingredients</th><th>Work</th><th>Sell</th><th>Lock</th></tr></thead><tbody>${f.map(x=>{const fr=FAMILY_RECIPE_RULES[x.station+'|'+x.r.name];return `<tr><td>${esc(x.station)}</td><td><b>${esc(x.r.name)}</b></td><td>${x.r.rv||1}</td><td>${esc(x.sr.ability||'—')} Lv${x.r.rec||1}</td><td>${x.sr.personality?x.sr.personality+' — '+PERSONALITY_NAMES[x.sr.personality]:'—'}</td><td>${esc(x.r.ingredients||'—')}</td><td>${x.r.work||0}</td><td>${Number(x.r.sell||0).toLocaleString()}</td><td>${fr?`🔒 ${esc(WORKER_FAMILIES[fr.family]?.label||fr.family)}`:'—'}</td></tr>`}).join('')}</tbody></table>`};el('prodSearch').addEventListener('input',draw);el('prodRvFilter').addEventListener('change',draw);draw()}
