@@ -336,14 +336,12 @@ jobs:
           grep -q 'chrome://extensions' extension/Install_Companion.bat
           grep -q 'edge://extensions' extension/Install_Companion.bat
           grep -q 'No supported browser is currently open.' extension/Update_Companion.bat
-          grep -q 'AppActivate($p.Id)' extension/Install_Companion.bat
-          grep -q 'MainWindowHandle -ne 0' extension/Install_Companion.bat
-          grep -q 'MainWindowHandle -ne 0' extension/Update_Companion.bat
-          grep -q "SendKeys('^t')" extension/Install_Companion.bat
-          grep -q "SendKeys('chrome://extensions/')" extension/Install_Companion.bat
-          grep -q "SendKeys('edge://extensions/')" extension/Install_Companion.bat
-          grep -q 'AppActivate($p.Id)' extension/Update_Companion.bat
-          grep -q "SendKeys('^t')" extension/Update_Companion.bat
+          ! grep -q 'SendKeys' extension/Install_Companion.bat
+          ! grep -q 'SendKeys' extension/Update_Companion.bat
+          grep -q 'Chrome is running.' extension/Install_Companion.bat
+          grep -q 'Edge is running.' extension/Install_Companion.bat
+          grep -q 'Chrome is not running - skipping.' extension/Install_Companion.bat
+          grep -q 'Edge is not running - skipping.' extension/Install_Companion.bat
           grep -q 'Load unpacked' extension/Install_Companion.bat
           grep -q 'Load unpacked' extension/Update_Companion.bat
           grep -q 'tasklist /FI "IMAGENAME eq chrome.exe"' extension/Update_Companion.bat
