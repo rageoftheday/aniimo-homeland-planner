@@ -79,6 +79,7 @@ jobs:
           test -s data/egg-reference.js
           test -s data/food-energy-reference.js
           test -s data/questlog-items.js
+          test -s data/item-supplemental-reference.js
           test -s data/homeland-reference-data.js
           test -s js/homeland-data.js
           test -s data/asset-manifest.js
@@ -95,7 +96,7 @@ jobs:
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
           grep -q 'css/app.css?v=30.23.1' index.html
           grep -q 'js/views.js?v=30.23.1' index.html
-          grep -q 'js/home-snapshot.js?v=3' index.html
+          grep -q 'js/home-snapshot.js?v=4' index.html
           grep -q 'js/importer.js?v=30.15.4' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
@@ -109,6 +110,7 @@ jobs:
           grep -q 'data/egg-reference.js?v=1' index.html
           grep -q 'data/food-energy-reference.js?v=1' index.html
           grep -q 'data/questlog-items.js?v=1' index.html
+          grep -q 'data/item-supplemental-reference.js?v=1' index.html
           grep -q 'data/official-wiki-homeland.js?v=30.16.0' index.html
           grep -q 'js/wiki-homeland.js?v=30.16.0' index.html
           test -s data/official-wiki-homeland.json
@@ -254,6 +256,9 @@ jobs:
           grep -q 'Stack value' js/home-snapshot.js
           grep -q 'function itemSellValue' js/home-snapshot.js
           grep -q 'ANIIMO_QUESTLOG_ITEMS' js/home-snapshot.js
+          grep -q 'ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE' js/home-snapshot.js
+          grep -q 'Pearl-Strung Blossom' data/item-supplemental-reference.js
+          grep -q 'Sunny Daisy' data/item-supplemental-reference.js
           grep -q 'homeSnapshotGrid' css/app.css
           node --check js/views.js
           grep -q 'dashboardImport' js/views.js
@@ -478,6 +483,7 @@ jobs:
           node --check data/egg-reference.js
           node --check data/food-energy-reference.js
           node --check data/questlog-items.js
+          node --check data/item-supplemental-reference.js
           node --check tools/scrape-questlog-items.js
           node --check data/homeland-reference-data.js
           node --check js/homeland-data.js

@@ -27,6 +27,8 @@
     const direct=p.liveText?.items?.[key]??p.liveText?.items?.[Number(key)]??p.embeddedText?.items?.[key]??p.embeddedText?.items?.[Number(key)];
     if(typeof direct==='string')return direct;
     if(direct?.name||direct?.label)return String(direct.name||direct.label);
+    const supplemental=window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE?.entries?.[key];
+    if(supplemental?.name)return String(supplemental.name);
     const q=questlogItem(key);if(q?.name)return String(q.name);
     const fact=itemFact(key);
     if(fact?.name)return String(fact.name);
