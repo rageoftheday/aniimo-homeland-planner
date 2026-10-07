@@ -357,6 +357,15 @@ header{align-items:center}
 .advisorRankNames{display:flex;flex-wrap:wrap;gap:4px}
 .advisorAniimoPill{font-size:9px;padding:3px 6px;border-radius:999px;border:1px solid #3b5a70;background:#1a3040;color:#d8edf9}
 .advisorAniimoPill.prismana{border-color:#8a70c7;background:#2a2141;color:#e3d7ff}
+.advisorAniimoPill.available{border-color:#55b978;background:#173b28;color:#d9ffe5;box-shadow:0 0 0 1px rgba(85,185,120,.18) inset}
+.advisorAniimoPill.working{border-color:#c49a4e;background:#3a2f19;color:#ffe9b3}
+.advisorAniimoPill.prismana.available{border-color:#68d78e;background:#1d4030;color:#e2ffeb}
+.advisorAniimoPill.prismana.working{border-color:#c9a45d;background:#40331f;color:#ffecc3}
+.advisorRankLegend{display:flex;gap:8px;flex-wrap:wrap;margin-top:5px;font-size:9px;color:#8fa5b5}
+.advisorRankLegend span{display:inline-flex;align-items:center;gap:4px}
+.advisorRankLegend span:before{content:'';width:7px;height:7px;border-radius:999px;background:#3b5a70}
+.advisorRankLegend .advisorLegendAvailable:before{background:#55b978}
+.advisorRankLegend .advisorLegendWorking:before{background:#c49a4e}
 .advisorEmpty{font-size:10px;color:#738999}
 @media(max-width:1100px){.advisorRankGrid{grid-template-columns:repeat(5,170px)}}
 
