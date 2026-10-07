@@ -1,22 +1,51 @@
 // Dedicated live Homeland Snapshot tab.
 (function(){
+  function catalogParts(){
+    const live=aniidexImportMeta?.catalog||null;
+    const embedded=typeof EMBEDDED_ANIIDEX_CATALOG!=='undefined'?EMBEDDED_ANIIDEX_CATALOG:null;
+    const liveHub=live?.hub||live?.homelandHub||live?.homeland||{};
+    const embeddedHub=embedded?.hub||{};
+    return {
+      liveFacts:liveHub?.facts||live?.facts||{},
+      liveText:live?.text||live?.homelandText||live?.siteText||liveHub?.text||{},
+      embeddedFacts:embeddedHub?.facts||{},
+      embeddedText:embedded?.text||embeddedHub?.text||{}
+    };
+  }
+  function questlogItem(id){
+    return window.ANIIMO_QUESTLOG_ITEMS?.byId?.[String(id??'')]||null;
+  }
+  function itemFact(id){
+    const key=String(id??''),p=catalogParts();
+    return p.liveFacts?.items?.[key]??p.liveFacts?.items?.[Number(key)]??p.embeddedFacts?.items?.[key]??p.embeddedFacts?.items?.[Number(key)]??null;
+  }
   function itemName(id){
     const key=String(id??'');
     const egg=window.ANIIMO_EGG_REFERENCE?.entries?.[key];
     if(egg?.name)return egg.name;
-    const src=aniidexImportMeta?.catalog||EMBEDDED_ANIIDEX_CATALOG||{};
-    const hub=src?.hub||src?.homelandHub||src?.homeland||EMBEDDED_ANIIDEX_CATALOG?.hub||{};
-    const facts=hub?.facts||src?.facts||EMBEDDED_ANIIDEX_CATALOG?.hub?.facts||{};
-    const text=src?.text||src?.homelandText||src?.siteText||hub?.text||EMBEDDED_ANIIDEX_CATALOG?.text||{};
-    const direct=text?.items?.[key]??text?.items?.[Number(key)];
+    const p=catalogParts();
+    const direct=p.liveText?.items?.[key]??p.liveText?.items?.[Number(key)]??p.embeddedText?.items?.[key]??p.embeddedText?.items?.[Number(key)];
     if(typeof direct==='string')return direct;
     if(direct?.name||direct?.label)return String(direct.name||direct.label);
-    const fact=facts?.items?.[key]??facts?.items?.[Number(key)];
+    const q=questlogItem(key);if(q?.name)return String(q.name);
+    const fact=itemFact(key);
     if(fact?.name)return String(fact.name);
     const slug=String(fact?.path||'').split('?')[0].replace(/\/+$/,'').split('/').pop()||'';
     if(slug)return slug.replace(/[-_]+/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
     return key?'Item '+key:'Unknown item';
   }
+  function itemSellValue(id){
+    const fact=itemFact(id),raw=fact?.sell;
+    if(raw!==null&&raw!==undefined&&raw!==''){
+      const n=Number(raw);if(Number.isFinite(n)&&n>=0)return n;
+    }
+    const q=questlogItem(id),sell=q?.sell;
+    if(sell!==null&&sell!==undefined&&sell!==''){
+      const n=Number(sell);if(Number.isFinite(n)&&n>=0)return n;
+    }
+    return null;
+  }
+  function homeCoin(n){return Number(n||0).toLocaleString()+' HC'}
   function remaining(sec){
     const ms=Number(sec||0)*1000-Date.now();if(ms<=0)return 'Ready now';
     const m=Math.max(1,Math.ceil(ms/60000)),d=Math.floor(m/1440),h=Math.floor((m%1440)/60),n=m%60;
@@ -57,7 +86,13 @@
       return '<tr><td><b>'+esc(dashboardFacilityName(q.facility))+'</b><div class="small">Piece '+(q.piece??'—')+' · Lv '+(q.level??'—')+'</div></td><td>'+(q.recipe!=null?'<b>'+esc(itemName(q.recipe))+'</b><div class="small"><code>'+esc(String(q.recipe))+'</code></div>':'—')+'</td><td>'+status+'</td><td>'+(tot?pct+'%':'—')+'</td><td>'+esc(out||'—')+'</td></tr>';
     }).join('')||'<tr><td colspan="5">No production pieces returned.</td></tr>';
     const facilityRows=h.facilityRows.map(x=>'<tr><td><b>'+esc(x.name)+'</b></td><td>'+x.total+'</td><td>'+esc(x.levels)+'</td></tr>').join('');
-    const storageRows=Object.entries(storage).filter(([,v])=>Number(v)>0).sort((a,b)=>itemName(a[0]).localeCompare(itemName(b[0]))).map(([id,v])=>'<tr><td><b>'+esc(itemName(id))+'</b></td><td><code>'+esc(id)+'</code></td><td>'+Number(v).toLocaleString()+'</td></tr>').join('');
+    const storageEntries=Object.entries(storage).filter(([,v])=>Number(v)>0);
+    let storageKnownValue=0,storagePricedCodes=0;
+    const storageRows=storageEntries.sort((a,b)=>itemName(a[0]).localeCompare(itemName(b[0]))).map(([id,v])=>{
+      const count=Number(v)||0,sell=itemSellValue(id),stack=sell==null?null:sell*count;
+      if(sell!=null){storagePricedCodes++;storageKnownValue+=stack;}
+      return '<tr><td><b>'+esc(itemName(id))+'</b></td><td><code>'+esc(id)+'</code></td><td>'+count.toLocaleString()+'</td><td>'+(sell==null?'—':homeCoin(sell))+'</td><td>'+(stack==null?'—':'<b>'+homeCoin(stack)+'</b>')+'</td></tr>';
+    }).join('');
     const moduleNames={2:'Rest Module',3:'Ecological Module',4:'Kitchen Module',5:'Resource Detector',6:'Crafting Module',7:'Power Module',8:'Plant Research Module',9:'Incubation Reaction Module',10:'Signal Transmitter'};
     const moduleRows=Object.entries(pc.rv_modules||{}).sort((a,b)=>Number(a[0])-Number(b[0])).map(([id,lv])=>'<tr><td>'+esc(moduleNames[id]||('Module '+id))+'</td><td>Lv '+Number(lv||0)+'</td><td><code>'+esc(id)+'</code></td></tr>').join('');
     root.innerHTML=
@@ -78,7 +113,7 @@
       '<details class="homeSnapshotDetails"><summary>Facility inventory ('+h.facilityPieces+' pieces / '+h.facilityRows.length+' types)</summary><div class="tableWrap homeFacilityTable"><table class="dataTable"><thead><tr><th>Facility</th><th>Total</th><th>Levels owned</th></tr></thead><tbody>'+facilityRows+'</tbody></table></div></details>'+
       '<details class="homeSnapshotDetails"><summary>RV modules</summary><div class="tableWrap"><table class="dataTable"><thead><tr><th>Module</th><th>Level</th><th>ID</th></tr></thead><tbody>'+moduleRows+'</tbody></table></div></details>'+
       '<details class="homeSnapshotDetails"><summary>Visitors / sync health</summary><div class="snapshotKeyRows"><div><span>Visitors</span><b>'+visitors.length+'</b></div><div><span>Visitor IDs</span><b>'+esc(visitors.join(', ')||'—')+'</b></div><div><span>Fresh</span><b>'+(h.meta?.home?.fresh===true?'Yes':h.meta?.home?.fresh===false?'No':'Unknown')+'</b></div><div><span>Cache seconds left</span><b>'+esc(String(h.meta?.home?.secondsLeft??'—'))+'</b></div><div><span>Region</span><b>'+esc(String(h.meta?.home?.region||'—'))+'</b></div><div><span>Server</span><b>'+esc(String(raw.server||'—'))+'</b></div></div></details>'+
-      '<details class="homeSnapshotDetails"><summary>Home storage ('+Object.keys(storage).length+' item codes)</summary><div class="tableWrap snapshotStorageTable"><table class="dataTable"><thead><tr><th>Item</th><th>Item ID</th><th>Count</th></tr></thead><tbody>'+storageRows+'</tbody></table></div></details>';
+      '<details class="homeSnapshotDetails"><summary>Home storage ('+storageEntries.length+' item codes)</summary><div class="snapshotStorageSummary"><div><span>Known sell value</span><b>'+homeCoin(storageKnownValue)+'</b></div><div><span>Priced item codes</span><b>'+storagePricedCodes+' / '+storageEntries.length+'</b></div><div><span>Unpriced / unknown</span><b>'+Math.max(0,storageEntries.length-storagePricedCodes)+'</b></div></div><div class="small snapshotSectionIntro">Total includes only items with a verified sell price. Unknown values are shown as — and are not counted as zero.</div><div class="tableWrap snapshotStorageTable"><table class="dataTable"><thead><tr><th>Item</th><th>Item ID</th><th>Count</th><th>Sell each</th><th>Stack value</th></tr></thead><tbody>'+storageRows+'</tbody></table></div></details>';
     clearInterval(window.__homeSnapshotTimer);
     window.__homeSnapshotTimer=setInterval(()=>document.querySelectorAll('#snapshotPane [data-egg-end]').forEach(n=>n.textContent=remaining(n.dataset.eggEnd)),30000);
   }
