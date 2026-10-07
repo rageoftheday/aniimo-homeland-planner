@@ -521,6 +521,11 @@ header{align-items:center}
 .snapshotSection{margin:12px 0 14px}
 .snapshotSectionIntro{margin:4px 0 8px}
 .snapshotProductionTable{max-height:420px}
+.snapshotProductionTable.grouped{max-height:none;overflow:visible}
+.snapshotProductionTable.individual{max-height:420px;overflow:auto}
+.snapshotProductionPieces{margin-top:3px}
+.snapshotProductionPieces[open]{padding-bottom:2px}
+.snapshotProductionPieces>summary{display:inline-block;cursor:pointer}
 .snapshotStorageTable{max-height:420px}
 .snapshotKeyRows{display:grid;gap:6px}
 .snapshotKeyRows>div{display:grid;grid-template-columns:minmax(120px,180px) 1fr;gap:8px;padding:7px 0;border-bottom:1px solid #243747}
