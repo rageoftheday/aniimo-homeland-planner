@@ -28,7 +28,14 @@ const plotDefs=[
  {n:10,x:0,y:45},{n:2,x:20,y:45},{n:1,x:40,y:45},{n:5,x:60,y:45}
 ];
 let openPlots = new Set([1]);
-
+const PLOT_RV_REQUIREMENTS={1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10,11:11,12:12,13:13,14:14,15:15,16:16};
+function plotRvRequirement(n){return PLOT_RV_REQUIREMENTS[Number(n)]||1}
+function plotEligibleAtRv(n,rv=+rvLevel.value){return Number(rv)>=plotRvRequirement(n)}
+function clampOpenPlotsToRv(){
+ const rv=+rvLevel.value||1;
+ openPlots=new Set([...openPlots].filter(n=>plotEligibleAtRv(n,rv)));
+ if(rv>=1)openPlots.add(1);
+}
 function isPlotOpen(n){ return openPlots.has(n); }
 
 function renderPlotAccess(){
@@ -38,9 +45,10 @@ function renderPlotAccess(){
  for(let n=1;n<=16;n++){
    const lab=document.createElement('label');
    lab.className='plotToggle '+(isPlotOpen(n)?'open':'locked');
-   const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=isPlotOpen(n);
+   const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=isPlotOpen(n);cb.disabled=!plotEligibleAtRv(n);
+   cb.title=cb.disabled?('Requires RV '+plotRvRequirement(n)):'';
    cb.onchange=()=>{
-     if(cb.checked) openPlots.add(n); else openPlots.delete(n);
+     if(cb.checked&&plotEligibleAtRv(n)) openPlots.add(n); else openPlots.delete(n);
      // Objects are not deleted when a plot is closed; they simply become invalid/red.
      render();
    };
@@ -1683,6 +1691,7 @@ starterBtn.onclick=()=>{
 };
 
 rvLevel.onchange=()=>{
+  clampOpenPlotsToRv();
   for(const n of ['Farmland','Woodland','Mine']) delete maxOverrides[n];
   for(const name of Object.keys(placeLevelPrefs)){
     const m=maxFacilityLevel(name,+rvLevel.value);
@@ -1732,7 +1741,7 @@ window.addEventListener('resize',()=>{if(autoFit.checked)fitBoard()});
 
 
 modulesToRvMaxBtn.onclick=()=>{initModuleLevelsToRvMax();render()};
-allPlotsBtn.onclick=()=>{openPlots=new Set(Array.from({length:16},(_,i)=>i+1));render()};
+allPlotsBtn.onclick=()=>{openPlots=new Set(Array.from({length:16},(_,i)=>i+1).filter(n=>plotEligibleAtRv(n)));render()};
 noPlotsBtn.onclick=()=>{openPlots=new Set();render()};
 
 
@@ -1774,6 +1783,7 @@ function applyPlannerState(d){
  moduleLevels=d.moduleLevels||{};
  if(!Object.keys(moduleLevels).length)initModuleLevelsToRvMax();
  openPlots=new Set(Array.isArray(d.openPlots)?d.openPlots:[1]);
+ clampOpenPlotsToRv();
  workers=Array.isArray(d.workers)?d.workers:[];
  workerIdCounter=d.workerIdCounter||Math.max(1,...workers.map(w=>(Number(w.id)||0)+1));
  aniidexImportMeta=d.aniidexImportMeta||null;

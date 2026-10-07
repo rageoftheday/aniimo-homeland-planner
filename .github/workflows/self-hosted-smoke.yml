@@ -133,7 +133,7 @@ jobs:
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
-          grep -q 'js/app.js?v=30.21.1' index.html
+          grep -q 'js/app.js?v=30.21.2' index.html
           grep -q 'data-tab="aniimos"' index.html
           grep -q 'id="aniimosPane"' index.html
           grep -q 'Backup ▾' index.html
@@ -228,6 +228,11 @@ jobs:
           NODE
           grep -q 'function aniimoNameOptions' js/app.js
           grep -q 'function addObject(item,x=null,y=null)' js/app.js
+          grep -q 'const PLOT_RV_REQUIREMENTS=' js/app.js
+          grep -q 'function clampOpenPlotsToRv' js/app.js
+          grep -q 'cb.disabled=!plotEligibleAtRv(n)' js/app.js
+          grep -q 'clampOpenPlotsToRv();' js/app.js
+          grep -q "allPlotsBtn.onclick=()=>{openPlots=new Set(Array.from({length:16},(_,i)=>i+1).filter(n=>plotEligibleAtRv(n)));render()};" js/app.js
           grep -q 'const p=nextFree(dims.w,dims.h)' js/app.js
           grep -q 'No legal free space is available in the currently open plots.' js/app.js
           grep -q 'const p=nextFree(o.w,o.h)' js/app.js
