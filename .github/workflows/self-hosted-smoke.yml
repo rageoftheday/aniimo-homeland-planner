@@ -95,7 +95,7 @@ jobs:
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
           grep -q 'css/app.css?v=30.23.1' index.html
-          grep -q 'js/views.js?v=30.23.2' index.html
+          grep -q 'js/views.js?v=30.23.3' index.html
           grep -q 'js/home-snapshot.js?v=5' index.html
           grep -q 'js/importer.js?v=30.15.4' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
@@ -210,6 +210,12 @@ jobs:
           grep -q 'planAdviceSubnav' css/app.css
           grep -q 'productionBrowserHead' js/views.js
           grep -q 'function fullRecipeRows' js/views.js
+          grep -q "recipeTypeLabel" js/views.js
+          grep -q "data-recipe-kind" js/views.js
+          grep -q "Home Resources" js/views.js
+          grep -q "Crops / Farming" js/views.js
+          grep -q "Crafting / Work" js/views.js
+          grep -q "let activeRecipeType='all'" js/views.js
           grep -q 'recipeCatalogParts' js/views.js
           grep -q 'prodKindFilter' js/views.js
           grep -q 'embedded Aniidx catalog' js/views.js
