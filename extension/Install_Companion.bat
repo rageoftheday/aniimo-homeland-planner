@@ -87,8 +87,17 @@ if "%BROWSER_OPENED%"=="0" (
 )
 
 echo.
+echo ============================================================
+echo                    NEXT STEPS
+echo ============================================================
+echo.
+echo In the extensions tab that just opened:
+echo   1. Turn on Developer mode.
+echo   2. Click Load unpacked.
+echo   3. Select this folder already opened in Explorer:
+echo      %TARGET%
+echo.
 echo [DONE] Files are installed permanently.
-echo The browser must still use Load unpacked once for this folder.
 echo.
 pause
 endlocal
