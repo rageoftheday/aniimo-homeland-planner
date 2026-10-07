@@ -923,7 +923,19 @@ function renderCatalog(){
      const plus=document.createElement('button');plus.textContent='+';
      plus.title=known ? 'Add one '+item.name : 'Enter Width and Height first';
      plus.disabled=!unlocked||placed>=limit||!known;
-     plus.onclick=()=>addObject(item);
+     plus.onclick=()=>{
+       if(focusedPlotNumber())addObjectToFocusedPlot(item);else addObject(item);
+     };
+     if(unlocked&&known&&placed<limit){
+       left.draggable=true;
+       left.classList.add('catalogDragHandle');
+       left.title='Drag '+item.name+' onto the focused Plot Editor, or use + to add it there.';
+       left.addEventListener('dragstart',ev=>{
+         ev.dataTransfer?.setData('application/x-aniimo-catalog',item.name);
+         ev.dataTransfer?.setData('text/plain',item.name);
+         if(ev.dataTransfer)ev.dataTransfer.effectAllowed='copy';
+       });
+     }
 
      acts.append(minus,count,plus);row.append(left,acts);sec.appendChild(row)
    } root.appendChild(sec)
@@ -1732,6 +1744,39 @@ deleteBtn.onclick=()=>{objects=objects.filter(x=>x.id!==selected);selected=null;
 duplicateBtn.onclick=()=>{const o=objects.find(x=>x.id===selected);if(!o)return;const item=catalog.find(i=>i.name===o.name);if(!item)return;const lim=maxCount(item,+rvLevel.value);if(objects.filter(x=>x.name===o.name).length>=lim)return;const p=nextFree(o.w,o.h);if(!p){if(startupStatus){startupStatus.textContent='No legal free space is available for a duplicate in the currently open plots.';startupStatus.style.color='#ffcb6b';}return;}objects.push({...o,id:idCounter++,x:p[0],y:p[1]});selected=objects.at(-1).id;render()};
 
 function nextFree(w,h){for(let y=0;y<=60-h;y+=.5)for(let x=0;x<=80-w;x+=.5){const t={id:-1,x,y,w,h};if(validArea(t)&&!collide(t))return[x,y]}return null}
+function focusedPlotNumber(){
+ try{return typeof homelandPlannerMode!=='undefined'&&homelandPlannerMode==='plot'&&typeof homelandFocusedPlot!=='undefined'?Number(homelandFocusedPlot)||null:null}catch(_){return null}
+}
+function nextFreeInPlot(plotNum,w,h){
+ const p=plotDefs.find(x=>x.n===Number(plotNum));
+ if(!p||!isPlotOpen(p.n))return null;
+ for(let ly=0;ly<=15-h;ly+=.5)for(let lx=0;lx<=20-w;lx+=.5){
+   const t={id:-1,x:p.x+lx,y:p.y+ly,w,h};
+   if(!collide(t))return[t.x,t.y];
+ }
+ return null;
+}
+function addObjectToFocusedPlot(item,localX=null,localY=null){
+ const n=focusedPlotNumber(),p=plotDefs.find(x=>x.n===Number(n));
+ if(!p||!isPlotOpen(p.n))return false;
+ const rv=+rvLevel.value,limit=maxCount(item,rv),dims=effectiveDims(item);
+ if(!isUnlocked(item)||objects.filter(o=>o.name===item.name).length>=limit||dims.w<=0||dims.h<=0)return false;
+ let x,y;
+ if(localX==null||localY==null){
+   const spot=nextFreeInPlot(n,dims.w,dims.h);
+   if(!spot){if(startupStatus){startupStatus.textContent='No legal free space is available in Plot '+n+'.';startupStatus.style.color='#ffcb6b';}return false}
+   [x,y]=spot;
+ }else{
+   const lx=Math.max(0,Math.min(20-dims.w,Math.round((Number(localX)||0)/.5)*.5));
+   const ly=Math.max(0,Math.min(15-dims.h,Math.round((Number(localY)||0)/.5)*.5));
+   x=p.x+lx;y=p.y+ly;
+   const t={id:-1,x,y,w:dims.w,h:dims.h};
+   if(collide(t)){if(startupStatus){startupStatus.textContent='That spot in Plot '+n+' is occupied. Try another square.';startupStatus.style.color='#ffcb6b';}return false}
+ }
+ addObject(item,x,y);
+ if(startupStatus){startupStatus.textContent=item.name+' added to Plot '+n+'.';startupStatus.style.color='#8fe3a7';}
+ return true;
+}
 addAllBtn.onclick=()=>{for(const item of catalog.filter(isUnlocked)){const lim=maxCount(item,+rvLevel.value),d=effectiveDims(item);if(d.w<=0||d.h<=0)continue;while(objects.filter(o=>o.name===item.name).length<lim){const p=nextFree(d.w,d.h);if(!p)break;{const obj={id:idCounter++,name:item.name,w:d.w,h:d.h,x:p[0],y:p[1],cls:item.cls||'',zone:item.zone||null,label:item.name,req:'none'};if(facilityLevels[item.name]&&facilityLevels[item.name].length){obj.facilityLevel=preferredPlaceLevel(item.name);obj.targetLevel=obj.facilityLevel;obj.placedLevel=obj.facilityLevel;obj.placementCost=directPlacementCost(item.name,obj.facilityLevel)}objects.push(obj)}}}selected=null;render()};
 function updateClimateStarterState(){
  const names=['Heat Furnace','Cooling Unit','Sunlamp'];
