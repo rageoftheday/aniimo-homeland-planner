@@ -88,8 +88,8 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.22.3' index.html
-          grep -q 'js/views.js?v=30.22.3' index.html
+          grep -q 'css/app.css?v=30.22.4' index.html
+          grep -q 'js/views.js?v=30.22.4' index.html
           grep -q 'js/importer.js?v=30.15.3' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
@@ -198,6 +198,15 @@ jobs:
           grep -q 'renderCatalog();updateClimateStarterState();renderAniimoCatalog()' js/app.js
           grep -q "Climate Starter 🔒 RV7" js/app.js
           grep -q 'Home Ability Distribution' js/views.js
+          grep -q 'function dashboardHomeSnapshot' js/views.js
+          grep -q 'function dashboardHomeSnapshotHTML' js/views.js
+          grep -q 'Profile habitability' js/views.js
+          grep -q 'Snapshot comfort' js/views.js
+          grep -q 'Production activity' js/views.js
+          grep -q 'Incubation' js/views.js
+          grep -q 'Facility inventory from latest sync' js/views.js
+          grep -q 'homeSnapshotGrid' css/app.css
+          node --check js/views.js
           grep -q 'dashboardImport' js/views.js
           grep -q 'Aniimo</th><th>Total levels</th><th>Current job demand' js/views.js
           node --check js/views.js
