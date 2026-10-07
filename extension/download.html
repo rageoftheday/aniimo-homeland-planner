@@ -21,13 +21,15 @@ ol{line-height:1.7}code{background:#0d141b;padding:2px 5px;border-radius:5px}
 <h2>Install</h2>
 <ol>
 <li>Download <code>Aniimo_Homeland_Companion.zip</code>.</li>
-<li>Extract the ZIP somewhere permanent.</li>
-<li>Open <code>chrome://extensions</code> or <code>edge://extensions</code>.</li>
+<li>Extract the ZIP.</li>
+<li>Run <code>Install_Companion.bat</code>.</li>
+<li>The installer copies the extension to <code>%LOCALAPPDATA%\\AniimoHomelandCompanion</code> and opens that folder.</li>
+<li>Chrome / Edge extension settings will open when those browsers are installed.</li>
 <li>Turn on <b>Developer mode</b>.</li>
 <li>Click <b>Load unpacked</b>.</li>
-<li>Select the extracted <code>Aniimo_Homeland_Companion</code> folder — the folder containing <code>manifest.json</code>.</li>
+<li>Select the permanent <code>AniimoHomelandCompanion</code> folder opened in Explorer.</li>
 <li>Return to Aniimo Homeland Planner and refresh the page.</li>
-<li>Open <b>Import / Sync</b>. It should say <b>Companion detected ✓</b>.</li>
+<li>For later versions, run <code>Update_Companion.bat</code> from the new ZIP, then click <b>Reload</b> on the extension card.</li>
 </ol>
 </div>
 <script>
@@ -52,7 +54,7 @@ async function download(){
  const btn=document.getElementById('downloadBtn'),status=document.getElementById('status');
  btn.disabled=true;status.className='muted';status.textContent='Building extension ZIP…';
  try{
-  const names=['manifest.json','background.js','planner-bridge.js','aniidex-isolated.js','aniidex-main.js'],files={};
+  const names=['manifest.json','background.js','planner-bridge.js','aniidex-isolated.js','aniidex-main.js','Install_Companion.bat','Update_Companion.bat'],files={};
   for(const name of names){
    const r=await fetch(name,{cache:'no-store'});if(!r.ok)throw new Error(name+' HTTP '+r.status);
    files['Aniimo_Homeland_Companion/'+name]=await r.text();
