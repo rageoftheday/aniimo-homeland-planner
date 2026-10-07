@@ -329,9 +329,13 @@ jobs:
           node --check extension/aniidex-isolated.js
           node --check extension/aniidex-main.js
           node -e "JSON.parse(require('fs').readFileSync('extension/manifest.json','utf8')); console.log('Companion manifest OK')"
-          grep -q '"version": "0.1.1"' extension/manifest.json
+          grep -q '"version": "0.1.2"' extension/manifest.json
           grep -q 'async function sendToAniidex' extension/background.js
           grep -q 'chrome.tabs.reload(tab.id)' extension/background.js
+          grep -q 'ANIIMO_PAGE_READY' extension/aniidex-main.js
+          grep -q 'ANIIMO_PAGE_PING' extension/aniidex-main.js
+          grep -q 'waitForAniimoPageReady' extension/aniidex-isolated.js
+          grep -q 'await waitForAniimoPageReady()' extension/aniidex-isolated.js
           node --check js/views.js
           ! grep -q 'Not fully loaded yet' js/views.js
           ! grep -q 'Next-RV resource requirements' js/views.js
