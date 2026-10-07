@@ -18,6 +18,7 @@ const path=require('path');
 
 const WIKILY_FURNITURE='https://new.wikily.gg/aniimo/homeland-furniture';
 const WIKILY_FARMLAND='https://new.wikily.gg/aniimo/homeland-furniture/farmland';
+const WIKILY_CRAFTING='https://new.wikily.gg/aniimo/homeland-crafting';
 const OUT_JSON=path.join(__dirname,'..','data','wikily-homeland-reference.json');
 const OUT_JS=path.join(__dirname,'..','data','wikily-homeland-reference.js');
 
@@ -51,6 +52,23 @@ function discoverMutants(html){
   return byId;
 }
 
+function discoverCraftingRecipes(html){
+  const byId={};
+  const re=/href=["']([^"']*\/homeland-crafting\/recipes\/([^"'/?#]+)-(\d+))["']/gi;
+  let m;
+  while((m=re.exec(html))){
+    const id=m[3],slug=m[2];
+    const name=slug.split('-').map(x=>x?x[0].toUpperCase()+x.slice(1):'').join(' ');
+    byId[id]={id:Number(id),name,url:new URL(m[1],WIKILY_CRAFTING).href};
+  }
+  const re2=/https?:\\?\/\\?\/[^"'\s]+\/homeland-crafting\/recipes\/([^"'/?#\\]+)-(\d+)/gi;
+  while((m=re2.exec(html))){
+    const id=m[2],slug=m[1].replace(/\\/g,'');
+    if(!byId[id])byId[id]={id:Number(id),name:slug.split('-').map(x=>x?x[0].toUpperCase()+x.slice(1):'').join(' '),url:'https://wikily.gg/aniimo/homeland-crafting/recipes/'+slug+'-'+id};
+  }
+  return byId;
+}
+
 function discoverCrops(html){
   const crops={};
   // Heading followed by "Needs: <seed> ×1" and "Produces: <crop> ×N".
@@ -66,7 +84,7 @@ function discoverCrops(html){
 }
 
 (async()=>{
-  const [furnitureHtml,farmlandHtml]=await Promise.all([get(WIKILY_FURNITURE),get(WIKILY_FARMLAND)]);
+  const [furnitureHtml,farmlandHtml,craftingHtml]=await Promise.all([get(WIKILY_FURNITURE),get(WIKILY_FARMLAND),get(WIKILY_CRAFTING)]);
   const mutants=discoverMutants(furnitureHtml);
   const mutantRows=Object.values(mutants).sort((a,b)=>a.id-b.id);
   if(mutantRows.length<120){
@@ -74,17 +92,21 @@ function discoverCrops(html){
   }
   const crops=discoverCrops(farmlandHtml);
   if(crops.length<10)throw new Error('Refusing to publish suspiciously small crop reference: '+crops.length);
+  const craftingById=discoverCraftingRecipes(craftingHtml),craftingRecipes=Object.values(craftingById).sort((a,b)=>a.id-b.id);
+  if(craftingRecipes.length<201)throw new Error('Refusing to publish incomplete crafting reference: discovered '+craftingRecipes.length+'; expected at least 201.');
 
   const payload={
     format:'aniimo-wikily-homeland-reference-v1',
-    source:{furniture:WIKILY_FURNITURE,farmland:WIKILY_FARMLAND},
+    source:{furniture:WIKILY_FURNITURE,farmland:WIKILY_FARMLAND,crafting:WIKILY_CRAFTING},
     scrapedAt:new Date().toISOString(),
-    counts:{mutantPlants:mutantRows.length,crops:crops.length},
+    counts:{mutantPlants:mutantRows.length,crops:crops.length,craftingRecipes:craftingRecipes.length},
     mutantPlants:mutantRows,
     mutantById:Object.fromEntries(mutantRows.map(x=>[String(x.id),x])),
-    crops
+    crops,
+    craftingRecipes,
+    craftingById:Object.fromEntries(craftingRecipes.map(x=>[String(x.id),x]))
   };
   fs.writeFileSync(OUT_JSON,JSON.stringify(payload,null,2)+'\n');
   fs.writeFileSync(OUT_JS,'window.ANIIMO_WIKILY_HOMELAND_REFERENCE='+JSON.stringify(payload,null,2)+';\n');
-  console.log('Wrote',OUT_JSON,'with',mutantRows.length,'mutant plants and',crops.length,'crops.');
+  console.log('Wrote',OUT_JSON,'with',mutantRows.length,'mutant plants,',crops.length,'crops and',craftingRecipes.length,'crafting recipes.');
 })().catch(err=>{console.error(err.stack||err);process.exit(1)});
