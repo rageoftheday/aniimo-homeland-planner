@@ -921,12 +921,12 @@ function renderCatalog(){
      minus.disabled=placed<=0;minus.onclick=()=>removeOneByName(item.name);
      const count=document.createElement('div');count.className='countBox';count.innerHTML=`<b>${placed}</b><br>/<br>${unlocked?limit:'—'}`;
      const plus=document.createElement('button');plus.textContent='+';
-     plus.title=known ? 'Add one '+item.name : 'Enter Width and Height first';
-     plus.disabled=!unlocked||placed>=limit||!known;
+     plus.title=!known?'Enter Width and Height first':focusedPlotNumber()?'Add one '+item.name+' to the focused plot':'Open a plot in Plot Editor before placing items';
+     plus.disabled=!unlocked||placed>=limit||!known||!focusedPlotNumber();
      plus.onclick=()=>{
-       if(focusedPlotNumber())addObjectToFocusedPlot(item);else addObject(item);
+       if(focusedPlotNumber())addObjectToFocusedPlot(item);
      };
-     if(unlocked&&known&&placed<limit){
+     if(unlocked&&known&&placed<limit&&focusedPlotNumber()){
        left.draggable=true;
        left.classList.add('catalogDragHandle');
        left.title='Drag '+item.name+' onto the focused Plot Editor, or use + to add it there.';
@@ -940,7 +940,7 @@ function renderCatalog(){
      acts.append(minus,count,plus);row.append(left,acts);sec.appendChild(row)
    } root.appendChild(sec)
  }
- rvNote.textContent=`RV ${rv}: unknown-size items require dimensions before + is enabled. Dimensions snap to 0.5 squares.${showFuture?' Future unlocks are shown grayed out.':''}`
+ rvNote.textContent=`RV ${rv}: open a plot in Plot Editor before placing items. Unknown-size items require dimensions before + is enabled. Dimensions snap to 0.5 squares.${showFuture?' Future unlocks are shown grayed out.':''}`
 }
 function cropUnlockedForObject(c,o,rv){
  if(c.rv>rv)return false;
