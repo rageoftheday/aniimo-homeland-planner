@@ -514,3 +514,16 @@ header{align-items:center}
 .rawJsonActions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:8px 0}
 .rawJsonActions input{min-width:260px;flex:1 1 340px}
 .rawJsonPre{flex:1 1 auto;min-height:420px;overflow:auto;margin:0;border:1px solid #30495d;border-radius:10px;background:#0b141d;padding:12px;font:11px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre;tab-size:2;color:#cfe5f4}
+
+.snapshotJump{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:12px 0;padding:11px;border:1px solid #35546b;background:#101d27;border-radius:10px}
+.snapshotJump>div{display:grid;gap:3px}.snapshotJump span{font-size:11px;color:var(--muted)}
+#snapshotPane{padding:12px;overflow:auto}
+.snapshotSection{margin:12px 0 14px}
+.snapshotSectionIntro{margin:4px 0 8px}
+.snapshotProductionTable{max-height:420px}
+.snapshotStorageTable{max-height:420px}
+.snapshotKeyRows{display:grid;gap:6px}
+.snapshotKeyRows>div{display:grid;grid-template-columns:minmax(120px,180px) 1fr;gap:8px;padding:7px 0;border-bottom:1px solid #243747}
+.snapshotKeyRows span{font-size:10px;color:var(--muted)}
+.snapshotKeyRows b{font-size:11px;word-break:break-word}
+#snapshotPane code{font-size:10px;color:#b8d9ef}
