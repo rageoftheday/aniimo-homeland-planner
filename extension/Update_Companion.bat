@@ -74,6 +74,12 @@ if "%BROWSER_OPENED%"=="0" (
 )
 
 echo.
+echo IMPORTANT:
+echo   - Click Reload on the Aniimo Homeland Companion extension card.
+echo   - Refresh the Aniimo Homeland Planner tab.
+echo   - Refresh any Aniidx tab that was already open.
+echo   - Confirm "Companion detected" in the planner before syncing.
+echo.
 echo [DONE] Extension files are updated.
 echo.
 pause
