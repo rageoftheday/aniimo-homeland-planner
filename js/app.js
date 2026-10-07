@@ -1792,6 +1792,23 @@ function addObjectToFocusedPlot(item,localX=null,localY=null){
  if(startupStatus){startupStatus.textContent=item.name+' added to Plot '+n+'.';startupStatus.style.color='#8fe3a7';}
  return true;
 }
+function removeObjectFromFocusedPlotByName(name){
+ const n=focusedPlotNumber(),p=plotDefs.find(x=>x.n===Number(n));
+ if(!p||!isPlotOpen(p.n))return false;
+ const matches=objects.filter(o=>{
+   if(o.name!==name)return false;
+   const cx=o.x+o.w/2,cy=o.y+o.h/2;
+   return cx>=p.x&&cx<p.x+20&&cy>=p.y&&cy<p.y+15;
+ });
+ if(!matches.length)return false;
+ const selectedMatch=matches.find(o=>o.id===selected);
+ const victim=selectedMatch||matches[matches.length-1];
+ objects=objects.filter(o=>o.id!==victim.id);
+ if(selected===victim.id)selected=null;
+ if(startupStatus){startupStatus.textContent=victim.name+' removed from Plot '+n+'.';startupStatus.style.color='#8fe3a7';}
+ render();
+ return true;
+}
 function moveObjectInFocusedPlot(objectId,localX,localY){
  const n=focusedPlotNumber(),p=plotDefs.find(x=>x.n===Number(n)),o=objects.find(x=>x.id===Number(objectId));
  if(!p||!o||!isPlotOpen(p.n))return false;
