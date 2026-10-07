@@ -253,7 +253,7 @@ function stopAniidexAutoSync(reason=''){
  if(reason)importUiMessage=reason;
 }
 function failAniidexAutoSync(message){
- aniidexSyncInFlight=false;
+ aniidexSyncInFlight=false;updateAniidexQuickSyncTopButton();
  stopAniidexAutoSync();
  aniidexAutoSyncRecovery=true;
  importUiMessage='Auto-sync paused — Aniidx sync needs attention. '+String(message||'The refresh failed.')+' Open the Aniidx sync page, make sure your player data loads, then return here and click Sync now.';
@@ -262,7 +262,7 @@ function failAniidexAutoSync(message){
 function openAniidexSyncPage(){window.open('https://aniidex.com/homeland/','_blank','noopener');}
 
 function setAniidexCompanionMessage(message,isError=false){
- importUiMessage=String(message||'');
+ importUiMessage=String(message||'');updateAniidexQuickSyncTopButton();
  const status=el('aniidexImportStatus');
  if(status){
    status.className=isError?'rightAlert':'rightGood';
