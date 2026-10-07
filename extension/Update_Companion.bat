@@ -74,6 +74,13 @@ if "%BROWSER_OPENED%"=="0" (
 )
 
 echo.
+echo ============================================================
+echo                    NEXT STEP
+echo ============================================================
+echo.
+echo In the extensions tab that just opened:
+echo   Find Aniimo Homeland Companion and click Reload.
+echo.
 echo [DONE] Extension files are updated.
 echo.
 pause
