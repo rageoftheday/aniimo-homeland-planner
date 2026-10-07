@@ -97,6 +97,11 @@ echo   2. Click Load unpacked.
 echo   3. Select this folder already opened in Explorer:
 echo      %TARGET%
 echo.
+echo IMPORTANT:
+echo   - Refresh the Aniimo Homeland Planner tab after loading the extension.
+echo   - If Aniidx was already open, refresh that Aniidx tab too.
+echo   - Return to the planner and confirm "Companion detected" before syncing.
+echo.
 echo [DONE] Files are installed permanently.
 echo.
 pause
