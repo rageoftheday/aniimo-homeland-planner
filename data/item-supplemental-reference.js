@@ -22,15 +22,15 @@ window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE={
     "4010130":{name:"Tartball",source:"https://aniimo.guide/en/items/tartball"},
     "4010131":{name:"Threadstar Plant",source:"https://aniimo.guide/en/items/threadstar-plant"},
     "4010132":{name:"Chroma Ore",source:"https://aniimo.guide/en/items/chroma-ore"},
-    "4030000":{name:"Colorful Wheat",sell:100,source:"https://wikily.gg/aniimo/homeland-furniture/colorful-wheat-4030000",sellSource:"https://new.wikily.gg/aniimo/homeland-crafting"},
-    "4030003":{name:"Huge Wheat",sell:100,source:"https://wikily.gg/aniimo/homeland-furniture/huge-wheat-4030003",sellSource:"https://new.wikily.gg/aniimo/homeland-crafting"},
+    "4030000":{name:"Colorful Wheat",sell:100,source:"https://wikily.gg/aniimo/homeland-furniture/colorful-wheat-4030000"},
+    "4030003":{name:"Huge Wheat",sell:100,source:"https://wikily.gg/aniimo/homeland-furniture/huge-wheat-4030003"},
     "4030010":{name:"Huge Potato",sell:null,source:"https://wikily.gg/aniimo/homeland-furniture/huge-potato-4030010"},
-    "4030014":{name:"Colorful Sugarcane",sell:10000,source:"https://wikily.gg/aniimo/homeland-furniture/colorful-sugarcane-4030014",sellSource:"https://new.wikily.gg/aniimo/homeland-crafting"},
+    "4030014":{name:"Colorful Sugarcane",sell:10000,source:"https://wikily.gg/aniimo/homeland-furniture/colorful-sugarcane-4030014"},
     "4030024":{name:"Huge Rice",sell:null,source:"https://wikily.gg/aniimo/homeland-furniture/huge-rice-4030024"},
-    "4030025":{name:"Huge Colorful Rice",sell:12000,source:"https://wikily.gg/aniimo/homeland-furniture/huge-colorful-rice-4030025",sellSource:"https://new.wikily.gg/aniimo/homeland-crafting"},
-    "4030028":{name:"Colorful Cotton",sell:6000,source:"https://wikily.gg/aniimo/homeland-furniture/colorful-cotton-4030028",sellSource:"https://new.wikily.gg/aniimo/homeland-crafting"},
-    "4030052":{name:"Huge Lavender",sell:10000,source:"https://wikily.gg/aniimo/homeland-furniture/huge-lavender-4030052",sellSource:"https://new.wikily.gg/aniimo/homeland-crafting"},
-    "4030063":{name:"Colorful Rose",sell:6000,source:"https://wikily.gg/aniimo/homeland-furniture/colorful-rose-4030063",sellSource:"https://new.wikily.gg/aniimo/homeland-crafting"},
-    "4030066":{name:"Huge Rose",sell:6000,source:"https://wikily.gg/aniimo/homeland-furniture/huge-rose-4030066",sellSource:"https://new.wikily.gg/aniimo/homeland-crafting"}
+    "4030025":{name:"Huge Colorful Rice",sell:12000,source:"https://wikily.gg/aniimo/homeland-furniture/huge-colorful-rice-4030025"},
+    "4030028":{name:"Colorful Cotton",sell:6000,source:"https://wikily.gg/aniimo/homeland-furniture/colorful-cotton-4030028"},
+    "4030052":{name:"Huge Lavender",sell:10000,source:"https://wikily.gg/aniimo/homeland-furniture/huge-lavender-4030052"},
+    "4030063":{name:"Colorful Rose",sell:6000,source:"https://wikily.gg/aniimo/homeland-furniture/colorful-rose-4030063"},
+    "4030066":{name:"Huge Rose",sell:6000,source:"https://wikily.gg/aniimo/homeland-furniture/huge-rose-4030066"}
   }
 };
