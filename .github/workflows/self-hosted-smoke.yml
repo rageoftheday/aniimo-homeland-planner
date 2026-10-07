@@ -88,9 +88,9 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.22.0' index.html
+          grep -q 'css/app.css?v=30.22.1' index.html
           grep -q 'js/views.js?v=30.22.2' index.html
-          grep -q 'js/importer.js?v=30.15.2' index.html
+          grep -q 'js/importer.js?v=30.15.3' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
@@ -193,6 +193,14 @@ jobs:
           grep -q 'Download Companion Extension' js/importer.js
           grep -q 'extension/download.html' js/importer.js
           grep -q 'downloads <b>only the extension</b>' js/importer.js
+          grep -q 'aniidexSyncNowBtn' js/importer.js
+          grep -q 'aniidexAutoSyncInterval' js/importer.js
+          grep -q 'Start auto-sync' js/importer.js
+          grep -q 'Open Aniidx Sync Page' js/importer.js
+          grep -q 'function failAniidexAutoSync' js/importer.js
+          grep -q "requestAniidexCompanionSync('auto')" js/importer.js
+          grep -q 'autoSyncPanel' css/app.css
+          node --check js/importer.js
           test -s extension/download.html
           grep -q 'Aniimo_Homeland_Companion.zip' extension/download.html
           grep -q 'manifest.json' extension/download.html

@@ -462,3 +462,11 @@ header{align-items:center}
 .hpv2FocusHead{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 0}.hpv2FocusHead h3{margin:0;font-size:18px}.hpv2FocusHead span,.hpv2FocusMeta{font-size:11px;color:#eaf5df}.hpv2FocusMeta{background:rgba(44,82,43,.52);padding:6px 8px;border-radius:999px}
 .hpv2FocusFoot{display:flex;justify-content:space-between;align-items:center;gap:10px;width:min(100%,1000px);margin:8px auto 0;padding:8px 10px;border-radius:10px;background:rgba(245,252,235,.82);font-size:11px;color:#53685c}
 @media(max-width:900px){.hpv2PlotGrid{grid-template-columns:repeat(2,minmax(150px,1fr))}.hpv2ModeBar,.hpv2Summary,.hpv2FocusFoot{align-items:flex-start;flex-direction:column}.hpv2FocusHead{grid-template-columns:1fr}.hpv2FocusMeta{width:max-content}}
+
+.autoSyncPanel{margin-top:12px;border:1px solid #35546c;background:#0f1c26;border-radius:11px;padding:11px;display:grid;gap:9px}
+.autoSyncInfo{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.autoSyncControls{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
+.autoSyncControls label{display:grid;gap:4px;margin:0}
+.autoSyncControls select{min-width:88px}
+.autoSyncRecovery{border:1px solid #87535a;background:#28181d;border-radius:9px;padding:9px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:#ffd6d9}
+.autoSyncRecovery span{font-size:11px;flex:1 1 320px}
