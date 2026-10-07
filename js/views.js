@@ -41,12 +41,30 @@ const HOMELAND_FACILITY_ICONS={
  'phonolfactory table':'🧪','bouncy brew keg':'🛢️','simmering pot':'🍲','blazing stove':'🔥','woodworking bench':'🪚',
  'chimney kiln':'🏺','pickling jar':'🫙','aniipod maker':'⚙️','dance pad polisher':'💎'
 };
+const HOMELAND_PLANT_NAME_ALIASES={
+ 'wheat seed':'wheat','sugarcane seed':'sugarcane','potato seed':'potato','rice seed':'rice','cotton seed':'cotton',
+ 'strawberry seed':'strawberry','lavender seed':'lavender','soybean seed':'soybean','grape seed':'grapes','cocoa seed':'cocoa',
+ 'agave seed':'agave','rose seed':'rose','cranberry seed':'cranberry','ginseng seed':'ginseng','emerald bamboo seed':'bamboo',
+ 'willow seed':'willow wood','rubber tree seed':'natural rubber','maple tree seed':'maple syrup','palm tree seed':'palm bark',
+ 'apple tree seed':'apple','cherry tree seed':'cherry blossom','bitter orange tree seed':'orange flower','lemon tree seed':'lemon',
+ 'coconut tree seed':'coconut','walnut tree seed':'walnut','chestnut tree seed':'chestnut',
+ 'moondew radish seeds':'moondew radish','waxing moon pepper seeds':'waxing moon pepper','sweet potato seeds':'sweet potato',
+ 'willow':'willow wood','emerald bamboo':'bamboo','rubber tree':'natural rubber','maple':'maple syrup','palm':'palm bark',
+ 'cherry':'cherry blossom','bitter orange':'orange flower'
+};
 function homelandVisualIconForName(name){
- const key=String(name||'').trim().toLowerCase();
+ let key=String(name||'').trim().toLowerCase();
+ key=HOMELAND_PLANT_NAME_ALIASES[key]||key;
+ key=key.replace(/\s*\(quick\)$/,'');
+ key=HOMELAND_PLANT_NAME_ALIASES[key]||key;
  return HOMELAND_CROP_ICONS[key]||HOMELAND_FACILITY_ICONS[key]||'◈';
 }
+function homelandPlantedOutputName(cropName){
+ const meta=typeof cropProductionMeta!=='undefined'?cropProductionMeta?.[cropName]:null;
+ return meta?.item||cropName;
+}
 function homelandObjectVisualIcon(o){
- if(o?.cropName)return homelandVisualIconForName(o.cropName);
+ if(o?.cropName)return homelandVisualIconForName(homelandPlantedOutputName(o.cropName));
  if(o?.name==='Mine'&&o?.recipeName)return '⛏️';
  if(o?.name==='Well')return '💧';
  return homelandVisualIconForName(o?.name||o?.label||'');
