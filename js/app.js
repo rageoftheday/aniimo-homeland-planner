@@ -1259,8 +1259,16 @@ function renderAdvisorSyncedWorkers(){
 function advisorReferenceForms(){
  const src=aniidexImportMeta?.catalog||EMBEDDED_ANIIDEX_CATALOG||{};
  const hub=src?.hub||src?.homelandHub||src?.homeland||{};
- const forms=src?.planner?.forms||src?.homelandPlanner?.forms||hub?.planner?.forms||hub?.facts?.forms||src?.facts?.forms||EMBEDDED_ANIIDEX_CATALOG?.planner?.forms||EMBEDDED_ANIIDEX_CATALOG?.hub?.facts?.forms;
- return Array.isArray(forms)?forms:Object.values(forms||{});
+ const facts=hub?.facts||src?.facts||EMBEDDED_ANIIDEX_CATALOG?.hub?.facts||{};
+ const text=src?.text||src?.homelandText||src?.siteText||hub?.text||EMBEDDED_ANIIDEX_CATALOG?.text||{};
+ const forms=src?.planner?.forms||src?.homelandPlanner?.forms||hub?.planner?.forms||facts?.forms||EMBEDDED_ANIIDEX_CATALOG?.planner?.forms||EMBEDDED_ANIIDEX_CATALOG?.hub?.facts?.forms||{};
+ const entries=Array.isArray(forms)?forms:Object.values(forms||{});
+ return entries.map(f=>{
+   if(!f)return f;
+   const variant=String(f.variant??f.formId??f.id??'');
+   const label=text?.forms?.[variant]??text?.forms?.[Number(variant)]??{};
+   return {...f,name:f.name||label?.name||'',form:f.form||label?.form||''};
+ }).filter(Boolean);
 }
 function advisorRankNames(ability,level,prismanaOnly=false){
  const seen=new Set(),out=[];
