@@ -115,7 +115,26 @@ function abilityContributors(ability){
 function toggleAbilityContributors(ability){
  const row=document.querySelector('[data-ability-detail="'+CSS.escape(ability)+'"]');
  if(row)row.hidden=!row.hidden;
+}function dashboardAbilityNameFromJobId(jobId){
+ const id=Number(jobId);if(!id)return '';
+ const src=aniidexImportMeta?.catalog||EMBEDDED_ANIIDEX_CATALOG||{};
+ const hub=src?.hub||src?.homelandHub||src?.homeland||EMBEDDED_ANIIDEX_CATALOG?.hub||{};
+ const facts=hub?.facts||src?.facts||EMBEDDED_ANIIDEX_CATALOG?.hub?.facts||{};
+ const abilities=facts?.abilities||{};
+ for(const [name,a] of Object.entries(abilities))if(Number(a?.id)===id)return name;
+ return '';
 }
+function dashboardLiveAbilityDemand(){
+ const demand={};let assignments=0;
+ for(const w of workers){
+   if(!w?.aniidex||w.aniidex.facility==null)continue;
+   const ability=dashboardAbilityNameFromJobId(w.aniidex.job);
+   if(!ability)continue;
+   demand[ability]=(demand[ability]||0)+1;assignments++;
+ }
+ return {demand,assignments};
+}
+
 function dashboardFacilityName(id){
  const key=String(id??'');
  const src=aniidexImportMeta?.catalog||EMBEDDED_ANIIDEX_CATALOG||{};
@@ -182,14 +201,16 @@ function dashboardHomeSnapshotHTML(){
 function renderDashboardTab(){
  const root=el('dashboardPane');if(!root)return;
  const active=workers.filter(w=>w.active!==false).length,cov=abilityCoverage(),blocked=blockedFamilyJobs(),jobs=activeJobs();
- const open=[...openPlots].length,demand={};for(const j of jobs)demand[j.ability]=(demand[j.ability]||0)+(j.rec||1);
+ const open=[...openPlots].length,liveDemand=dashboardLiveAbilityDemand(),demand={},useLiveDemand=liveDemand.assignments>0;
+ if(useLiveDemand)Object.assign(demand,liveDemand.demand);else for(const j of jobs)demand[j.ability]=(demand[j.ability]||0)+(j.rec||1);
  const abilityRows=HOME_ABILITIES.map(a=>{
    const contributors=abilityContributors(a),levels=cov[a]||0,need=demand[a]||0;
-   const status=need===0?'No demand':levels<need?'Short':levels===need?'Tight':'Covered';
-   const cls=need===0?'':levels<need?'fitBad':levels===need?'fitWarn':'fitGood';
+   const capacity=useLiveDemand?contributors.length:levels;
+   const status=need===0?'No demand':capacity<need?'Short':capacity===need?'Tight':'Covered';
+   const cls=need===0?'':capacity<need?'fitBad':capacity===need?'fitWarn':'fitGood';
    const hover=contributors.map(x=>`${x.w.name||'Unnamed'} — Lv${x.level}`).join('\n')||'No active Aniimo with this ability';
    const detail=contributors.length?contributors.map(x=>`<button type="button" class="abilityContributor" onclick="setMainTab('roster')" title="Open Imported Roster"><b>${esc(x.w.name||'Unnamed')}</b><span>${esc(x.w.form||'Base')} · Lv${x.level}</span></button>`).join(''):'<span class="small">No active Imported Roster Aniimo have this ability.</span>';
-   return `<tr><td><b>${esc(a)}</b></td><td><button type="button" class="abilityCountBtn" title="${esc(hover)}" onclick="toggleAbilityContributors('${esc(a)}')">${contributors.length} Aniimo</button></td><td>${levels}</td><td>${need||'—'}</td><td class="${cls}">${status}</td></tr><tr class="abilityContributorRow" data-ability-detail="${esc(a)}" hidden><td colspan="5"><div class="abilityContributorList"><div class="small"><b>${esc(a)} contributors</b> — highest level first</div><div class="abilityContributorGrid">${detail}</div></div></td></tr>`;
+   return `<tr><td><b>${esc(a)}</b></td><td><button type="button" class="abilityCountBtn" title="${esc(hover)}" onclick="toggleAbilityContributors('${esc(a)}')">${contributors.length} Aniimo</button></td><td>${levels}</td><td>${need?`${need}${useLiveDemand?' live':''}`:'—'}</td><td class="${cls}">${status}</td></tr><tr class="abilityContributorRow" data-ability-detail="${esc(a)}" hidden><td colspan="5"><div class="abilityContributorList"><div class="small"><b>${esc(a)} contributors</b> — highest level first</div><div class="abilityContributorGrid">${detail}</div></div></td></tr>`;
  }).join('');
  root.innerHTML=`<div class="v30Title">Homeland Dashboard</div><div class="v30Sub">Quick health check for this profile. Start with Import / Sync, then use Plan / Advice for recommendations, worker choices, and progression.</div>
  <div id="dashboardImport" class="dashboardImportHost"></div>
@@ -201,7 +222,7 @@ function renderDashboardTab(){
   <div class="metricCard"><div class="label">Family blocks</div><div class="metric">${blocked.length}</div><div class="small">locked recipes missing an accepted family</div></div>
  </div>
  <div class="sectionTitle">Home Ability Distribution</div>
- <div class="small" style="margin-bottom:8px">Aniimo count matches the game-style distribution. Total levels adds the ability levels from your active Imported Roster. Hover a count for names, or click it to expand the contributors.</div>
+ <div class="small" style="margin-bottom:8px">Aniimo count matches the game-style distribution. Total levels adds the ability levels from your active Imported Roster. <b>Current job demand</b> uses live Aniidx worker assignments when available${useLiveDemand?` (${liveDemand.assignments} synced working assignments)`:', otherwise planner-configured jobs'}. Hover a count for names, or click it to expand the contributors.</div>
  <div class="tableWrap"><table class="dataTable abilityDistributionTable"><thead><tr><th>Ability</th><th>Aniimo</th><th>Total levels</th><th>Current job demand</th><th>Status</th></tr></thead><tbody>${abilityRows}</tbody></table></div>`;
  renderImportTab('dashboardImport',true);
 }
