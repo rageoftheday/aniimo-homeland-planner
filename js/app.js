@@ -921,12 +921,12 @@ function renderCatalog(){
      minus.disabled=placed<=0;minus.onclick=()=>removeOneByName(item.name);
      const count=document.createElement('div');count.className='countBox';count.innerHTML=`<b>${placed}</b><br>/<br>${unlocked?limit:'—'}`;
      const plus=document.createElement('button');plus.textContent='+';
-     plus.title=known ? 'Add one '+item.name : 'Enter Width and Height first';
-     plus.disabled=!unlocked||placed>=limit||!known;
+     plus.title=!known?'Enter Width and Height first':focusedPlotNumber()?'Add one '+item.name+' to the focused plot':'Open a plot in Plot Editor before placing items';
+     plus.disabled=!unlocked||placed>=limit||!known||!focusedPlotNumber();
      plus.onclick=()=>{
-       if(focusedPlotNumber())addObjectToFocusedPlot(item);else addObject(item);
+       if(focusedPlotNumber())addObjectToFocusedPlot(item);
      };
-     if(unlocked&&known&&placed<limit){
+     if(unlocked&&known&&placed<limit&&focusedPlotNumber()){
        left.draggable=true;
        left.classList.add('catalogDragHandle');
        left.title='Drag '+item.name+' onto the focused Plot Editor, or use + to add it there.';
@@ -940,7 +940,7 @@ function renderCatalog(){
      acts.append(minus,count,plus);row.append(left,acts);sec.appendChild(row)
    } root.appendChild(sec)
  }
- rvNote.textContent=`RV ${rv}: unknown-size items require dimensions before + is enabled. Dimensions snap to 0.5 squares.${showFuture?' Future unlocks are shown grayed out.':''}`
+ rvNote.textContent=`RV ${rv}: open a plot in Plot Editor before placing items. Unknown-size items require dimensions before + is enabled. Dimensions snap to 0.5 squares.${showFuture?' Future unlocks are shown grayed out.':''}`
 }
 function cropUnlockedForObject(c,o,rv){
  if(c.rv>rv)return false;
@@ -1775,6 +1775,17 @@ function addObjectToFocusedPlot(item,localX=null,localY=null){
  }
  addObject(item,x,y);
  if(startupStatus){startupStatus.textContent=item.name+' added to Plot '+n+'.';startupStatus.style.color='#8fe3a7';}
+ return true;
+}
+function moveObjectInFocusedPlot(objectId,localX,localY){
+ const n=focusedPlotNumber(),p=plotDefs.find(x=>x.n===Number(n)),o=objects.find(x=>x.id===Number(objectId));
+ if(!p||!o||!isPlotOpen(p.n))return false;
+ const lx=Math.max(0,Math.min(20-o.w,Math.round((Number(localX)||0)/.5)*.5));
+ const ly=Math.max(0,Math.min(15-o.h,Math.round((Number(localY)||0)/.5)*.5));
+ const nx=p.x+lx,ny=p.y+ly,t={id:o.id,x:nx,y:ny,w:o.w,h:o.h};
+ if(collide(t)){if(startupStatus){startupStatus.textContent='That spot in Plot '+n+' is occupied. Try another square.';startupStatus.style.color='#ffcb6b';}return false}
+ o.x=nx;o.y=ny;selected=o.id;render();
+ if(startupStatus){startupStatus.textContent=o.name+' moved within Plot '+n+'.';startupStatus.style.color='#8fe3a7';}
  return true;
 }
 addAllBtn.onclick=()=>{for(const item of catalog.filter(isUnlocked)){const lim=maxCount(item,+rvLevel.value),d=effectiveDims(item);if(d.w<=0||d.h<=0)continue;while(objects.filter(o=>o.name===item.name).length<lim){const p=nextFree(d.w,d.h);if(!p)break;{const obj={id:idCounter++,name:item.name,w:d.w,h:d.h,x:p[0],y:p[1],cls:item.cls||'',zone:item.zone||null,label:item.name,req:'none'};if(facilityLevels[item.name]&&facilityLevels[item.name].length){obj.facilityLevel=preferredPlaceLevel(item.name);obj.targetLevel=obj.facilityLevel;obj.placedLevel=obj.facilityLevel;obj.placementCost=directPlacementCost(item.name,obj.facilityLevel)}objects.push(obj)}}}selected=null;render()};
