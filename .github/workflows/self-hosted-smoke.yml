@@ -346,7 +346,7 @@ jobs:
           grep -q "AppActivate('Chrome')" extension/Update_Companion.bat
           grep -q "AppActivate('Edge')" extension/Update_Companion.bat
           grep -q 'Load unpacked' extension/Install_Companion.bat
-          grep -q 'Load unpacked' extension/Update_Companion.bat
+          grep -q 'Reload' extension/Update_Companion.bat
           grep -q 'tasklist /FI "IMAGENAME eq chrome.exe"' extension/Update_Companion.bat
           grep -q 'tasklist /FI "IMAGENAME eq msedge.exe"' extension/Update_Companion.bat
           grep -q 'Install_Companion.bat' js/importer.js
