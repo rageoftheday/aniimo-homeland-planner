@@ -41,6 +41,10 @@
     if(raw!==null&&raw!==undefined&&raw!==''){
       const n=Number(raw);if(Number.isFinite(n)&&n>=0)return n;
     }
+    const supplemental=window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE?.entries?.[String(id??'')],supplementalSell=supplemental?.sell;
+    if(supplementalSell!==null&&supplementalSell!==undefined&&supplementalSell!==''){
+      const n=Number(supplementalSell);if(Number.isFinite(n)&&n>=0)return n;
+    }
     const q=questlogItem(id),sell=q?.sell;
     if(sell!==null&&sell!==undefined&&sell!==''){
       const n=Number(sell);if(Number.isFinite(n)&&n>=0)return n;
