@@ -73,7 +73,7 @@ function renderHomelandPlannerV2(){
  if(homelandPlannerMode==='plot'){
    const n=homelandFocusedPlot,p=homelandPlotDef(n)||homelandPlotDef(1),rows=homelandPlotObjects(n),unlock=HOMELAND_PLOT_UNLOCKS[n]||{};
    const addOptions=homelandPlotAddOptions();
-   root.innerHTML=modeBar+`<div class="hpv2FocusHead"><button onclick="setHomelandPlannerMode('overview')">← All Plots</button><div><h3>Plot ${n} · ${esc(homelandPlotRole(n))}</h3><span>${rows.length} placed object${rows.length===1?'':'s'} · 20×15 squares</span></div><div class="hpv2FocusMeta">RV ${unlock.rv||'—'} · ${Number(unlock.cost||0).toLocaleString()} HC unlock</div></div><div class="hpv2BuilderShell"><div class="hpv2BuilderMain"><div class="hpv2FocusGrid" data-hpv2-drop-plot="${n}"><div class="hpv2GridLines"></div>${rows.map(o=>homelandMiniObject(o,p,true)).join('')}</div><div class="hpv2FocusFoot"><span>Drag new pieces from the palette onto an exact square. Drag placed pieces to rearrange them inside Plot ${n}.</span></div></div><aside class="hpv2PiecePalette"><div class="hpv2PiecePaletteHead"><div><b>Single Pieces</b><span>${addOptions.length} unlocked / available</span></div><input id="hpv2PieceSearch" placeholder="Search pieces…"></div><div class="hpv2PieceList">${homelandPiecePaletteHTML(addOptions)||'<div class="small">No additional unlocked pieces are available.</div>'}</div></aside></div>`;
+   root.innerHTML=modeBar+`<div class="hpv2FocusHead"><button onclick="setHomelandPlannerMode('overview')">← All Plots</button><div><h3>Plot ${n} · ${esc(homelandPlotRole(n))}</h3><span>${rows.length} placed object${rows.length===1?'':'s'} · 20×15 squares</span></div><div class="hpv2FocusMeta">RV ${unlock.rv||'—'} · ${Number(unlock.cost||0).toLocaleString()} HC unlock</div></div><div class="hpv2BuilderShell"><div class="hpv2BuilderMain"><div class="hpv2FocusGrid" data-hpv2-drop-plot="${n}"><div class="hpv2GridLines"></div>${rows.map(o=>homelandMiniObject(o,p,true)).join('')}</div><div class="hpv2FocusFoot"><span>Drag new pieces from the palette onto an exact square. Drag placed pieces to rearrange them inside Plot ${n}.</span></div></div><aside class="hpv2PiecePalette"><div class="hpv2PiecePaletteHead"><div><b>Single Pieces</b><span>${addOptions.length} unlocked / available</span></div><div class="hpv2BuilderTools"><label>Snap <select id="hpv2SnapSelect"><option value="1"${String(HOMELAND_BUILDER_SNAP)==='1'?' selected':''}>1 square</option><option value=".5"${String(HOMELAND_BUILDER_SNAP)==='.5'?' selected':''}>0.5 square</option><option value=".25"${String(HOMELAND_BUILDER_SNAP)==='.25'?' selected':''}>0.25 square</option><option value="free"${String(HOMELAND_BUILDER_SNAP)==='free'?' selected':''}>No snap</option></select></label><input id="hpv2PieceSearch" placeholder="Search pieces…"></div></div><div class="hpv2PieceList">${homelandPiecePaletteHTML(addOptions)||'<div class="small">No additional unlocked pieces are available.</div>'}</div></aside></div>`;
  }else{
    const cards=plotDefs.map(p=>{
      const open=isPlotOpen(p.n),rows=homelandPlotObjects(p.n),u=HOMELAND_PLOT_UNLOCKS[p.n]||{},role=homelandPlotRole(p.n);
@@ -86,9 +86,10 @@ function renderHomelandPlannerV2(){
  root.querySelectorAll('[data-hpv2-object]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();selected=Number(b.dataset.hpv2Object);render();}));
  root.querySelectorAll('[data-hpv2-locked]').forEach(b=>b.addEventListener('click',()=>{const n=Number(b.dataset.hpv2Locked),u=HOMELAND_PLOT_UNLOCKS[n]||{};b.title=`Plot ${n}: unlock reference RV ${u.rv||'—'}, ${Number(u.cost||0).toLocaleString()} HC`;}));
  root.querySelectorAll('[data-hpv2-piece]').forEach(card=>card.addEventListener('dragstart',e=>{
-   const name=card.dataset.hpv2Piece||'';
+   const name=card.dataset.hpv2Piece||'',item=catalog.find(x=>x.name===name),d=item?effectiveDims(item):null;
    e.dataTransfer?.setData('application/x-aniimo-catalog',name);
    e.dataTransfer?.setData('text/plain',name);
+   if(d)e.dataTransfer?.setData('application/x-aniimo-anchor',JSON.stringify({x:d.w/2,y:d.h/2}));
    if(e.dataTransfer)e.dataTransfer.effectAllowed='copy';
  }));
  root.querySelectorAll('[data-hpv2-piece-add]').forEach(btn=>btn.addEventListener('click',()=>{
@@ -99,9 +100,18 @@ function renderHomelandPlannerV2(){
    const q=normalizeSearch(pieceSearch.value);
    root.querySelectorAll('[data-piece-search]').forEach(card=>card.hidden=!!q&&!String(card.dataset.pieceSearch||'').includes(q));
  });
+ const snapSelect=el('hpv2SnapSelect');
+ snapSelect?.addEventListener('change',()=>{setHomelandBuilderSnap(snapSelect.value);renderHomelandPlannerV2();});
  root.querySelectorAll('[data-hpv2-object][draggable="true"]').forEach(obj=>obj.addEventListener('dragstart',e=>{
    e.stopPropagation();
    e.dataTransfer?.setData('application/x-aniimo-object',obj.dataset.hpv2Object||'');
+   const rect=obj.getBoundingClientRect();
+   const objectId=Number(obj.dataset.hpv2Object),placed=objects.find(x=>x.id===objectId);
+   if(placed&&rect.width>0&&rect.height>0){
+     const anchorX=Math.max(0,Math.min(placed.w,(e.clientX-rect.left)/rect.width*placed.w));
+     const anchorY=Math.max(0,Math.min(placed.h,(e.clientY-rect.top)/rect.height*placed.h));
+     e.dataTransfer?.setData('application/x-aniimo-anchor',JSON.stringify({x:anchorX,y:anchorY}));
+   }
    if(e.dataTransfer)e.dataTransfer.effectAllowed='move';
  }));
  const dropGrid=root.querySelector('[data-hpv2-drop-plot]');
@@ -111,8 +121,11 @@ function renderHomelandPlannerV2(){
    dropGrid.addEventListener('drop',e=>{
      e.preventDefault();dropGrid.classList.remove('dragTarget');
      const rect=dropGrid.getBoundingClientRect();
-     const localX=(e.clientX-rect.left)/Math.max(1,rect.width)*20;
-     const localY=(e.clientY-rect.top)/Math.max(1,rect.height)*15;
+     const cursorX=(e.clientX-rect.left)/Math.max(1,rect.width)*20;
+     const cursorY=(e.clientY-rect.top)/Math.max(1,rect.height)*15;
+     let anchor={x:0,y:0};
+     try{anchor=JSON.parse(e.dataTransfer?.getData('application/x-aniimo-anchor')||'{"x":0,"y":0}')||anchor}catch(_){}
+     const localX=cursorX-(Number(anchor.x)||0),localY=cursorY-(Number(anchor.y)||0);
      const objectId=e.dataTransfer?.getData('application/x-aniimo-object')||'';
      if(objectId){moveObjectInFocusedPlot(objectId,localX,localY);return}
      const name=e.dataTransfer?.getData('application/x-aniimo-catalog')||e.dataTransfer?.getData('text/plain')||'';
