@@ -94,8 +94,8 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.23.3' index.html
-          grep -q 'js/views.js?v=30.23.4' index.html
+          grep -q 'css/app.css?v=30.23.4' index.html
+          grep -q 'js/views.js?v=30.23.5' index.html
           grep -q 'js/home-snapshot.js?v=7' index.html
           grep -q 'js/importer.js?v=30.15.4' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
@@ -144,7 +144,7 @@ jobs:
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
-          grep -q 'js/app.js?v=30.21.8' index.html
+          grep -q 'js/app.js?v=30.21.9' index.html
           grep -q 'data-tab="aniimos"' index.html
           grep -q 'id="aniimosPane"' index.html
           grep -q 'Backup ▾' index.html
@@ -165,10 +165,19 @@ jobs:
           grep -q 'advisorAniimoPill.available' css/app.css
           grep -q 'advisorAniimoPill.working' css/app.css
           node --check js/app.js
+          grep -Fq ".hpv2BuilderShell" css/app.css
+          grep -Fq ".hpv2PiecePalette" css/app.css
+          grep -Fq "const cards=plotDefs.map" js/views.js
+          grep -Fq "application/x-aniimo-object" js/views.js
+          grep -Fq "Single Pieces" js/views.js
+          grep -Fq "hpv2BuilderShell" js/views.js
+          grep -Fq "Overview only · no placement here" js/views.js
+          grep -Fq "All Plots is overview-only" js/views.js
+          grep -Fq "Open a plot in Plot Editor before placing items" js/app.js
+          grep -Fq "function moveObjectInFocusedPlot" js/app.js
           grep -Fq ".catalogDragHandle" css/app.css
           grep -Fq ".hpv2FocusGrid.dragTarget" css/app.css
           grep -Fq "grid-auto-rows:max-content" css/app.css
-          grep -Fq "plotDefs.slice().sort" js/views.js
           grep -Fq "data-hpv2-drop-plot" js/views.js
           grep -Fq "Add directly to Plot" js/views.js
           grep -Fq "application/x-aniimo-catalog" js/app.js
