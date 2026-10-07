@@ -120,7 +120,11 @@ function dashboardFacilityName(id){
  const src=aniidexImportMeta?.catalog||EMBEDDED_ANIIDEX_CATALOG||{};
  const hub=src?.hub||src?.homelandHub||src?.homeland||EMBEDDED_ANIIDEX_CATALOG?.hub||{};
  const text=src?.text||src?.homelandText||src?.siteText||hub?.text||EMBEDDED_ANIIDEX_CATALOG?.text||{};
- return String(text?.facilities?.[key]??text?.facilities?.[Number(key)]??('Facility '+key));
+ const direct=text?.facilities?.[key]??text?.facilities?.[Number(key)];if(direct)return String(direct);
+ const planner=src?.planner||src?.homelandPlanner||hub?.planner||EMBEDDED_ANIIDEX_CATALOG?.planner||{};
+ const rows=Array.isArray(planner?.facilities)?planner.facilities:Object.values(planner?.facilities||{});
+ const hit=rows.find(x=>String(x?.type??x?.id??'')===key);
+ return String(hit?.name||('Facility '+key));
 }
 function dashboardHomeSnapshot(){
  const meta=aniidexImportMeta||null;
