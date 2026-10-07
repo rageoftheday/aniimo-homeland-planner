@@ -1,5 +1,7 @@
 // Dedicated live Homeland Snapshot tab.
 (function(){
+  let productionGroupMode='grouped';
+  let productionSort='item';
   function catalogParts(){
     const live=aniidexImportMeta?.catalog||null;
     const embedded=typeof EMBEDDED_ANIIDEX_CATALOG!=='undefined'?EMBEDDED_ANIIDEX_CATALOG:null;
@@ -105,12 +107,59 @@
     const foodResidents=Math.max(0,Number(h.rosterCount||0));
     const foodReserveMinutes=foodRate>0?foodEnergyTotal/foodRate:0;
     const foodReserveLabel=foodEnergyTotal>0&&foodRate>0?(foodUnknownUnits>0?'≥ '+formatReserveMinutes(foodReserveMinutes)+' from known foods':'≈ '+formatReserveMinutes(foodReserveMinutes)):'Unknown';
-    const qRows=queues.map(q=>{
-      const out=Object.entries(q.output||{}).filter(([,v])=>Number(v)>0).map(([id,v])=>itemName(id)+' ×'+Number(v)).join(' • ');
+    const productionRows=queues.map(q=>{
+      const outputs=Object.entries(q.output||{}).filter(([,v])=>Number(v)>0);
+      const out=outputs.map(([id,v])=>itemName(id)+' ×'+Number(v)).join(' • ');
       const p=Array.isArray(q.progress)?q.progress:[0,0],cur=Number(p[0]||0),tot=Number(p[1]||0),pct=tot?Math.round(cur/tot*100):0;
       const status=q.paused?'Paused':out?'Output ready':q.recipe!=null?'Working':'Idle';
-      return '<tr><td><b>'+esc(dashboardFacilityName(q.facility))+'</b><div class="small">Piece '+(q.piece??'—')+' · Lv '+(q.level??'—')+'</div></td><td>'+(q.recipe!=null?'<b>'+esc(itemName(q.recipe))+'</b><div class="small"><code>'+esc(String(q.recipe))+'</code></div>':'—')+'</td><td>'+status+'</td><td>'+(tot?pct+'%':'—')+'</td><td>'+esc(out||'—')+'</td></tr>';
-    }).join('')||'<tr><td colspan="5">No production pieces returned.</td></tr>';
+      return {
+        raw:q,
+        facility:dashboardFacilityName(q.facility),
+        recipeId:q.recipe==null?'':String(q.recipe),
+        recipeName:q.recipe!=null?itemName(q.recipe):'Idle / no recipe',
+        status,
+        progress:tot?pct:null,
+        output:out||'—',
+        ready:!!out,
+        piece:String(q.piece??'—'),
+        level:String(q.level??'—')
+      };
+    });
+    const statusRank={'Output ready':0,'Working':1,'Paused':2,'Idle':3};
+    const sortProduction=(a,b)=>{
+      if(productionSort==='facility')return a.facility.localeCompare(b.facility)||a.recipeName.localeCompare(b.recipeName);
+      if(productionSort==='status')return (statusRank[a.status]??9)-(statusRank[b.status]??9)||a.recipeName.localeCompare(b.recipeName);
+      if(productionSort==='ready')return Number(b.ready)-Number(a.ready)||a.recipeName.localeCompare(b.recipeName);
+      if(productionSort==='count')return (b.count||1)-(a.count||1)||a.recipeName.localeCompare(b.recipeName);
+      return a.recipeName.localeCompare(b.recipeName)||a.facility.localeCompare(b.facility);
+    };
+    let qRows='';
+    let productionShownCount=productionRows.length;
+    if(productionGroupMode==='grouped'){
+      const groups=new Map();
+      for(const row of productionRows){
+        const key=row.recipeId?('recipe:'+row.recipeId):('idle:'+row.facility+':'+row.status);
+        if(!groups.has(key))groups.set(key,{...row,count:0,pieces:[],facilities:new Set(),statuses:new Set(),outputs:new Set(),readyCount:0,progressValues:[]});
+        const g=groups.get(key);g.count++;g.pieces.push(row);g.facilities.add(row.facility);g.statuses.add(row.status);if(row.output!=='—')g.outputs.add(row.output);if(row.ready)g.readyCount++;if(row.progress!=null)g.progressValues.push(row.progress);
+      }
+      const grouped=[...groups.values()].map(g=>{
+        g.facility=[...g.facilities].join(' • ');
+        g.status=g.statuses.size===1?[...g.statuses][0]:[...g.statuses].join(' / ');
+        g.output=g.outputs.size?[...g.outputs].join(' • '):'—';
+        g.ready=g.readyCount>0;
+        g.progress=g.progressValues.length?Math.round(g.progressValues.reduce((a,b)=>a+b,0)/g.progressValues.length):null;
+        return g;
+      }).sort(sortProduction);
+      productionShownCount=grouped.length;
+      qRows=grouped.map(g=>{
+        const pieceDetails=g.pieces.slice().sort((a,b)=>Number(a.piece)-Number(b.piece)).map(x=>'<div class="small">Piece '+esc(x.piece)+' · Lv '+esc(x.level)+' · '+esc(x.facility)+' · '+esc(x.status)+(x.progress!=null?' · '+x.progress+'%':'')+(x.output!=='—'?' · '+esc(x.output):'')+'</div>').join('');
+        const detail=g.count>1?'<details class="snapshotProductionPieces"><summary>'+g.count+' pieces</summary>'+pieceDetails+'</details>':'<div class="small">Piece '+esc(g.pieces[0]?.piece||'—')+' · Lv '+esc(g.pieces[0]?.level||'—')+'</div>';
+        return '<tr><td><b>'+esc(g.facility)+'</b>'+detail+'</td><td><b>'+esc(g.recipeName)+'</b>'+(g.recipeId?'<div class="small"><code>'+esc(g.recipeId)+'</code></div>':'')+'</td><td>'+esc(g.status)+(g.readyCount?'<div class="small">'+g.readyCount+' ready</div>':'')+'</td><td>'+(g.progress!=null?g.progress+'% avg':'—')+'</td><td>'+esc(g.output)+'</td></tr>';
+      }).join('');
+    }else{
+      qRows=productionRows.sort(sortProduction).map(row=>'<tr><td><b>'+esc(row.facility)+'</b><div class="small">Piece '+esc(row.piece)+' · Lv '+esc(row.level)+'</div></td><td><b>'+esc(row.recipeName)+'</b>'+(row.recipeId?'<div class="small"><code>'+esc(row.recipeId)+'</code></div>':'')+'</td><td>'+esc(row.status)+'</td><td>'+(row.progress!=null?row.progress+'%':'—')+'</td><td>'+esc(row.output)+'</td></tr>').join('');
+    }
+    qRows=qRows||'<tr><td colspan="5">No production pieces returned.</td></tr>';
     const facilityRows=h.facilityRows.map(x=>'<tr><td><b>'+esc(x.name)+'</b></td><td>'+x.total+'</td><td>'+esc(x.levels)+'</td></tr>').join('');
     const storageEntries=Object.entries(storage).filter(([,v])=>Number(v)>0);
     let storageKnownValue=0,storagePricedCodes=0;
@@ -135,11 +184,13 @@
       '<section class="snapshotSection"><div class="sectionTitle">Incubation</div><div class="small snapshotSectionIntro">Egg IDs are preserved even when a friendly name is not mapped yet.</div><div class="tableWrap"><table class="dataTable"><thead><tr><th>Egg</th><th>Item ID</th><th>Hatchinator piece</th><th>Hatches at</th><th>Remaining</th></tr></thead><tbody>'+eggRows+'</tbody></table></div></section>'+
       '<section class="snapshotSection"><div class="sectionTitle">Food Supply</div><div class="snapshotStorageSummary"><div><span>Estimated food reserve</span><b>'+esc(foodReserveLabel)+'</b></div><div><span>Known food energy</span><b>'+foodEnergyTotal.toLocaleString()+'</b></div><div><span>Live food cost</span><b>'+foodRate.toLocaleString()+'/min</b><small>'+foodResidents+' Homeland Aniimo</small></div></div><div class="small snapshotSectionIntro">'+food.length+' filled slot'+(food.length===1?'':'s')+' • live cost '+foodRate+'/min • estimate uses Aniidx food-energy values and the live food cost. The active food item may be partially consumed, so the game can show a slightly lower exact total.</div><div class="tableWrap"><table class="dataTable"><thead><tr><th>Slot</th><th>Food</th><th>Item ID</th><th>Count</th><th>Energy each</th></tr></thead><tbody>'+foodRows+'</tbody></table></div></section>'+
       abilityTable()+
-      '<details class="homeSnapshotDetails" open><summary>Live production pieces ('+queues.length+')</summary><div class="tableWrap snapshotProductionTable"><table class="dataTable"><thead><tr><th>Facility</th><th>Recipe / item</th><th>Status</th><th>Progress</th><th>Output ready</th></tr></thead><tbody>'+qRows+'</tbody></table></div></details>'+
+      '<details class="homeSnapshotDetails" open><summary>Live production pieces ('+queues.length+')</summary><div class="filterBar snapshotProductionControls"><label class="small">View <select id="snapshotProductionMode"><option value="grouped"'+(productionGroupMode==='grouped'?' selected':'')+'>Grouped by item</option><option value="individual"'+(productionGroupMode==='individual'?' selected':'')+'>Individual pieces</option></select></label><label class="small">Sort <select id="snapshotProductionSort"><option value="item"'+(productionSort==='item'?' selected':'')+'>Item name</option><option value="facility"'+(productionSort==='facility'?' selected':'')+'>Facility</option><option value="status"'+(productionSort==='status'?' selected':'')+'>Status</option><option value="ready"'+(productionSort==='ready'?' selected':'')+'>Output ready first</option><option value="count"'+(productionSort==='count'?' selected':'')+'>Piece count</option></select></label><span class="small">'+productionShownCount+' row'+(productionShownCount===1?'':'s')+' shown</span></div><div class="tableWrap snapshotProductionTable"><table class="dataTable"><thead><tr><th>Facility / pieces</th><th>Recipe / item</th><th>Status</th><th>Progress</th><th>Output ready</th></tr></thead><tbody>'+qRows+'</tbody></table></div></details>'+
       '<details class="homeSnapshotDetails"><summary>Facility inventory ('+h.facilityPieces+' pieces / '+h.facilityRows.length+' types)</summary><div class="tableWrap homeFacilityTable"><table class="dataTable"><thead><tr><th>Facility</th><th>Total</th><th>Levels owned</th></tr></thead><tbody>'+facilityRows+'</tbody></table></div></details>'+
       '<details class="homeSnapshotDetails"><summary>RV modules</summary><div class="tableWrap"><table class="dataTable"><thead><tr><th>Module</th><th>Level</th><th>ID</th></tr></thead><tbody>'+moduleRows+'</tbody></table></div></details>'+
       '<details class="homeSnapshotDetails"><summary>Visitors / sync health</summary><div class="snapshotKeyRows"><div><span>Visitors</span><b>'+visitors.length+'</b></div><div><span>Visitor IDs</span><b>'+esc(visitors.join(', ')||'—')+'</b></div><div><span>Fresh</span><b>'+(h.meta?.home?.fresh===true?'Yes':h.meta?.home?.fresh===false?'No':'Unknown')+'</b></div><div><span>Cache seconds left</span><b>'+esc(String(h.meta?.home?.secondsLeft??'—'))+'</b></div><div><span>Region</span><b>'+esc(String(h.meta?.home?.region||'—'))+'</b></div><div><span>Server</span><b>'+esc(String(raw.server||'—'))+'</b></div></div></details>'+
       '<details class="homeSnapshotDetails"><summary>Home storage ('+storageEntries.length+' item codes)</summary><div class="snapshotStorageSummary"><div><span>Known sell value</span><b>'+homeCoin(storageKnownValue)+'</b></div><div><span>Priced item codes</span><b>'+storagePricedCodes+' / '+storageEntries.length+'</b></div><div><span>Unpriced / unknown</span><b>'+Math.max(0,storageEntries.length-storagePricedCodes)+'</b></div></div><div class="small snapshotSectionIntro">Total includes only items with a verified sell price. Unknown values are shown as — and are not counted as zero.</div><div class="tableWrap snapshotStorageTable"><table class="dataTable"><thead><tr><th>Item</th><th>Item ID</th><th>Count</th><th>Sell each</th><th>Stack value</th></tr></thead><tbody>'+storageRows+'</tbody></table></div></details>';
+    el('snapshotProductionMode')?.addEventListener('change',e=>{productionGroupMode=e.target.value==='individual'?'individual':'grouped';renderHomeSnapshotTab();});
+    el('snapshotProductionSort')?.addEventListener('change',e=>{productionSort=e.target.value||'item';renderHomeSnapshotTab();});
     clearInterval(window.__homeSnapshotTimer);
     window.__homeSnapshotTimer=setInterval(()=>document.querySelectorAll('#snapshotPane [data-egg-end]').forEach(n=>n.textContent=remaining(n.dataset.eggEnd)),30000);
   }
