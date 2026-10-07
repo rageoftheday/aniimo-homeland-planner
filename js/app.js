@@ -1887,6 +1887,7 @@ function switchProfile(id){if(id===profileStore.current)return;snapshotIntoCurre
 function createProfile(name,type='Custom',copyState=true){snapshotIntoCurrentProfile();const id=newProfileId();profileStore.profiles[id]={id,name:name||'New Profile',type,state:copyState?JSON.parse(JSON.stringify(currentPlannerState())):null,updated:Date.now()};profileStore.current=id;saveProfileStore();renderProfileBar();render()}
 function initProfileUI(){loadProfileStore();const p=profileStore.profiles[profileStore.current];if(p&&p.state){applyPlannerState(JSON.parse(JSON.stringify(p.state)))}else if(p){p.state=currentPlannerState();saveProfileStore()}renderProfileBar()}
 
+el('aniidexQuickSyncTopBtn')?.addEventListener('click',quickAniidexSyncFromHeader);
 el('homelandImportTopBtn')?.addEventListener('click',focusHomelandImporter);
 el('profileSelect')?.addEventListener('change',e=>switchProfile(e.target.value));
 el('profileType')?.addEventListener('change',e=>{const p=profileStore.profiles[profileStore.current];if(p){p.type=e.target.value;saveProfileStore();renderProfileBar()}});

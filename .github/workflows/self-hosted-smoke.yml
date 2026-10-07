@@ -77,6 +77,7 @@ jobs:
           test -s js/home-snapshot.js
           test -s data/embedded-aniidex-catalog.js
           test -s data/egg-reference.js
+          test -s data/food-energy-reference.js
           test -s data/questlog-items.js
           test -s data/homeland-reference-data.js
           test -s js/homeland-data.js
@@ -94,8 +95,8 @@ jobs:
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
           grep -q 'css/app.css?v=30.23.1' index.html
           grep -q 'js/views.js?v=30.23.1' index.html
-          grep -q 'js/home-snapshot.js?v=2' index.html
-          grep -q 'js/importer.js?v=30.15.3' index.html
+          grep -q 'js/home-snapshot.js?v=3' index.html
+          grep -q 'js/importer.js?v=30.15.4' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
@@ -106,6 +107,7 @@ jobs:
           grep -q 'js/assets.js' index.html
           grep -q 'data/embedded-aniidex-catalog.js' index.html
           grep -q 'data/egg-reference.js?v=1' index.html
+          grep -q 'data/food-energy-reference.js?v=1' index.html
           grep -q 'data/questlog-items.js?v=1' index.html
           grep -q 'data/official-wiki-homeland.js?v=30.16.0' index.html
           grep -q 'js/wiki-homeland.js?v=30.16.0' index.html
@@ -140,7 +142,7 @@ jobs:
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
-          grep -q 'js/app.js?v=30.21.5' index.html
+          grep -q 'js/app.js?v=30.21.6' index.html
           grep -q 'data-tab="aniimos"' index.html
           grep -q 'id="aniimosPane"' index.html
           grep -q 'Backup ▾' index.html
@@ -244,12 +246,20 @@ jobs:
           grep -q 'Incubation' js/home-snapshot.js
           grep -q 'Facility inventory' js/home-snapshot.js
           grep -q 'Known sell value' js/home-snapshot.js
+          grep -q 'function foodEnergy' js/home-snapshot.js
+          grep -q 'catalogValue=Number(fact?.food)' js/home-snapshot.js
+          grep -q 'raw.food_speed' js/home-snapshot.js
+          grep -q 'Live food cost' js/home-snapshot.js
+          grep -q 'Estimated food reserve' js/home-snapshot.js
           grep -q 'Stack value' js/home-snapshot.js
           grep -q 'function itemSellValue' js/home-snapshot.js
           grep -q 'ANIIMO_QUESTLOG_ITEMS' js/home-snapshot.js
           grep -q 'homeSnapshotGrid' css/app.css
           node --check js/views.js
           grep -q 'dashboardImport' js/views.js
+          grep -q 'aniidexQuickSyncTopBtn' index.html
+          grep -q 'function quickAniidexSyncFromHeader' js/importer.js
+          grep -q "addEventListener('click',quickAniidexSyncFromHeader)" js/app.js
           grep -q 'snapshotJump' js/views.js
           grep -q 'Aniimo</th><th>Total levels</th><th>Live work / planner demand' js/home-snapshot.js
           grep -q 'function dashboardLiveAbilityUsage' js/views.js
@@ -465,6 +475,7 @@ jobs:
           NODE
           node --check data/embedded-aniidex-catalog.js
           node --check data/egg-reference.js
+          node --check data/food-energy-reference.js
           node --check data/questlog-items.js
           node --check tools/scrape-questlog-items.js
           node --check data/homeland-reference-data.js

@@ -253,7 +253,7 @@ function stopAniidexAutoSync(reason=''){
  if(reason)importUiMessage=reason;
 }
 function failAniidexAutoSync(message){
- aniidexSyncInFlight=false;
+ aniidexSyncInFlight=false;updateAniidexQuickSyncTopButton();
  stopAniidexAutoSync();
  aniidexAutoSyncRecovery=true;
  importUiMessage='Auto-sync paused — Aniidx sync needs attention. '+String(message||'The refresh failed.')+' Open the Aniidx sync page, make sure your player data loads, then return here and click Sync now.';
@@ -262,7 +262,7 @@ function failAniidexAutoSync(message){
 function openAniidexSyncPage(){window.open('https://aniidex.com/homeland/','_blank','noopener');}
 
 function setAniidexCompanionMessage(message,isError=false){
- importUiMessage=String(message||'');
+ importUiMessage=String(message||'');updateAniidexQuickSyncTopButton();
  const status=el('aniidexImportStatus');
  if(status){
    status.className=isError?'rightAlert':'rightGood';
@@ -270,6 +270,21 @@ function setAniidexCompanionMessage(message,isError=false){
  }
 }
 
+function updateAniidexQuickSyncTopButton(){
+ const btn=el('aniidexQuickSyncTopBtn');if(!btn)return;
+ btn.disabled=!!aniidexSyncInFlight;
+ btn.textContent=aniidexSyncInFlight?'↻ Syncing…':'↻ Sync Now';
+ btn.title=importUiMessage||'Refresh the current profile from Aniidx without leaving this tab';
+}
+function quickAniidexSyncFromHeader(){
+ const uid=String(aniidexPendingUid||aniidexImportMeta?.uid||'').trim();
+ if(!/^[1-9]\d{7,15}$/.test(uid)){
+   importUiMessage='Quick Sync needs a saved Aniimo UID first. Enter/import it once in Dashboard → Import / Sync.';
+   focusHomelandImporter();
+   return;
+ }
+ requestAniidexCompanionSync('manual');
+}
 function requestAniidexCompanionSync(mode='manual'){
  if(aniidexSyncInFlight)return;
  const input=el('aniidexCompanionUid');
@@ -281,7 +296,7 @@ function requestAniidexCompanionSync(mode='manual'){
    return;
  }
  aniidexSyncMode=mode==='auto'?'auto':'manual';
- aniidexSyncInFlight=true;
+ aniidexSyncInFlight=true;updateAniidexQuickSyncTopButton();
  const btn=el('aniidexCompanionBtn');if(btn)btn.disabled=true;
  const syncNow=el('aniidexSyncNowBtn');if(syncNow)syncNow.disabled=true;
  setAniidexCompanionMessage(aniidexSyncMode==='auto'?'Auto-syncing from Aniidx…':(aniidexCompanionDetected?'Connecting to Aniidx…':'Looking for the Aniimo Homeland Companion extension…'));
@@ -289,7 +304,7 @@ function requestAniidexCompanionSync(mode='manual'){
  clearTimeout(aniidexCompanionTimer);
  aniidexCompanionTimer=setTimeout(()=>{
    if(!aniidexCompanionDetected){
-     aniidexSyncInFlight=false;
+     aniidexSyncInFlight=false;updateAniidexQuickSyncTopButton();
      if(btn)btn.disabled=false;if(syncNow)syncNow.disabled=false;
      if(aniidexSyncMode==='auto')failAniidexAutoSync('Aniimo Homeland Companion was not detected.');
      else setAniidexCompanionMessage('Aniimo Homeland Companion was not detected. Install/load the extension from this repository, then refresh the planner.',true);
@@ -316,7 +331,7 @@ window.addEventListener('message',event=>{
  if(msg.type==='ANIIMO_SYNC_RESULT'){
    aniidexCompanionDetected=true;
    clearTimeout(aniidexCompanionTimer);
-   aniidexSyncInFlight=false;
+   aniidexSyncInFlight=false;updateAniidexQuickSyncTopButton();
    const btn=el('aniidexCompanionBtn');if(btn)btn.disabled=false;
    const syncNow=el('aniidexSyncNowBtn');if(syncNow)syncNow.disabled=false;
    if(!msg.ok){
@@ -333,12 +348,12 @@ window.addEventListener('message',event=>{
      const sum=applyAniidexImportedData(profileData,homeData,'Aniidx direct sync',aniidexBundleCatalog(data),confirmRefresh,data);
      if(!sum){setAniidexCompanionMessage('Aniidx sync received; import was cancelled.');return;}
      aniidexLastSyncAt=Date.now();
-     aniidexAutoSyncRecovery=false;
+     aniidexAutoSyncRecovery=false;updateAniidexQuickSyncTopButton();
      setAniidexCompanionMessage(`${aniidexSyncMode==='auto'?'Auto-sync':'Direct Aniidx sync'} complete ✓ ${sum.name||'Player'} • RV ${sum.rv} • ${sum.aniimo} Homeland Aniimo • ${sum.facilities} facility pieces • ${sum.caught||0} caught forms`);
      if(aniidexAutoSyncRunning)scheduleAniidexAutoSync();
      renderImportTab();
    }catch(err){
-     aniidexSyncInFlight=false;
+     aniidexSyncInFlight=false;updateAniidexQuickSyncTopButton();
      if(aniidexSyncMode==='auto')failAniidexAutoSync('Direct sync import failed: '+(err?.message||err));
      else setAniidexCompanionMessage('Direct Aniidx sync import failed: '+(err?.message||err),true);
    }
