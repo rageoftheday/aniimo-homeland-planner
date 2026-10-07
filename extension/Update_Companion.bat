@@ -47,12 +47,24 @@ start "" explorer.exe "%TARGET%"
 set "CHROME=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
 if not exist "%CHROME%" set "CHROME=%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
 if not exist "%CHROME%" set "CHROME=%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe"
-if exist "%CHROME%" start "" "%CHROME%" "chrome://extensions/"
+tasklist /FI "IMAGENAME eq chrome.exe" 2>nul | find /I "chrome.exe" >nul
+if not errorlevel 1 if exist "%CHROME%" (
+  echo [INFO] Chrome is already open - opening chrome://extensions
+  start "" "%CHROME%" "chrome://extensions/"
+) else (
+  echo [INFO] Chrome is not running - leaving it closed.
+)
 
 set "EDGE=%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
 if not exist "%EDGE%" set "EDGE=%ProgramFiles%\Microsoft\Edge\Application\msedge.exe"
 if not exist "%EDGE%" set "EDGE=%LOCALAPPDATA%\Microsoft\Edge\Application\msedge.exe"
-if exist "%EDGE%" start "" "%EDGE%" "edge://extensions/"
+tasklist /FI "IMAGENAME eq msedge.exe" 2>nul | find /I "msedge.exe" >nul
+if not errorlevel 1 if exist "%EDGE%" (
+  echo [INFO] Edge is already open - opening edge://extensions
+  start "" "%EDGE%" "edge://extensions/"
+) else (
+  echo [INFO] Edge is not running - leaving it closed.
+)
 
 echo.
 pause
