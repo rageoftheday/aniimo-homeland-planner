@@ -119,7 +119,7 @@ function applyAniidexImportedData(profileData,homeData,sourceLabel='Aniidex',cat
  moduleLevels={...importedModules.levels};
  const normalPlots=(rawHome.plots||[]).filter(n=>n>=1&&n<=16);if(normalPlots.length)openPlots=new Set(normalPlots);
  const rawAniimo=rawHome.aniimo||[];workers=rawAniimo.map(a=>importedWorkerFromAniidex(a,catalogData));workerIdCounter=Math.max(1,...workers.map(w=>(Number(w.id)||0)+1));
- aniidexImportMeta={uid:String(rawHome.uid||profileData?.profile?.uid||profileData?.uid||''),importedAt:Date.now(),summary:sum,profile:profileData,home:homeData,catalog:catalogData,source:sourceLabel,raw:rawBundle||{profile:profileData,homeland:homeData}};
+ aniidexImportMeta={uid:String(rawHome.uid||profileData?.profile?.uid||profileData?.uid||''),importedAt:Date.now(),summary:sum,profile:profileData,home:homeData,catalog:catalogData,source:sourceLabel,rawMeta:rawBundle?{format:rawBundle.format||'',capturedAt:rawBundle.capturedAt||'',source:rawBundle.source||sourceLabel,warnings:Array.isArray(rawBundle.warnings)?rawBundle.warnings:[]}:null};
  const p=profileStore?.profiles?.[profileStore.current];if(p&&sum.name&&(/^Main Account$/i.test(p.name)||!p.name))p.name=sum.name;
  render();snapshotIntoCurrentProfile();renderProfileBar();
  return sum;
