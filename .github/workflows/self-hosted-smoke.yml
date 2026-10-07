@@ -77,12 +77,14 @@ jobs:
           test -s js/home-snapshot.js
           test -s data/embedded-aniidex-catalog.js
           test -s data/egg-reference.js
+          test -s data/questlog-items.js
           test -s data/homeland-reference-data.js
           test -s js/homeland-data.js
           test -s data/asset-manifest.js
           test -s data/aniimo-stage-images.csv
           test -s data/aniimo-stage-index.js
           test -s js/assets.js
+          test -s tools/scrape-questlog-items.js
           grep -q '<!doctype html>' index.html
           grep -q '<title>Aniimo Homeland Planner</title>' index.html
           test -s assets/favicon.svg
@@ -90,9 +92,9 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.23.0' index.html
+          grep -q 'css/app.css?v=30.23.1' index.html
           grep -q 'js/views.js?v=30.23.1' index.html
-          grep -q 'js/home-snapshot.js?v=1' index.html
+          grep -q 'js/home-snapshot.js?v=2' index.html
           grep -q 'js/importer.js?v=30.15.3' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
@@ -104,6 +106,7 @@ jobs:
           grep -q 'js/assets.js' index.html
           grep -q 'data/embedded-aniidex-catalog.js' index.html
           grep -q 'data/egg-reference.js?v=1' index.html
+          grep -q 'data/questlog-items.js?v=1' index.html
           grep -q 'data/official-wiki-homeland.js?v=30.16.0' index.html
           grep -q 'js/wiki-homeland.js?v=30.16.0' index.html
           test -s data/official-wiki-homeland.json
@@ -240,6 +243,10 @@ jobs:
           grep -q 'Live production pieces' js/home-snapshot.js
           grep -q 'Incubation' js/home-snapshot.js
           grep -q 'Facility inventory' js/home-snapshot.js
+          grep -q 'Known sell value' js/home-snapshot.js
+          grep -q 'Stack value' js/home-snapshot.js
+          grep -q 'function itemSellValue' js/home-snapshot.js
+          grep -q 'ANIIMO_QUESTLOG_ITEMS' js/home-snapshot.js
           grep -q 'homeSnapshotGrid' css/app.css
           node --check js/views.js
           grep -q 'dashboardImport' js/views.js
@@ -458,6 +465,8 @@ jobs:
           NODE
           node --check data/embedded-aniidex-catalog.js
           node --check data/egg-reference.js
+          node --check data/questlog-items.js
+          node --check tools/scrape-questlog-items.js
           node --check data/homeland-reference-data.js
           node --check js/homeland-data.js
           node --check data/asset-manifest.js
