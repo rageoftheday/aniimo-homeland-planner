@@ -60,20 +60,20 @@ set "BROWSER_OPENED=0"
 
 tasklist /FI "IMAGENAME eq chrome.exe" 2>nul | find /I "chrome.exe" >nul
 if not errorlevel 1 (
-  echo [INFO] Chrome is already open - opening a new tab for chrome://extensions
-  powershell -NoProfile -ExecutionPolicy Bypass -Command "$p=Get-Process chrome -ErrorAction SilentlyContinue | Where-Object {$_.MainWindowHandle -ne 0} | Select-Object -First 1; if($p){$w=New-Object -ComObject WScript.Shell; if($w.AppActivate($p.Id)){Start-Sleep -Milliseconds 150; $w.SendKeys('^t'); Start-Sleep -Milliseconds 150; $w.SendKeys('chrome://extensions/'); $w.SendKeys('{ENTER}')}}"
+  echo [INFO] Chrome is running.
+  echo        Open a new tab and go to: chrome://extensions
   set "BROWSER_OPENED=1"
 ) else (
-  echo [INFO] Chrome is not running - leaving it closed.
+  echo [INFO] Chrome is not running - skipping.
 )
 
 tasklist /FI "IMAGENAME eq msedge.exe" 2>nul | find /I "msedge.exe" >nul
 if not errorlevel 1 (
-  echo [INFO] Edge is already open - opening a new tab for edge://extensions
-  powershell -NoProfile -ExecutionPolicy Bypass -Command "$p=Get-Process msedge -ErrorAction SilentlyContinue | Where-Object {$_.MainWindowHandle -ne 0} | Select-Object -First 1; if($p){$w=New-Object -ComObject WScript.Shell; if($w.AppActivate($p.Id)){Start-Sleep -Milliseconds 150; $w.SendKeys('^t'); Start-Sleep -Milliseconds 150; $w.SendKeys('edge://extensions/'); $w.SendKeys('{ENTER}')}}"
+  echo [INFO] Edge is running.
+  echo        Open a new tab and go to: edge://extensions
   set "BROWSER_OPENED=1"
 ) else (
-  echo [INFO] Edge is not running - leaving it closed.
+  echo [INFO] Edge is not running - skipping.
 )
 
 if "%BROWSER_OPENED%"=="0" (
