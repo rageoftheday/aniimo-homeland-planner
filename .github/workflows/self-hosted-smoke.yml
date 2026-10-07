@@ -90,7 +90,7 @@ jobs:
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
           grep -q 'css/app.css?v=30.22.0' index.html
           grep -q 'js/views.js?v=30.22.2' index.html
-          grep -q 'js/importer.js?v=30.15.1' index.html
+          grep -q 'js/importer.js?v=30.15.2' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
@@ -324,6 +324,14 @@ jobs:
           test -s extension/planner-bridge.js
           test -s extension/aniidex-isolated.js
           test -s extension/aniidex-main.js
+          test -s extension/Install_Companion.bat
+          test -s extension/Update_Companion.bat
+          grep -q 'AniimoHomelandCompanion' extension/Install_Companion.bat
+          grep -q 'AniimoHomelandCompanion' extension/Update_Companion.bat
+          grep -q 'Install_Companion.bat' js/importer.js
+          grep -q 'Update_Companion.bat' js/importer.js
+          grep -q 'Install_Companion.bat' extension/download.html
+          grep -q 'Update_Companion.bat' extension/download.html
           node --check extension/background.js
           node --check extension/planner-bridge.js
           node --check extension/aniidex-isolated.js
