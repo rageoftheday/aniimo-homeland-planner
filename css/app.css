@@ -470,3 +470,11 @@ header{align-items:center}
 .autoSyncControls select{min-width:88px}
 .autoSyncRecovery{border:1px solid #87535a;background:#28181d;border-radius:9px;padding:9px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:#ffd6d9}
 .autoSyncRecovery span{font-size:11px;flex:1 1 320px}
+
+.planAdviceHead{margin-bottom:10px}
+.planAdviceSubnav{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #263a4b}
+.planAdviceSubnav button{padding:7px 11px}
+.planAdviceSubnav button.active{background:#315f88;border-color:#72bfe9}
+.planAdviceSection{display:none}
+.planAdviceSection.active{display:block}
+#planAdvisorHost>.rosterBox{margin-top:0!important}
