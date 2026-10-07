@@ -41,6 +41,7 @@ const HOMELAND_FACILITY_ICONS={
  'phonolfactory table':'🧪','bouncy brew keg':'🛢️','simmering pot':'🍲','blazing stove':'🔥','woodworking bench':'🪚',
  'chimney kiln':'🏺','pickling jar':'🫙','aniipod maker':'⚙️','dance pad polisher':'💎'
 };
+// Seed/formula aliases resolve to the harvested visual shown on placed growables.
 const HOMELAND_PLANT_NAME_ALIASES={
  'wheat seed':'wheat','sugarcane seed':'sugarcane','potato seed':'potato','rice seed':'rice','cotton seed':'cotton',
  'strawberry seed':'strawberry','lavender seed':'lavender','soybean seed':'soybean','grape seed':'grapes','cocoa seed':'cocoa',
