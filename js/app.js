@@ -1257,7 +1257,9 @@ function renderAdvisorSyncedWorkers(){
  root.innerHTML=`<div class="advisorWorkerGroup"><div class="advisorWorkerGroupHead"><b>Working now</b><span>${working.length}</span></div><div class="advisorWorkerGrid">${workingHtml}</div></div><div class="advisorWorkerGroup"><div class="advisorWorkerGroupHead"><b>Inactive / available</b><span>${inactive.length}</span></div><div class="advisorWorkerGrid">${inactiveHtml}</div></div>`;
 }
 function advisorReferenceForms(){
- const forms=EMBEDDED_ANIIDEX_CATALOG?.hub?.facts?.forms;
+ const src=aniidexImportMeta?.catalog||EMBEDDED_ANIIDEX_CATALOG||{};
+ const hub=src?.hub||src?.homelandHub||src?.homeland||{};
+ const forms=src?.planner?.forms||src?.homelandPlanner?.forms||hub?.planner?.forms||hub?.facts?.forms||src?.facts?.forms||EMBEDDED_ANIIDEX_CATALOG?.planner?.forms||EMBEDDED_ANIIDEX_CATALOG?.hub?.facts?.forms;
  return Array.isArray(forms)?forms:Object.values(forms||{});
 }
 function advisorRankNames(ability,level,prismanaOnly=false){
