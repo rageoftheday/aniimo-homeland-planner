@@ -527,3 +527,9 @@ header{align-items:center}
 .snapshotKeyRows span{font-size:10px;color:var(--muted)}
 .snapshotKeyRows b{font-size:11px;word-break:break-word}
 #snapshotPane code{font-size:10px;color:#b8d9ef}
+
+.snapshotStorageSummary{display:grid;grid-template-columns:repeat(3,minmax(140px,1fr));gap:8px;margin:10px 0}
+.snapshotStorageSummary>div{padding:9px 10px;border:1px solid #2d4658;border-radius:8px;background:#101d27;display:grid;gap:3px}
+.snapshotStorageSummary span{font-size:10px;color:var(--muted)}
+.snapshotStorageSummary b{font-size:15px}
+@media(max-width:900px){.snapshotStorageSummary{grid-template-columns:1fr}}
