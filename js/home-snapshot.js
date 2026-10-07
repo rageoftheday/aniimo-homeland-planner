@@ -55,9 +55,14 @@
   }
   function homeCoin(n){return Number(n||0).toLocaleString()+' HC'}
   function foodEnergy(id){
-    const fact=itemFact(id),catalogValue=Number(fact?.food);
-    if(Number.isFinite(catalogValue)&&catalogValue>0)return catalogValue;
-    const key=String(id??''),ref=window.ANIIMO_FOOD_ENERGY_REFERENCE?.entries?.[key],fallback=Number(ref?.energy);
+    const key=String(id??''),p=catalogParts();
+    const liveFact=p.liveFacts?.items?.[key]??p.liveFacts?.items?.[Number(key)]??null;
+    const embeddedFact=p.embeddedFacts?.items?.[key]??p.embeddedFacts?.items?.[Number(key)]??null;
+    const liveValue=Number(liveFact?.food);
+    if(Number.isFinite(liveValue)&&liveValue>0)return liveValue;
+    const embeddedValue=Number(embeddedFact?.food);
+    if(Number.isFinite(embeddedValue)&&embeddedValue>0)return embeddedValue;
+    const ref=window.ANIIMO_FOOD_ENERGY_REFERENCE?.entries?.[key],fallback=Number(ref?.energy);
     return Number.isFinite(fallback)&&fallback>0?fallback:null;
   }
   function formatReserveMinutes(totalMinutes){
