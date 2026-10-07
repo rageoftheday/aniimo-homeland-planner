@@ -11,6 +11,7 @@ let aniimosRankScope=localStorage.getItem('aniimosRankScope')||'all';
 // v30 tab shell and full-screen views
 let activeMainTab='dashboard';
 let homelandPlannerMode=localStorage.getItem('homelandPlannerMode')||'overview';
+if(!['overview','plot'].includes(homelandPlannerMode))homelandPlannerMode='overview';
 let homelandFocusedPlot=Number(localStorage.getItem('homelandFocusedPlot')||1);
 const HOMELAND_PLOT_UNLOCKS={
  1:{rv:1,cost:0},2:{rv:2,cost:2000},3:{rv:3,cost:4000},4:{rv:4,cost:6000},
@@ -51,16 +52,11 @@ function renderHomelandPlannerV2(){
  let root=el('homelandPlannerV2');
  if(!root){root=document.createElement('div');root.id='homelandPlannerV2';map.insertBefore(root,map.firstChild)}
  const toolbar=map.querySelector('.toolbar'),viewport=el('mapViewport'),legend=map.querySelector('.legend');
- const legacy=homelandPlannerMode==='legacy';
- if(toolbar)toolbar.hidden=!legacy;if(viewport)viewport.hidden=!legacy;if(legend)legend.hidden=!legacy;
- if(legacy){
-   root.innerHTML=`<div class="hpv2ModeBar"><button onclick="setHomelandPlannerMode('overview')">← New Overview</button><div><b>Legacy Board</b><span>Existing 80×60 editor preserved while the new planner is built.</span></div></div>`;
-   return;
- }
- const modeBar=`<div class="hpv2ModeBar"><div><b>Homeland Planner</b><span>Overview first · click an open plot to focus its 20×15 workspace.</span></div><div class="hpv2ModeActions"><button class="${homelandPlannerMode==='overview'?'active':''}" onclick="setHomelandPlannerMode('overview')">All Plots</button><button class="${homelandPlannerMode==='plot'?'active':''}" onclick="setHomelandPlannerMode('plot',homelandFocusedPlot)">Plot Editor</button><button onclick="setHomelandPlannerMode('legacy')">Legacy Board</button></div></div>`;
+ if(toolbar)toolbar.hidden=true;if(viewport)viewport.hidden=true;if(legend)legend.hidden=true;
+ const modeBar=`<div class="hpv2ModeBar"><div><b>Homeland Planner</b><span>Overview first · click an open plot to focus its 20×15 workspace.</span></div><div class="hpv2ModeActions"><button class="${homelandPlannerMode==='overview'?'active':''}" onclick="setHomelandPlannerMode('overview')">All Plots</button><button class="${homelandPlannerMode==='plot'?'active':''}" onclick="setHomelandPlannerMode('plot',homelandFocusedPlot)">Plot Editor</button></div></div>`;
  if(homelandPlannerMode==='plot'){
    const n=homelandFocusedPlot,p=homelandPlotDef(n)||homelandPlotDef(1),rows=homelandPlotObjects(n),unlock=HOMELAND_PLOT_UNLOCKS[n]||{};
-   root.innerHTML=modeBar+`<div class="hpv2FocusHead"><button onclick="setHomelandPlannerMode('overview')">← All Plots</button><div><h3>Plot ${n} · ${esc(homelandPlotRole(n))}</h3><span>${rows.length} placed object${rows.length===1?'':'s'} · 20×15 squares</span></div><div class="hpv2FocusMeta">RV ${unlock.rv||'—'} · ${Number(unlock.cost||0).toLocaleString()} HC unlock</div></div><div class="hpv2FocusGrid"><div class="hpv2GridLines"></div>${rows.map(o=>homelandMiniObject(o,p,true)).join('')}</div><div class="hpv2FocusFoot"><span>Click a tile to select it in the existing Details inspector.</span><button onclick="setHomelandPlannerMode('legacy')">Open precision board</button></div>`;
+   root.innerHTML=modeBar+`<div class="hpv2FocusHead"><button onclick="setHomelandPlannerMode('overview')">← All Plots</button><div><h3>Plot ${n} · ${esc(homelandPlotRole(n))}</h3><span>${rows.length} placed object${rows.length===1?'':'s'} · 20×15 squares</span></div><div class="hpv2FocusMeta">RV ${unlock.rv||'—'} · ${Number(unlock.cost||0).toLocaleString()} HC unlock</div></div><div class="hpv2FocusGrid"><div class="hpv2GridLines"></div>${rows.map(o=>homelandMiniObject(o,p,true)).join('')}</div><div class="hpv2FocusFoot"><span>Click a tile to select it in the existing Details inspector.</span></div>`;
  }else{
    const cards=plotDefs.map(p=>{
      const open=isPlotOpen(p.n),rows=homelandPlotObjects(p.n),u=HOMELAND_PLOT_UNLOCKS[p.n]||{},role=homelandPlotRole(p.n);
