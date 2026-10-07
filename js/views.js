@@ -123,6 +123,18 @@ function dashboardFacilitySupportedAbilities(facilityId){
 function dashboardAbilityNameForAssignment(w){
  const facility=Number(w?.aniidex?.facility),job=Number(w?.aniidex?.job);
  if(!facility)return '';
+ const src=aniidexImportMeta?.catalog||EMBEDDED_ANIIDEX_CATALOG||{};
+ const hub=src?.hub||src?.homelandHub||src?.homeland||EMBEDDED_ANIIDEX_CATALOG?.hub||{};
+ const facts=hub?.facts||src?.facts||EMBEDDED_ANIIDEX_CATALOG?.hub?.facts||{};
+ const text=src?.text||src?.homelandText||src?.siteText||hub?.text||EMBEDDED_ANIIDEX_CATALOG?.text||{};
+ if(job){
+   for(const [key,a] of Object.entries(facts?.abilities||{})){
+     if(Number(a?.id)!==job)continue;
+     const label=text?.abilities?.[job]??text?.abilities?.[String(job)]??key;
+     const direct=typeof label==='string'?label:(label?.name||label?.label||key);
+     if(HOME_ABILITIES.includes(String(direct)))return String(direct);
+   }
+ }
  const planner=dashboardCatalogPlanner(),rows=Array.isArray(planner?.recipes)?planner.recipes:Object.values(planner?.recipes||{});
  if(job){
    for(const r of rows){
