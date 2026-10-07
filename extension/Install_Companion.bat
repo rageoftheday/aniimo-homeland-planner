@@ -56,15 +56,41 @@ echo.
 
 start "" explorer.exe "%TARGET%"
 
+set "BROWSER_OPENED=0"
+
 set "CHROME=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
 if not exist "%CHROME%" set "CHROME=%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
 if not exist "%CHROME%" set "CHROME=%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe"
-if exist "%CHROME%" start "" "%CHROME%" "chrome://extensions/"
+tasklist /FI "IMAGENAME eq chrome.exe" 2>nul | find /I "chrome.exe" >nul
+if not errorlevel 1 if exist "%CHROME%" (
+  echo [INFO] Chrome is already open - opening chrome://extensions
+  start "" "%CHROME%" "chrome://extensions/"
+  set "BROWSER_OPENED=1"
+) else (
+  echo [INFO] Chrome is not running - leaving it closed.
+)
 
 set "EDGE=%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
 if not exist "%EDGE%" set "EDGE=%ProgramFiles%\Microsoft\Edge\Application\msedge.exe"
 if not exist "%EDGE%" set "EDGE=%LOCALAPPDATA%\Microsoft\Edge\Application\msedge.exe"
-if exist "%EDGE%" start "" "%EDGE%" "edge://extensions/"
+tasklist /FI "IMAGENAME eq msedge.exe" 2>nul | find /I "msedge.exe" >nul
+if not errorlevel 1 if exist "%EDGE%" (
+  echo [INFO] Edge is already open - opening edge://extensions
+  start "" "%EDGE%" "edge://extensions/"
+  set "BROWSER_OPENED=1"
+) else (
+  echo [INFO] Edge is not running - leaving it closed.
+)
+
+if "%BROWSER_OPENED%"=="0" (
+  echo.
+  echo [NEXT STEP] No supported browser is currently open.
+  echo Open Chrome or Edge when you are ready, then go to:
+  echo   Chrome: chrome://extensions
+  echo   Edge:   edge://extensions
+  echo Turn on Developer mode, click Load unpacked, and select:
+  echo   %TARGET%
+)
 
 echo.
 echo [DONE] Files are installed permanently.

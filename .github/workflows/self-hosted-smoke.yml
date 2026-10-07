@@ -328,6 +328,18 @@ jobs:
           test -s extension/Update_Companion.bat
           grep -q 'AniimoHomelandCompanion' extension/Install_Companion.bat
           grep -q 'AniimoHomelandCompanion' extension/Update_Companion.bat
+          grep -q 'tasklist /FI "IMAGENAME eq chrome.exe"' extension/Install_Companion.bat
+          grep -q 'tasklist /FI "IMAGENAME eq msedge.exe"' extension/Install_Companion.bat
+          grep -q 'Chrome is not running - leaving it closed.' extension/Install_Companion.bat
+          grep -q 'Edge is not running - leaving it closed.' extension/Install_Companion.bat
+          grep -q 'No supported browser is currently open.' extension/Install_Companion.bat
+          grep -q 'chrome://extensions' extension/Install_Companion.bat
+          grep -q 'edge://extensions' extension/Install_Companion.bat
+          grep -q 'No supported browser is currently open.' extension/Update_Companion.bat
+          grep -q 'Load unpacked' extension/Install_Companion.bat
+          grep -q 'Load unpacked' extension/Update_Companion.bat
+          grep -q 'tasklist /FI "IMAGENAME eq chrome.exe"' extension/Update_Companion.bat
+          grep -q 'tasklist /FI "IMAGENAME eq msedge.exe"' extension/Update_Companion.bat
           grep -q 'Install_Companion.bat' js/importer.js
           grep -q 'Update_Companion.bat' js/importer.js
           grep -q 'Install_Companion.bat' extension/download.html
