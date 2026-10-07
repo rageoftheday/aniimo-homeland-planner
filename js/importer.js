@@ -314,21 +314,29 @@ window.addEventListener('message',event=>{
  if(msg.type==='ANIIMO_SYNC_RESULT'){
    aniidexCompanionDetected=true;
    clearTimeout(aniidexCompanionTimer);
+   aniidexSyncInFlight=false;
    const btn=el('aniidexCompanionBtn');if(btn)btn.disabled=false;
+   const syncNow=el('aniidexSyncNowBtn');if(syncNow)syncNow.disabled=false;
    if(!msg.ok){
-     setAniidexCompanionMessage(msg.error||'Aniidx sync failed.',true);
+     if(aniidexSyncMode==='auto')failAniidexAutoSync(msg.error||'Aniidx sync failed.');
+     else setAniidexCompanionMessage(msg.error||'Aniidx sync failed.',true);
      return;
    }
    try{
      const data=msg.bundle||{};
      const profileData=data.profile||{};
      const homeData=data.homeland||{};
-     const sum=applyAniidexImportedData(profileData,homeData,'Aniidx direct sync',aniidexBundleCatalog(data));
+     const sum=applyAniidexImportedData(profileData,homeData,'Aniidx direct sync',aniidexBundleCatalog(data),aniidexSyncMode!=='auto');
      if(!sum){setAniidexCompanionMessage('Aniidx sync received; import was cancelled.');return;}
-     setAniidexCompanionMessage(`Direct Aniidx sync complete ✓ ${sum.name||'Player'} • RV ${sum.rv} • ${sum.aniimo} Homeland Aniimo • ${sum.facilities} facility pieces • ${sum.caught||0} caught forms`);
+     aniidexLastSyncAt=Date.now();
+     aniidexAutoSyncRecovery=false;
+     setAniidexCompanionMessage(`${aniidexSyncMode==='auto'?'Auto-sync':'Direct Aniidx sync'} complete ✓ ${sum.name||'Player'} • RV ${sum.rv} • ${sum.aniimo} Homeland Aniimo • ${sum.facilities} facility pieces • ${sum.caught||0} caught forms`);
+     if(aniidexAutoSyncRunning)scheduleAniidexAutoSync();
      renderImportTab();
    }catch(err){
-     setAniidexCompanionMessage('Direct Aniidx sync import failed: '+(err?.message||err),true);
+     aniidexSyncInFlight=false;
+     if(aniidexSyncMode==='auto')failAniidexAutoSync('Direct sync import failed: '+(err?.message||err));
+     else setAniidexCompanionMessage('Direct Aniidx sync import failed: '+(err?.message||err),true);
    }
  }
 });
