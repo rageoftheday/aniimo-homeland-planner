@@ -115,6 +115,69 @@ function toggleAbilityContributors(ability){
  const row=document.querySelector('[data-ability-detail="'+CSS.escape(ability)+'"]');
  if(row)row.hidden=!row.hidden;
 }
+function dashboardFacilityName(id){
+ const key=String(id??'');
+ const src=aniidexImportMeta?.catalog||EMBEDDED_ANIIDEX_CATALOG||{};
+ const hub=src?.hub||src?.homelandHub||src?.homeland||EMBEDDED_ANIIDEX_CATALOG?.hub||{};
+ const text=src?.text||src?.homelandText||src?.siteText||hub?.text||EMBEDDED_ANIIDEX_CATALOG?.text||{};
+ const direct=text?.facilities?.[key]??text?.facilities?.[Number(key)];if(direct)return String(direct);
+ const planner=src?.planner||src?.homelandPlanner||hub?.planner||EMBEDDED_ANIIDEX_CATALOG?.planner||{};
+ const rows=Array.isArray(planner?.facilities)?planner.facilities:Object.values(planner?.facilities||{});
+ const hit=rows.find(x=>String(x?.type??x?.id??'')===key);
+ return String(hit?.name||('Facility '+key));
+}
+function dashboardHomeSnapshot(){
+ const meta=aniidexImportMeta||null;
+ const prof=meta?.profile?.profile||meta?.profile||{};
+ const profileHome=prof?.homeland||{};
+ const rawHome=meta?.home?.home||meta?.home||{};
+ const facilities=rawHome?.facilities||{};
+ const facilityRows=[];let facilityPieces=0;
+ for(const [type,levels] of Object.entries(facilities)){
+   let total=0;const levelParts=[];
+   for(const [lv,countRaw] of Object.entries(levels||{})){const count=Number(countRaw)||0;if(!count)continue;total+=count;levelParts.push('Lv '+lv+' ×'+count);}
+   if(total){facilityPieces+=total;facilityRows.push({type,name:dashboardFacilityName(type),total,levels:levelParts.join(' • ')});}
+ }
+ facilityRows.sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name));
+ const roster=Array.isArray(rawHome?.aniimo)?rawHome.aniimo:[];
+ const working=roster.filter(a=>a?.facility!=null).length;
+ const inactive=Math.max(0,roster.length-working);
+ const queues=Array.isArray(rawHome?.crops)?rawHome.crops:[];
+ const activeQueues=queues.filter(q=>q?.recipe!=null).length;
+ const readyQueues=queues.filter(q=>Object.values(q?.output||{}).some(v=>(Number(v)||0)>0)).length;
+ const pausedQueues=queues.filter(q=>q?.paused===true).length;
+ const eggs=Array.isArray(rawHome?.eggs)?rawHome.eggs:[];
+ const normalPlots=(rawHome?.plots||[]).filter(n=>Number(n)>=1&&Number(n)<=16);
+ const areas=Array.isArray(rawHome?.areas)?rawHome.areas:[];
+ const hatchinators=Object.values(facilities?.['1050000']||{}).reduce((n,v)=>n+(Number(v)||0),0);
+ const food=Array.isArray(rawHome?.food)?rawHome.food:[];
+ const captured=meta?.home?.importedAt||rawHome?.imported_at||meta?.importedAt||0;
+ return {meta,prof,profileHome,rawHome,facilityRows,facilityPieces,rosterCount:roster.length,working,inactive,queues:queues.length,activeQueues,readyQueues,pausedQueues,eggs:eggs.length,normalPlots:normalPlots.length,areas:areas.length,hatchinators,foodSlots:food.filter(x=>(Number(x?.count)||0)>0).length,foodSpeed:Number(rawHome?.food_speed||0),captured};
+}
+function dashboardHomeSnapshotHTML(){
+ const h=dashboardHomeSnapshot();
+ if(!h.meta)return `<div class="homeSnapshotEmpty"><b>No synced Homeland snapshot yet.</b><span>Use Sync now above and this section will fill with live home status that does not require map geometry.</span></div>`;
+ const pc=h.profileHome||{},sc=h.rawHome?.comfort||{};
+ const profileFurniture=Number(pc.furniture_comfort||0),profilePet=Number(pc.pet_comfort||0),habitability=Number(pc.habitability||0);
+ const snapshotFurniture=Number(sc.furniture||0),snapshotPet=Number(sc.pet||0),snapshotTotal=Number(sc.total||0);
+ const rv=Number(h.rawHome?.home_level||pc.rv_level||rvLevel.value||0);
+ const modules=Object.entries(pc.rv_modules||{}).filter(([,v])=>(Number(v)||0)>0).length;
+ const likes=Number(pc.likes||0);
+ const capturedText=h.captured?formatAniidexSyncTime(Number(h.captured)>1e12?Number(h.captured):Number(h.captured)*1000):'Unknown';
+ const facilityTable=h.facilityRows.length?`<div class="tableWrap homeFacilityTable"><table class="dataTable"><thead><tr><th>Facility</th><th>Total</th><th>Levels owned</th></tr></thead><tbody>${h.facilityRows.map(x=>`<tr><td><b>${esc(x.name)}</b></td><td>${x.total}</td><td>${esc(x.levels)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="small">No facility inventory was returned by this sync.</div>';
+ return `<div class="homeSnapshotHead"><div><div class="sectionTitle">Home Snapshot</div><div class="small">Live Homeland state we can read without knowing exact building coordinates. Last snapshot: <b>${esc(capturedText)}</b>.</div></div></div>
+ <div class="homeSnapshotGrid">
+  <div class="homeSnapshotCard"><span>RV / land</span><b>RV ${rv}</b><small>${h.normalPlots} production plots • ${h.areas} cleared areas • ${modules} installed module types</small></div>
+  <div class="homeSnapshotCard"><span>Profile habitability</span><b>${habitability.toLocaleString()}</b><small>Furniture ${profileFurniture.toLocaleString()} • Aniimo ${profilePet.toLocaleString()} • ${likes} likes</small></div>
+  <div class="homeSnapshotCard"><span>Snapshot comfort</span><b>${snapshotTotal.toLocaleString()}</b><small>Furniture ${snapshotFurniture.toLocaleString()} • Aniimo ${snapshotPet.toLocaleString()}</small></div>
+  <div class="homeSnapshotCard"><span>Facilities</span><b>${h.facilityPieces}</b><small>${h.facilityRows.length} facility types tracked</small></div>
+  <div class="homeSnapshotCard"><span>Homeland Aniimo</span><b>${h.working} working</b><small>${h.inactive} inactive / available • ${h.rosterCount} total</small></div>
+  <div class="homeSnapshotCard"><span>Production activity</span><b>${h.activeQueues} active</b><small>${h.queues} pieces tracked • ${h.readyQueues} with output • ${h.pausedQueues} paused</small></div>
+  <div class="homeSnapshotCard"><span>Incubation</span><b>${h.eggs} egg${h.eggs===1?'':'s'}</b><small>${h.hatchinators} Hatchinator${h.hatchinators===1?'':'s'} owned</small></div>
+  <div class="homeSnapshotCard"><span>Food supply</span><b>${h.foodSlots} filled slot${h.foodSlots===1?'':'s'}</b><small>${h.foodSpeed?`Food speed ${h.foodSpeed}`:'No food-speed value returned'}</small></div>
+ </div>
+ <details class="homeSnapshotDetails"><summary>Facility inventory from latest sync</summary>${facilityTable}</details>`;
+}
 function renderDashboardTab(){
  const root=el('dashboardPane');if(!root)return;
  const active=workers.filter(w=>w.active!==false).length,cov=abilityCoverage(),blocked=blockedFamilyJobs(),jobs=activeJobs();
@@ -129,6 +192,7 @@ function renderDashboardTab(){
  }).join('');
  root.innerHTML=`<div class="v30Title">Homeland Dashboard</div><div class="v30Sub">Quick health check for this profile. Start with Import / Sync, then use Plan / Advice for recommendations, worker choices, and progression.</div>
  <div id="dashboardImport" class="dashboardImportHost"></div>
+ <div id="dashboardHomeSnapshot">${dashboardHomeSnapshotHTML()}</div>
  <div class="dashboardGrid">
   <div class="metricCard"><div class="label">RV</div><div class="metric">${esc(rvLevel.value)}</div><div class="small">${open} open production plots</div></div>
   <div class="metricCard"><div class="label">Production Zone</div><div class="metric">${active}</div><div class="small">${workers.length} Aniimo entered</div></div>
