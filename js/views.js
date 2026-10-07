@@ -46,7 +46,9 @@ function setHomelandPlannerMode(mode,plot){
 function homelandMiniObject(o,p,big=false){
  const l=Math.max(0,o.x-p.x),t=Math.max(0,o.y-p.y);
  const title=homelandObjectTitle(o),lv=o.facilityLevel||o.placedLevel||'';
- return `<button type="button" class="hpv2Obj${big?' big':''}" data-hpv2-object="${o.id}" ${big?'draggable="true"':''} title="${esc(title)}${lv?' · Lv'+lv:''}" style="left:${l/20*100}%;top:${t/15*100}%;width:${Math.min(o.w,20)/20*100}%;height:${Math.min(o.h,15)/15*100}%"><span>${esc((title||o.name||'?').slice(0,1))}</span>${big&&lv?`<b>Lv${lv}</b>`:''}</button>`;
+ const style=`left:${l/20*100}%;top:${t/15*100}%;width:${Math.min(o.w,20)/20*100}%;height:${Math.min(o.h,15)/15*100}%`;
+ if(!big)return `<div class="hpv2Obj preview" aria-hidden="true" title="${esc(title)}${lv?' · Lv'+lv:''}" style="${style}"><span>${esc((title||o.name||'?').slice(0,1))}</span></div>`;
+ return `<button type="button" class="hpv2Obj big" data-hpv2-object="${o.id}" draggable="true" title="${esc(title)}${lv?' · Lv'+lv:''}" style="${style}"><span>${esc((title||o.name||'?').slice(0,1))}</span>${lv?`<b>Lv${lv}</b>`:''}</button>`;
 }
 function homelandPlotAddOptions(){
  const rv=+rvLevel.value;
