@@ -41,12 +41,31 @@ const HOMELAND_FACILITY_ICONS={
  'phonolfactory table':'🧪','bouncy brew keg':'🛢️','simmering pot':'🍲','blazing stove':'🔥','woodworking bench':'🪚',
  'chimney kiln':'🏺','pickling jar':'🫙','aniipod maker':'⚙️','dance pad polisher':'💎'
 };
+// Seed/formula aliases resolve to the harvested visual shown on placed growables.
+const HOMELAND_PLANT_NAME_ALIASES={
+ 'wheat seed':'wheat','sugarcane seed':'sugarcane','potato seed':'potato','rice seed':'rice','cotton seed':'cotton',
+ 'strawberry seed':'strawberry','lavender seed':'lavender','soybean seed':'soybean','grape seed':'grapes','cocoa seed':'cocoa',
+ 'agave seed':'agave','rose seed':'rose','cranberry seed':'cranberry','ginseng seed':'ginseng','emerald bamboo seed':'bamboo',
+ 'willow seed':'willow wood','rubber tree seed':'natural rubber','maple tree seed':'maple syrup','palm tree seed':'palm bark',
+ 'apple tree seed':'apple','cherry tree seed':'cherry blossom','bitter orange tree seed':'orange flower','lemon tree seed':'lemon',
+ 'coconut tree seed':'coconut','walnut tree seed':'walnut','chestnut tree seed':'chestnut',
+ 'moondew radish seeds':'moondew radish','waxing moon pepper seeds':'waxing moon pepper','sweet potato seeds':'sweet potato',
+ 'willow':'willow wood','emerald bamboo':'bamboo','rubber tree':'natural rubber','maple':'maple syrup','palm':'palm bark',
+ 'cherry':'cherry blossom','bitter orange':'orange flower'
+};
 function homelandVisualIconForName(name){
- const key=String(name||'').trim().toLowerCase();
+ let key=String(name||'').trim().toLowerCase();
+ key=HOMELAND_PLANT_NAME_ALIASES[key]||key;
+ key=key.replace(/\s*\(quick\)$/,'');
+ key=HOMELAND_PLANT_NAME_ALIASES[key]||key;
  return HOMELAND_CROP_ICONS[key]||HOMELAND_FACILITY_ICONS[key]||'◈';
 }
+function homelandPlantedOutputName(cropName){
+ const meta=typeof cropProductionMeta!=='undefined'?cropProductionMeta?.[cropName]:null;
+ return meta?.item||cropName;
+}
 function homelandObjectVisualIcon(o){
- if(o?.cropName)return homelandVisualIconForName(o.cropName);
+ if(o?.cropName)return homelandVisualIconForName(homelandPlantedOutputName(o.cropName));
  if(o?.name==='Mine'&&o?.recipeName)return '⛏️';
  if(o?.name==='Well')return '💧';
  return homelandVisualIconForName(o?.name||o?.label||'');
@@ -85,18 +104,18 @@ function homelandMiniObject(o,p,big=false){
  return `<button type="button" class="hpv2Obj big" data-hpv2-object="${o.id}" draggable="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</button>`;
 }
 function homelandPlotAddOptions(){
- const rv=+rvLevel.value;
  return catalog.filter(item=>{
-   const d=effectiveDims(item),placed=objects.filter(o=>o.name===item.name).length;
-   return isUnlocked(item)&&d.w>0&&d.h>0&&placed<maxCount(item,rv);
+   const d=effectiveDims(item);
+   return isUnlocked(item)&&d.w>0&&d.h>0;
  }).sort((a,b)=>a.cat.localeCompare(b.cat)||a.name.localeCompare(b.name));
 }
 function homelandPiecePaletteHTML(items){
- const rv=+rvLevel.value;
+ const rv=+rvLevel.value,focused=homelandPlotObjects(homelandFocusedPlot);
  return items.map(item=>{
-   const d=effectiveDims(item),placed=objects.filter(o=>o.name===item.name).length,limit=maxCount(item,rv);
+   const d=effectiveDims(item),placed=objects.filter(o=>o.name===item.name).length,focusedPlaced=focused.filter(o=>o.name===item.name).length,limit=maxCount(item,rv);
    const search=normalizeSearch(item.cat+' '+item.name+' '+d.w+'x'+d.h);
-   return `<div class="hpv2PieceCard" draggable="true" data-hpv2-piece="${esc(item.name)}" data-piece-search="${esc(search)}"><div class="hpv2PieceIcon">${esc(homelandVisualIconForName(item.name))}</div><div class="hpv2PieceInfo"><b>${esc(item.name)}</b><span>${esc(item.cat)} · ${d.w}×${d.h}</span><small>${placed} placed / ${limit} max</small></div><button type="button" data-hpv2-piece-add="${esc(item.name)}" title="Add to first legal free spot in this plot">+</button></div>`;
+   const addDisabled=placed>=limit?' disabled':'',removeDisabled=focusedPlaced<=0?' disabled':'';
+   return `<div class="hpv2PieceCard" draggable="true" data-hpv2-piece="${esc(item.name)}" data-piece-search="${esc(search)}"><div class="hpv2PieceIcon">${esc(homelandVisualIconForName(item.name))}</div><div class="hpv2PieceInfo"><b>${esc(item.name)}</b><span>${esc(item.cat)} · ${d.w}×${d.h}</span><small>${placed} placed / ${limit} max · ${focusedPlaced} in this plot</small></div><div class="hpv2PieceActions"><button type="button" data-hpv2-piece-remove="${esc(item.name)}" title="Remove one from this plot"${removeDisabled}>−</button><button type="button" data-hpv2-piece-add="${esc(item.name)}" title="Add to first legal free spot in this plot"${addDisabled}>+</button></div></div>`;
  }).join('');
 }
 function renderHomelandPlannerV2(){
@@ -130,6 +149,9 @@ function renderHomelandPlannerV2(){
  }));
  root.querySelectorAll('[data-hpv2-piece-add]').forEach(btn=>btn.addEventListener('click',()=>{
    const item=catalog.find(x=>x.name===btn.dataset.hpv2PieceAdd);if(item)addObjectToFocusedPlot(item);
+ }));
+ root.querySelectorAll('[data-hpv2-piece-remove]').forEach(btn=>btn.addEventListener('click',()=>{
+   removeObjectFromFocusedPlotByName(btn.dataset.hpv2PieceRemove||'');
  }));
  const pieceSearch=el('hpv2PieceSearch');
  pieceSearch?.addEventListener('input',()=>{
