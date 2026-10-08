@@ -603,11 +603,11 @@ function populateReferenceStationRecipes(){
   const isQuick=ref.kind==='home'&&String(ref.id).startsWith('402')&&
     !!window.HomelandLocalIcons?.quick('Quick '+info.name,ref.id);
   const wantedName=isQuick?'Quick '+info.name:info.name;
-  const legacyBase=x=>String(x||'').toLowerCase().replace(/^quick\\s+/,'').replace(/\\s*[×x]\\s*\\d+\\s*$/,'').trim();
+  const legacyBase=x=>String(x||'').toLowerCase().replace(/^quick\s+/,'').replace(/\s*[×x]\s*\d+\s*$/,'').trim();
   const sameOutput=current.filter(x=>String(x.outputItemId)===String(output.item)||legacyBase(x.name)===legacyBase(info.name));
   const existing=current.find(x=>String(x.recipeId)===String(ref.id))||
     current.find(x=>!x.reference&&x.recipeId==null&&
-      (x.name===wantedName||(!isQuick&&!/^quick\\s/i.test(x.name)&&legacyBase(x.name)===legacyBase(wantedName))))||
+      (x.name===wantedName||(!isQuick&&!/^quick\s/i.test(x.name)&&legacyBase(x.name)===legacyBase(wantedName))))||
     sameOutput.find(x=>x.reference&&Number(x.minLevel)===level&&String(x.recipeId)===String(ref.id));
   const name=existing?.name||((sameOutput.length||current.some(x=>x.name===wantedName))?wantedName+' (Lv'+level+' · #'+ref.id+')':wantedName);
   const ingredients=(ref.inputs||[]).map(x=>(getItem(x.item)?.name||'Item '+x.item)+' ×'+Number(x.qty||1)).join(' + ')||'—';
