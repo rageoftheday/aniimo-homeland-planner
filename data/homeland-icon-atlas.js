@@ -48,6 +48,13 @@
    return {id,item};
  }
  function html(idOrName,size=24){
+   const local=window.HomelandLocalIcons;
+   const localImage=local?.picture('Items',idOrName,size)||local?.picture('Recipes',idOrName,size);
+   if(localImage){
+     const fallback=find(idOrName)||find(outputItem(idOrName))||find(catalogItem(idOrName).id);
+     const underlay=fallback?sprite(fallback,size):'<span aria-hidden="true">◈</span>';
+     return '<span class="homelandIconWithFallback" style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:100%;max-width:'+Math.max(12,Math.min(64,Number(size)||24))+'px;aspect-ratio:1;overflow:hidden">'+underlay+'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">'+localImage+'</span></span>';
+   }
    const direct=find(idOrName);if(direct)return sprite(direct,size);
    const resolved=outputItem(idOrName),v=find(resolved);if(v)return sprite(v,size);
    const known=catalogItem(idOrName),knownSprite=find(known.id);if(knownSprite)return sprite(knownSprite,size);
@@ -66,6 +73,12 @@
   const [x,y]=xy.split(',').map(Number);characters[name.toLowerCase()]={name,x,y,width:64,height:64};
  }
  function character(name,size=26){
+  const local=window.HomelandLocalIcons?.picture('Aniimo',name,size);
+  if(local){
+    const fallback=characters[String(name||'').toLowerCase().trim()];
+    const underlay=fallback?sprite(fallback,size,true):'';
+    return '<span class="homelandIconWithFallback" style="position:relative;display:inline-flex;width:100%;max-width:'+Math.max(12,Math.min(64,Number(size)||26))+'px;aspect-ratio:1;overflow:hidden;border-radius:50%">'+underlay+'<span style="position:absolute;inset:0;display:flex">'+local+'</span></span>';
+  }
   const v=characters[String(name||'').toLowerCase().trim()];
   return v?sprite(v,size,true):'';
  }
