@@ -1147,6 +1147,10 @@ function renderDatabaseTab(){
  ${noWikiForms.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>No Wiki forms</td></tr>`).join('')}
  ${knownWikiGaps.length+releasedMissingWiki.length+officialMissingRoster.length+noWikiForms.length?'':'<tr><td colspan="3">No discrepancies between the loaded references.</td></tr>'}
  </tbody></table></div></div>
+ <div class="databaseSection"><div class="sectionTitle">Homeland artwork library</div>
+ <div class="small">Verified item icons from the Aniimo database sprite sheet. Unmapped catalog entries retain existing artwork fallbacks.</div>
+ <details><summary>Browse ${Object.keys(window.AniimoIconAtlas?.byId||{}).length} verified Homeland output icons</summary>
+ <div class="homelandIconGallery">${Object.values(window.AniimoIconAtlas?.byId||{}).map(item=>`<div class="homelandIconGalleryTile" title="${esc(item.name)} · ${item.id}">${window.AniimoIconAtlas.html(item.id,42)}<span>${esc(item.name)}</span><small>#${esc(item.id)}</small></div>`).join('')}</div></details></div>
  <div class="databaseSection"><div class="sectionTitle">Home Market price reconciliation</div>
  <div class="small">Public Home Market prices and locally stored HC prices can disagree. Conflicts are flagged without changing inventory totals until the matching item ID and current market value are verified.</div>
  <div class="tableWrap"><table class="dataTable"><thead><tr><th>Item ID</th><th>Item</th><th>Planner HC</th><th>Published Home Market HC</th><th>Reference</th></tr></thead><tbody>${priceConflicts.map(x=>`<tr><td><code>${esc(x.id)}</code></td><td>${esc(x.name)}</td><td>${x.local.toLocaleString()} HC</td><td>${x.market.toLocaleString()} HC</td><td><a href="${esc(x.url)}" target="_blank" rel="noopener">Review source</a></td></tr>`).join('')||'<tr><td colspan="5">No documented discrepancies.</td></tr>'}</tbody></table></div>
