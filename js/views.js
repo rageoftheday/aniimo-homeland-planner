@@ -11,6 +11,7 @@ let aniimosRankScope=localStorage.getItem('aniimosRankScope')||'all';
 // v30 tab shell and full-screen views
 let activeMainTab='dashboard';
 let rawJsonQuery='';
+let homelandPieceQuery='';
 let homelandPlannerMode=localStorage.getItem('homelandPlannerMode')||'overview';
 if(!['overview','plot','full'].includes(homelandPlannerMode))homelandPlannerMode='overview';
 let homelandFocusedPlot=Number(localStorage.getItem('homelandFocusedPlot')||1);
@@ -211,6 +212,10 @@ function renderHomelandPlannerV2(){
  const map=el('mapPane');if(!map)return;
  let root=el('homelandPlannerV2');
  if(!root){root=document.createElement('div');root.id='homelandPlannerV2';map.insertBefore(root,map.firstChild)}
+ const oldSearch=root.querySelector('#hpv2PieceSearch');
+ const searchWasFocused=!!oldSearch&&document.activeElement===oldSearch;
+ const searchCaret=searchWasFocused?oldSearch.selectionStart:null;
+ if(oldSearch)homelandPieceQuery=oldSearch.value;
  const previousFullScroll=root.querySelector('.hpv2FullScroll');
  const previousFullPosition=previousFullScroll?{left:previousFullScroll.scrollLeft,top:previousFullScroll.scrollTop}:null;
  const toolbar=map.querySelector('.toolbar'),viewport=el('mapViewport'),legend=map.querySelector('.legend');
@@ -256,10 +261,14 @@ function renderHomelandPlannerV2(){
    if(homelandPlannerMode==='full')removeOneByName(btn.dataset.hpv2PieceRemove||'');else removeObjectFromFocusedPlotByName(btn.dataset.hpv2PieceRemove||'');
  }));
  const pieceSearch=el('hpv2PieceSearch');
- pieceSearch?.addEventListener('input',()=>{
-   const q=normalizeSearch(pieceSearch.value);
-   root.querySelectorAll('[data-piece-search]').forEach(card=>{const matched=!q||String(card.dataset.pieceSearch||'').includes(q);card.hidden=!matched;card.style.display=matched?'':'none';});
- });
+ const applyPieceFilter=()=>{
+   const q=normalizeSearch(homelandPieceQuery);
+   root.querySelectorAll('[data-piece-search]').forEach(card=>{const match=!q||String(card.dataset.pieceSearch||'').includes(q);card.hidden=!match;card.style.display=match?'':'none';});
+ };
+ if(pieceSearch){pieceSearch.value=homelandPieceQuery;applyPieceFilter();
+   if(searchWasFocused){pieceSearch.focus({preventScroll:true});try{pieceSearch.setSelectionRange(searchCaret,searchCaret)}catch(_){}}
+ }
+ pieceSearch?.addEventListener('input',()=>{homelandPieceQuery=pieceSearch.value;applyPieceFilter();});
  const snapSelect=el('hpv2SnapSelect');
  snapSelect?.addEventListener('change',()=>{setHomelandBuilderSnap(snapSelect.value);renderHomelandPlannerV2();});
  root.querySelectorAll('[data-hpv2-object][draggable="true"]').forEach(obj=>obj.addEventListener('dragstart',e=>{
