@@ -9,7 +9,7 @@
   if(data.items?.[key])return key;
   const recipe=Array.isArray(data.recipes)?data.recipes.find(x=>String(x.id)===key):data.recipes?.[key];
   if(recipe?.outputs?.[0]?.item!=null)return String(recipe.outputs[0].item);
-  const normalized=slug(key).replace(/^quick_/,'').replace(/_quick$/,'');
+  const normalized=slug(key).replace(/^quick_/,'').replace(/_quick$/,'').replace(/_\d+$/,'');
   const item=Object.entries(data.items||{}).find(([,v])=>slug(v?.name)===normalized);
   return item?.[0]||key;
  }
