@@ -80,6 +80,7 @@ jobs:
           grep -Fq 'hpv2LiveWorker .homelandLocalIcon' css/app.css
           node scripts/audit-map-recipe-icons.cjs
           node scripts/audit-homebuilder-portraits.cjs
+          node scripts/audit-portrait-load-race.cjs
           node scripts/audit-id-named-aniimo-portraits.cjs
           node scripts/audit-facility-recipe-catalog.cjs
           node --check data/homeland-local-icon-bridge.js
@@ -226,7 +227,7 @@ jobs:
           grep -Fq '.hpv2WorkerBadge .homebuilderPortraitImage' css/app.css
           grep -Fq 'const live=assigned?[assigned]:[]' js/views.js
           node --check js/homebuilder-portraits.js
-          grep -Fq 'js/homebuilder-portraits.js?v=5' index.html
+          grep -Fq 'js/homebuilder-portraits.js?v=6' index.html
           node --check js/views.js
           grep -Fq ".hpv2MapLibrary" css/app.css
           grep -Fq ">Delete<" js/views.js
