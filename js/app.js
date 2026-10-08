@@ -1928,6 +1928,58 @@ function currentPlannerState(){
    aniidexImportMeta
  };
 }
+
+const HOMELAND_LAYOUT_SAVE_KEY='aniimoHomelandSavedMapLayoutV1';
+function currentHomelandMapLayout(){
+ return {
+   format:'aniimo-homeland-map-layout-v1',
+   savedAt:Date.now(),
+   objects:JSON.parse(JSON.stringify(objects)),
+   idCounter,
+   dimensionOverrides:JSON.parse(JSON.stringify(dimensionOverrides||{})),
+   placeLevelPrefs:JSON.parse(JSON.stringify(placeLevelPrefs||{}))
+ };
+}
+function findSavedHomelandMapLayout(){
+ try{
+   const raw=localStorage.getItem(HOMELAND_LAYOUT_SAVE_KEY);
+   if(!raw)return null;
+   const data=JSON.parse(raw);
+   return data&&data.format==='aniimo-homeland-map-layout-v1'&&Array.isArray(data.objects)?data:null;
+ }catch(_){return null}
+}
+function saveHomelandMapLayout(){
+ try{
+   const data=currentHomelandMapLayout();
+   localStorage.setItem(HOMELAND_LAYOUT_SAVE_KEY,JSON.stringify(data));
+   if(localStorage.getItem(HOMELAND_LAYOUT_SAVE_KEY)==null)throw new Error('Storage verification failed');
+   renderHomelandPlannerV2?.();
+   return true;
+ }catch(e){
+   alert('Could not save the map layout in this browser. '+(e?.message||e));
+   return false;
+ }
+}
+function loadHomelandMapLayout(){
+ const data=findSavedHomelandMapLayout();
+ if(!data){alert('No saved map layout was found in this browser yet.');return false}
+ if(objects.length&&!confirm('Load the saved map layout?\n\nThis replaces the pieces currently shown on the planner map, but keeps the currently loaded profile, UID, roster, RV, Aniidx data, food, storage, and other profile data.'))return false;
+ objects=JSON.parse(JSON.stringify(data.objects||[]));
+ idCounter=Number(data.idCounter)||Math.max(1,...objects.map(o=>(Number(o.id)||0)+1));
+ dimensionOverrides=JSON.parse(JSON.stringify(data.dimensionOverrides||{}));
+ placeLevelPrefs=JSON.parse(JSON.stringify(data.placeLevelPrefs||{}));
+ selected=null;
+ normalizeLegacyNames();
+ render();
+ snapshotIntoCurrentProfile?.();
+ return true;
+}
+function homelandSavedLayoutLabel(){
+ const data=findSavedHomelandMapLayout();
+ if(!data)return 'No saved map';
+ const d=new Date(Number(data.savedAt)||0);
+ return Number.isFinite(d.getTime())&&d.getTime()>0?'Saved '+d.toLocaleString():'Saved map available';
+}
 function applyPlannerState(d){
  rvLevel.value=d.rv||1;
  objects=Array.isArray(d.objects)?d.objects:[];
