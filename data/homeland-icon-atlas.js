@@ -23,7 +23,7 @@
    const n=Math.max(12,Math.min(64,Number(size)||24));
    const cls=portrait?'aniimoAtlasIcon aniimoPortraitIcon':'aniimoAtlasIcon';
    const aria=portrait?' role="img" aria-label="'+String(v.name).replace(/"/g,'&quot;')+'"':' aria-hidden="true"';
-   const crop='width:min(100%,'+n+'px);max-width:100%;aspect-ratio:1;display:inline-block;vertical-align:middle;flex:none;overflow:hidden;position:relative;'+(portrait?'border-radius:50%;':'');
+   const crop='width:100%;max-width:'+n+'px;aspect-ratio:1;display:inline-block;vertical-align:middle;flex:0 1 auto;min-width:0;min-height:0;overflow:hidden;position:relative;'+(portrait?'border-radius:50%;':'');
    // Explicit percentage sizes/offsets keep the original 64px crop at any displayed size.
    const img='position:absolute;max-width:none;width:'+(4031/64*100)+'%;height:'+(4079/64*100)+'%;left:-'+(v.x/64*100)+'%;top:-'+(v.y/64*100)+'%;pointer-events:none';
    return '<span class="'+cls+'"'+aria+' style="'+crop+'"><img src="'+url+'" alt="" loading="lazy" decoding="async" style="'+img+'"></span>';
