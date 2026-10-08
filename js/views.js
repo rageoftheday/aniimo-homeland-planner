@@ -1048,7 +1048,10 @@ function renderDatabaseTab(){
  const wikiNames=new Set((window.WikiHomeland?.speciesList?.()||[]).map(x=>releasedByDex.get(String(x.dex))||x.name));
  const officialSpecies=window.WikiHomeland?.speciesList?.()||[];
  const officialDex=new Map(officialSpecies.map(x=>[String(Number(x.dex)),x]));
- const releasedMissingWiki=(speciesData.species||[]).filter(x=>!officialDex.has(String(Number(x.dex))));
+ // These two are confirmed released in the roster and family gates; only Wiki cache coverage is absent.
+ const confirmedWithoutWiki=new Set(['030|Somniwing','10001|Irisalis']);
+ const knownWikiGaps=(speciesData.species||[]).filter(x=>confirmedWithoutWiki.has(String(x.dex)+'|'+x.name)&&!officialDex.has(String(Number(x.dex))));
+ const releasedMissingWiki=(speciesData.species||[]).filter(x=>!officialDex.has(String(Number(x.dex)))&&!confirmedWithoutWiki.has(String(x.dex)+'|'+x.name));
  const officialMissingRoster=officialSpecies.filter(x=>!(speciesData.species||[]).some(y=>Number(y.dex)===Number(x.dex)));
  const noWikiForms=(speciesData.species||[]).filter(x=>{const w=officialDex.get(String(Number(x.dex)));return !!w&&!(w.forms||[]).length;});
  const gatedStations=new Set(locks.map(([k])=>k.split('|')[0]));
@@ -1083,13 +1086,14 @@ function renderDatabaseTab(){
  </div></div><div class="databaseScroll">
  <div class="databaseSection"><div class="sectionTitle">Aniimo species &amp; forms · coverage audit</div>
  <div class="small">Released roster: ${(speciesData.species||[]).length} species · Official Wiki snapshot: ${officialSpecies.length} species and ${wiki.counts?.forms||0} forms. Official Wiki cache: ${esc(window.WikiHomeland?.summary?.().scrapedAt||'unknown')}. Compare by Dex number; updates to the game's released roster require a fresh external reference.</div>
- <div class="small">${releasedMissingWiki.length} released entries missing from Wiki snapshot · ${officialMissingRoster.length} Wiki species absent from released roster · ${noWikiForms.length} Wiki entries without listed forms.</div>
+ <div class="small">${releasedMissingWiki.length} other released entries missing from Wiki snapshot · ${knownWikiGaps.length} confirmed released Aniimo awaiting Wiki data · ${officialMissingRoster.length} Wiki species absent from released roster · ${noWikiForms.length} Wiki entries without listed forms.</div>
  <button type="button" id="aniimoSpeciesAuditExport">Download Aniimo coverage CSV</button>
  <div class="tableWrap"><table class="dataTable"><thead><tr><th>Dex</th><th>Aniimo</th><th>Issue</th></tr></thead><tbody>
- ${releasedMissingWiki.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>Missing official Wiki data / forms</td></tr>`).join('')}
+ ${knownWikiGaps.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>Confirmed released — official Wiki cache missing species/forms</td></tr>`).join('')}
+ ${releasedMissingWiki.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>Missing official Wiki reference data / forms</td></tr>`).join('')}
  ${officialMissingRoster.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>Wiki entry not in released roster — verify release</td></tr>`).join('')}
  ${noWikiForms.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>No Wiki forms</td></tr>`).join('')}
- ${releasedMissingWiki.length+officialMissingRoster.length+noWikiForms.length?'':'<tr><td colspan="3">No discrepancies between the loaded references.</td></tr>'}
+ ${knownWikiGaps.length+releasedMissingWiki.length+officialMissingRoster.length+noWikiForms.length?'':'<tr><td colspan="3">No discrepancies between the loaded references.</td></tr>'}
  </tbody></table></div></div>
  <div class="databaseSection"><div class="sectionTitle">Home Market price reconciliation</div>
  <div class="small">Public Home Market prices and locally stored HC prices can disagree. Conflicts are flagged without changing inventory totals until the matching item ID and current market value are verified.</div>
@@ -1119,7 +1123,7 @@ function renderDatabaseTab(){
  </div></div>`;
  root.querySelector('#aniimoSpeciesAuditExport')?.addEventListener('click',()=>{
   const csv=x=>'"'+String(x??'').replace(/"/g,'""')+'"';
-  const rows=[['dex','name','issue'],...releasedMissingWiki.map(x=>[x.dex,x.name,'Missing Wiki species/forms']),...officialMissingRoster.map(x=>[x.dex,x.name,'Wiki only; verify release']),...noWikiForms.map(x=>[x.dex,x.name,'No Wiki forms'])];
+  const rows=[['dex','name','issue'],...knownWikiGaps.map(x=>[x.dex,x.name,'Confirmed released; Wiki cache lacks species/forms']),...releasedMissingWiki.map(x=>[x.dex,x.name,'Missing Wiki species/forms']),...officialMissingRoster.map(x=>[x.dex,x.name,'Wiki only; verify release']),...noWikiForms.map(x=>[x.dex,x.name,'No Wiki forms'])];
   const blob=new Blob([rows.map(row=>row.map(csv).join(',')).join('\\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=url;a.download='aniimo-species-form-coverage.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
  });
