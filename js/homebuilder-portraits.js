@@ -16,8 +16,10 @@
   // Authoritative reference ID from the imported Aniimo record wins over names.
   if(manifest&&formId&&manifest.byFormId){
    if(manifest.byFormId[formId])return [manifest.byFormId[formId]];
-   window.HomebuilderMissingPortraits=window.HomebuilderMissingPortraits||new Set();
-   window.HomebuilderMissingPortraits.add(species+' — form #'+formId);
+   if(!manifest.intentionallyExcludedFormIds?.[formId]){
+    window.HomebuilderMissingPortraits=window.HomebuilderMissingPortraits||new Set();
+    window.HomebuilderMissingPortraits.add(species+' — form #'+formId);
+   }
    return [];
   }
   const names=[];
