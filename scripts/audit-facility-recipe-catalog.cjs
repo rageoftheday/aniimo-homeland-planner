@@ -42,9 +42,9 @@ for(const recipe of ref.recipes){
 }
 assert.equal(audited,179,'Non-crop reference recipe count changed');
 const sand=db['Tidewhisper Sandcastle'].filter(x=>x.reference);
-assert.deepEqual(sand.map(x=>[String(x.recipeId),x.name,Number(x.minLevel)]).sort((a,b)=>a[0].localeCompare(b[0])),[
+assert.equal(JSON.stringify(sand.map(x=>[String(x.recipeId),x.name,Number(x.minLevel)]).sort((a,b)=>a[0].localeCompare(b[0]))),JSON.stringify([
  ['4001049','Pearl',3],['4001069','Sea Salt',1],['4020060','Quick Sea Salt',2]
-]);
+]));
 assert.equal(db['Floral Windmill'].filter(x=>x.reference&&x.name==='Quick Scales').length,1,'Quick Scales not matched');
 const extras=Object.entries(db).flatMap(([station,rows])=>rows.filter(row=>!row.reference).map(row=>station+': '+row.name));
 assert(extras.every(x=>x.startsWith('Mine: ')), 'Unmatched legacy recipes: '+extras.join(', '));
