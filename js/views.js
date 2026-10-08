@@ -223,7 +223,8 @@ function homelandLiveWorkerBadges(o,q){
   const label=String(matching?.name||a.name||form.name||'Assigned Aniimo');
   const imageSrc=matching?.localPortrait||window.AniimoAssets?.portraitCandidates?.(label,matching?.form||form.form||'')?.[0]||form.head||'';
   const art=window.AniimoIconAtlas?.character(label,26);
-  return '<span class="hpv2WorkerBadge hpv2LiveWorker" data-worker-species="'+esc(label.toLowerCase().replace(/[^a-z0-9]+/g,'-'))+'" role="button" tabindex="0" title="Working here: '+esc(label)+' — click for worker selection">'+(art||(imageSrc?'<img alt="'+esc(label)+'" src="'+esc(imageSrc)+'" loading="lazy" onerror="this.style.display=\'none\'">':'<span>👤</span>'))+'</span>';
+  const preferred=window.HomebuilderPortraits?.html(matching||a,art||'');
+  return '<span class="hpv2WorkerBadge hpv2LiveWorker" data-worker-species="'+esc(label.toLowerCase().replace(/[^a-z0-9]+/g,'-'))+'" role="button" tabindex="0" title="Working here: '+esc(label)+' — click for worker selection">'+(preferred||art||(imageSrc?'<img alt="'+esc(label)+'" src="'+esc(imageSrc)+'" loading="lazy" onerror="this.style.display=\'none\'">':'<span>👤</span>'))+'</span>';
  }).join('');
 }
 function homelandObjectVisualHTML(o,big=false){
@@ -1264,4 +1265,4 @@ function renderRawJsonTab(){
  const copy=el('rawJsonCopy');if(copy)copy.onclick=async()=>{try{await navigator.clipboard.writeText(full);copy.textContent='Copied ✓';setTimeout(()=>{if(el('rawJsonCopy'))el('rawJsonCopy').textContent='Copy JSON'},1200)}catch{copy.textContent='Copy failed'}};
  const dl=el('rawJsonDownload');if(dl)dl.onclick=()=>{const blob=new Blob([full],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Aniimo_Homeland_'+String(bundle.uid||'sync')+'_raw.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);};
 }
-function renderV30Views(){renderRightQuickStats();if(activeMainTab==='map')renderHomelandPlannerV2();else if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='snapshot')renderHomeSnapshotTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='plan')renderPlanAdviceTab();else if(activeMainTab==='database')renderDatabaseTab();else if(activeMainTab==='raw')renderRawJsonTab();}
+function renderV30Views(){renderRightQuickStats();if(activeMainTab==='map')renderHomelandPlannerV2();else if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='snapshot')renderHomeSnapshotTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='plan')renderPlanAdviceTab();else if(activeMainTab==='database')renderDatabaseTab();else if(activeMainTab==='raw')renderRawJsonTab();window.HomebuilderPortraits?.hydrate();}
