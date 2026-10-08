@@ -154,8 +154,8 @@ function homelandItemArtworkId(name){
    ||explicit[key];
  return id&&/^\\d+$/.test(id)?id:null;
 }
-function homelandIllustratedIconHTML(name,cssClass='hpv2IconGlyph'){
- const fallback=esc(homelandVisualIconForName(name)),id=homelandItemArtworkId(name);
+function homelandIllustratedIconHTML(name,cssClass='hpv2IconGlyph',fallbackIcon=null){
+ const fallback=esc(fallbackIcon||homelandVisualIconForName(name)),id=homelandItemArtworkId(name);
  const fac=window.AniimoAssets?.facility?.(String(name||'').replace(/\\s*\\(level \\d+\\)$/i,''))||null;
  // Material CDN path confirmed for Cotton (4001004), not assumed available for every ID.
  const facilitySlug=String(name||'').trim().toLowerCase().replace(/\\s*\\(level \\d+\\)$/,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -229,7 +229,7 @@ function homelandPiecePaletteHTML(items){
    const d=effectiveDims(item),placed=objects.filter(o=>o.name===item.name).length,focusedPlaced=focused.filter(o=>o.name===item.name).length,limit=maxCount(item,rv);
    const search=normalizeSearch(item.cat+' '+item.name+' '+d.w+'x'+d.h);
    const addDisabled=placed>=limit?' disabled':'',removeDisabled=focusedPlaced<=0?' disabled':'';
-   return `<div class="hpv2PieceCard" draggable="true" data-hpv2-piece="${esc(item.name)}" data-piece-search="${esc(search)}"><div class="hpv2PieceIcon">${homelandIllustratedIconHTML(item.name)}</div><div class="hpv2PieceInfo"><b>${esc(item.name)}</b><span>${esc(item.cat)} · ${d.w}×${d.h}</span><small>${placed} placed / ${limit} max · ${focusedPlaced} in this plot</small></div><div class="hpv2PieceActions"><button type="button" data-hpv2-piece-remove="${esc(item.name)}" title="Remove one from this plot"${removeDisabled}>−</button><button type="button" data-hpv2-piece-add="${esc(item.name)}" title="Add to first legal free spot in this plot"${addDisabled}>+</button></div></div>`;
+   return `<div class="hpv2PieceCard" draggable="true" data-hpv2-piece="${esc(item.name)}" data-piece-search="${esc(search)}"><div class="hpv2PieceIcon">${homelandIllustratedIconHTML(item.name,"hpv2IconGlyph",homelandVisualIconForName(item.name))}</div><div class="hpv2PieceInfo"><b>${esc(item.name)}</b><span>${esc(item.cat)} · ${d.w}×${d.h}</span><small>${placed} placed / ${limit} max · ${focusedPlaced} in this plot</small></div><div class="hpv2PieceActions"><button type="button" data-hpv2-piece-remove="${esc(item.name)}" title="Remove one from this plot"${removeDisabled}>−</button><button type="button" data-hpv2-piece-add="${esc(item.name)}" title="Add to first legal free spot in this plot"${addDisabled}>+</button></div></div>`;
  }).join('');
 }
 function renderHomelandPlannerV2(){
