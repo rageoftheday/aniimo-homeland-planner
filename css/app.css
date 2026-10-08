@@ -604,3 +604,6 @@ header{align-items:center}
 
 /* Full-map-specific zoom controls, independent from the hidden legacy board toolbar. */
 .hpv2FullZoomTools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.hpv2FullZoomTools label{display:flex;align-items:center;gap:7px;font-size:11px}.hpv2FullZoomTools input{width:150px}.hpv2FullZoomTools button{min-width:34px}.hpv2FullZoomTools b{min-width:42px;text-align:center}
+
+/* Explicitly hide filtered palette cards; display:grid otherwise overrides UA [hidden]. */
+.hpv2PieceCard[hidden]{display:none!important}
