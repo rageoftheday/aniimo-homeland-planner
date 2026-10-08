@@ -185,7 +185,10 @@ function homelandLivePieceFor(o){
  const raw=aniidexImportMeta?.home?.home||aniidexImportMeta?.home||{};
  const queues=Array.isArray(raw.crops)?raw.crops:[];
  if(!queues.length||!o)return null;
- if(o.livePieceId){const linked=queues.find(q=>String(q.piece)===String(o.livePieceId));if(linked)return linked;}
+ const uid=String(aniidexImportMeta?.profile?.profile?.uid||aniidexImportMeta?.profile?.uid||raw.uid||'');
+ let linkedId=o.livePieceId;
+ if(uid){try{const stored=JSON.parse(localStorage.getItem('homeland-live-links-v1:'+uid)||'{}');linkedId=stored[o.id+'|'+o.name+'|'+o.x+','+o.y]||linkedId;}catch(e){}}
+ if(linkedId){const linked=queues.find(q=>String(q.piece)===String(linkedId)&&String(dashboardFacilityName(q.facility)).toLowerCase()===String(o.name||'').toLowerCase());if(linked)return linked;}
  const name=String(o.name||'').toLowerCase();
  const sameType=objects.filter(x=>String(x.name||'').toLowerCase()===name).sort((a,b)=>Number(a.id)-Number(b.id));
  const available=queues.filter(q=>String(dashboardFacilityName(q.facility)).toLowerCase()===name)
@@ -226,7 +229,7 @@ function homelandObjectVisualHTML(o,big=false){
  const id=q?.recipe!=null?q.recipe:null;
  const currentName=id!=null?(window.AniimoIconAtlas?.find(id)?.name||window.HomelandItemCatalog?.lookup(id,aniidexImportMeta?.catalog)?.name||''):'';
  const fallbackName=o?.cropName?homelandPlantedOutputName(o.cropName):o?.recipeName||o?.name||o?.label||'';
- const artName=currentName||fallbackName;
+ const artName=currentName||(q&&q.recipe==null?o?.name:fallbackName);
  const icon=id!=null&&window.AniimoIconAtlas?.html(id,40);
  const badges=homelandLiveWorkerBadges(o,q);
  return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${icon||homelandIllustratedIconHTML(artName)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
@@ -249,6 +252,7 @@ function setHomelandPlannerMode(mode,plot){
  renderHomelandPlannerV2();
 }
 function homelandAssignedPortraitHTML(o){
+ if(['Farmland','Woodland','Mine'].includes(o?.name))return '';
  if(!o?.workerId)return '';
  const w=typeof workers!=='undefined'?workers.find(x=>String(x.id)===String(o.workerId)):null;
  if(!w)return '';
