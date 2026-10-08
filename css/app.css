@@ -659,5 +659,8 @@ header{align-items:center}
 .hpv2WorkerBadge.hpv2LiveWorker .homelandLocalIcon{width:100%!important;max-width:none!important;max-height:none!important;height:100%!important;object-fit:cover!important;transform:scale(1.65);transform-origin:50% 24%}
 
 /* Head-first framing for original Aniimo PNGs inside map worker circles only. */
-.hpv2WorkerBadge.hpv2LiveWorker[data-worker-species="piopiota"] .homelandLocalIcon{transform:translateY(29%) scale(2.15)!important;transform-origin:50% 20%!important;object-position:50% 0%!important}
-.hpv2WorkerBadge.hpv2LiveWorker[data-worker-species="piopiota"] .homelandIconWithFallback{overflow:hidden;border-radius:50%}
+
+/* Original form-aware 190px PNGs: show complete centered face without sprite crop. */
+.hpv2WorkerBadge .homebuilderPortraitSwap{position:relative;width:100%;height:100%;display:block;overflow:hidden;border-radius:50%}
+.hpv2WorkerBadge .homebuilderPortraitFallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.hpv2WorkerBadge .homebuilderPortraitImage{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center!important;transform:none!important}
