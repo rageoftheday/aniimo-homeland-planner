@@ -2056,6 +2056,45 @@ function saveHomelandMapLayout(mapId=undefined){
    return false;
  }
 }
+// Portable standalone Homeland map import/export. Does not import or replace profiles.
+function exportHomelandMapFile(){
+ const lib=homelandMapLibrary(),current=lib.current&&lib.maps?.[lib.current],name=current?.name||'Homeland Map';
+ const payload=currentHomelandMapLayout(name);
+ payload.format='aniimo-homeland-map-v1';
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='Aniimo_Homeland_Map.json';document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function importHomelandMapFile(){
+ const input=document.createElement('input');input.type='file';input.accept='.json,application/json';
+ input.onchange=async()=>{
+  const file=input.files?.[0];if(!file)return;
+  try{
+   const data=JSON.parse(await file.text());
+   const map=data?.format==='aniimo-homeland-map-v1'?data:data?.format==='aniimo-homeland-map-library-v1'?data.maps?.[data.current]||Object.values(data.maps||{})[0]:null;
+   if(!map||!Array.isArray(map.objects))throw Error('Expected a standalone Homeland map JSON file.');
+   if(map.objects.length>1000)throw Error('Map has too many objects.');
+   const known=new Set(catalog.map(c=>c.name)),ids=new Set();
+   for(const o of map.objects){
+    if(!o||!known.has(o.name))throw Error('Unknown building: '+String(o?.name));
+    for(const key of ['x','y','w','h'])if(!Number.isFinite(Number(o[key])))throw Error('Invalid map coordinates.');
+    if(Number(o.x)<0||Number(o.y)<0||Number(o.w)<=0||Number(o.h)<=0||Number(o.x)+Number(o.w)>80.001||Number(o.y)+Number(o.h)>60.001)throw Error('Building outside the 80 × 60 map: '+o.name);
+    if(ids.has(o.id))throw Error('Duplicate building id');ids.add(o.id);
+   }
+   const name=String(map.name||file.name.replace(/\.json$/i,'')).slice(0,100);
+   const lib=homelandMapLibrary(),id=newHomelandMapId();
+   lib.maps[id]={id,name,savedAt:Date.now(),objects:JSON.parse(JSON.stringify(map.objects)),
+    idCounter:Number(map.idCounter)||Math.max(1,...map.objects.map(o=>(Number(o.id)||0)+1)),
+    maxOverrides:map.maxOverrides||{},dimensionOverrides:map.dimensionOverrides||{},placeLevelPrefs:map.placeLevelPrefs||{}};
+   lib.current=id;saveHomelandMapLibrary(lib);
+   if(objects.length&&!confirm('Import "'+name+'" as a new saved map and open it?\\n\\nThis only replaces the current map. Your profile, Aniimo roster, and imported Aniidx data remain unchanged.')){renderHomelandPlannerV2?.();return}
+   loadHomelandMapLayout(id);
+   alert('Map imported and saved locally: '+name);
+  }catch(e){alert('Could not import map: '+(e?.message||String(e)))}
+ };
+ input.click();
+}
 function loadHomelandMapLayout(mapId){
  const lib=homelandMapLibrary(),data=lib.maps?.[String(mapId||'')];
  if(!data){alert('Choose a saved map first.');return false}
