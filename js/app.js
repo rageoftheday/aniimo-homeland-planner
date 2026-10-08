@@ -2082,6 +2082,13 @@ function importHomelandMapFile(){
     if(Number(o.x)<0||Number(o.y)<0||Number(o.w)<=0||Number(o.h)<=0||Number(o.x)+Number(o.w)>80.001||Number(o.y)+Number(o.h)>60.001)throw Error('Building outside the 80 × 60 map: '+o.name);
     if(ids.has(o.id))throw Error('Duplicate building id');ids.add(o.id);
    }
+   // A valid imported map must never stack two building footprints.
+   for(let i=0;i<map.objects.length;i++)for(let j=i+1;j<map.objects.length;j++){
+    const a=map.objects[i],b=map.objects[j];
+    if(Math.min(Number(a.x)+Number(a.w),Number(b.x)+Number(b.w))>Math.max(Number(a.x),Number(b.x))+1e-7&&
+       Math.min(Number(a.y)+Number(a.h),Number(b.y)+Number(b.h))>Math.max(Number(a.y),Number(b.y))+1e-7)
+       throw Error('Overlapping buildings: #'+a.id+' '+a.name+' and #'+b.id+' '+b.name+'. Please correct the JSON before importing.');
+   }
    const name=String(map.name||file.name.replace(/\.json$/i,'')).slice(0,100);
    const lib=homelandMapLibrary(),id=newHomelandMapId();
    lib.maps[id]={id,name,savedAt:Date.now(),objects:JSON.parse(JSON.stringify(map.objects)),
