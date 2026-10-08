@@ -227,10 +227,13 @@ function homelandLiveWorkerBadges(o,q){
   const form=window.ANIIMO_ASSET_MANIFEST?.aniimoForms?.[formId]||{};
   const matching=assigned||(typeof workers!=='undefined'?workers.find(w=>String(w.id)===String(a.id)):null);
   const label=String(matching?.name||a.name||form.name||'Assigned Aniimo');
-  const imageSrc=matching?.localPortrait||window.AniimoAssets?.portraitCandidates?.(label,matching?.form||form.form||'')?.[0]||form.head||'';
-  const art=window.AniimoIconAtlas?.character(label,26);
-  const preferred=window.HomebuilderPortraits?.html(matching||a,art||'');
-  return '<span class="hpv2WorkerBadge hpv2LiveWorker" data-worker-species="'+esc(label.toLowerCase().replace(/[^a-z0-9]+/g,'-'))+'" role="button" tabindex="0" title="Working here: '+esc(label)+' — click for worker selection">'+(preferred||art||(imageSrc?'<img alt="'+esc(label)+'" src="'+esc(imageSrc)+'" loading="lazy" onerror="this.style.display=\'none\'">':'<span>👤</span>'))+'</span>';
+  // Use the verified numeric Aniimo form ID and the new circular portrait only.
+  // A missing image is handled by HomebuilderPortraits' universal placeholder.
+  const record=matching||a;
+  const rawFormId=record?.formId??record?.form_id??record?.variantId??a.formId??a.form_id??a.form;
+  const portraitWorker={...record,name:label,formId:/^\\d{6,8}$/.test(String(rawFormId||''))?String(rawFormId):undefined};
+  const preferred=window.HomebuilderPortraits?.html(portraitWorker,'')||'<img src="assets/homebuilder-aniimo-portraits/unassigned-aniimo.svg" alt="Missing Aniimo portrait">';
+  return '<span class="hpv2WorkerBadge hpv2LiveWorker" data-worker-species="'+esc(label.toLowerCase().replace(/[^a-z0-9]+/g,'-'))+'" role="button" tabindex="0" title="Working here: '+esc(label)+' — click for worker selection">'+preferred+'</span>';
  }).join('');
 }
 function homelandObjectVisualHTML(o,big=false){
