@@ -48,6 +48,9 @@
    return {id,item};
  }
  function html(idOrName,size=24){
+   const local=window.HomelandLocalIcons;
+   const localImage=local?.picture('Items',idOrName,size)||local?.picture('Recipes',idOrName,size);
+   if(localImage)return localImage;
    const direct=find(idOrName);if(direct)return sprite(direct,size);
    const resolved=outputItem(idOrName),v=find(resolved);if(v)return sprite(v,size);
    const known=catalogItem(idOrName),knownSprite=find(known.id);if(knownSprite)return sprite(knownSprite,size);
@@ -66,6 +69,8 @@
   const [x,y]=xy.split(',').map(Number);characters[name.toLowerCase()]={name,x,y,width:64,height:64};
  }
  function character(name,size=26){
+  const local=window.HomelandLocalIcons?.picture('Aniimo',name,size);
+  if(local)return local;
   const v=characters[String(name||'').toLowerCase().trim()];
   return v?sprite(v,size,true):'';
  }
