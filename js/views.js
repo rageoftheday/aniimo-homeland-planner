@@ -213,11 +213,13 @@ function homelandLiveWorkersFor(o,q){
  return (Array.isArray(raw.aniimo)?raw.aniimo:[]).filter(a=>a.piece!=null&&String(a.piece)===String(q.piece));
 }
 function homelandLiveWorkerBadges(o,q){
- const live=homelandLiveWorkersFor(o,q);
+ // A manually selected Aniimo overrides the stale imported live worker.
+ const assigned=o?.workerId&&typeof workers!=='undefined'?workers.find(w=>String(w.id)===String(o.workerId)):null;
+ const live=assigned?[assigned]:homelandLiveWorkersFor(o,q);
  return live.map(a=>{
   const formId=String(a.form||'');
   const form=window.ANIIMO_ASSET_MANIFEST?.aniimoForms?.[formId]||{};
-  const matching=typeof workers!=='undefined'?workers.find(w=>String(w.id)===String(a.id)):null;
+  const matching=assigned||(typeof workers!=='undefined'?workers.find(w=>String(w.id)===String(a.id)):null);
   const label=String(matching?.name||a.name||form.name||'Assigned Aniimo');
   const imageSrc=matching?.localPortrait||window.AniimoAssets?.portraitCandidates?.(label,matching?.form||form.form||'')?.[0]||form.head||'';
   const art=window.AniimoIconAtlas?.character(label,26);
@@ -278,7 +280,7 @@ function homelandMiniObject(o,p,big=false){
  const l=big&&p.full?o.x:Math.max(0,o.x-p.x),t=big&&p.full?o.y:Math.max(0,o.y-p.y);
  const title=homelandObjectTitle(o),lv=homelandObjectLevel(o);
  const style=p.full?`left:${l/80*100}%;top:${t/60*100}%;width:${o.w/80*100}%;height:${o.h/60*100}%`:`left:${l/20*100}%;top:${t/15*100}%;width:${Math.min(o.w,20)/20*100}%;height:${Math.min(o.h,15)/15*100}%`;
- const visual=homelandObjectVisualHTML(o,big)+(homelandLiveWorkersFor(o,homelandLivePieceFor(o)).length?'':homelandAssignedPortraitHTML(o));
+ const visual=homelandObjectVisualHTML(o,big);
  if(!big)return `<div class="hpv2Obj preview" aria-hidden="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</div>`;
  return `<button type="button" class="hpv2Obj big" data-hpv2-object="${o.id}" aria-pressed="${selected===o.id}" draggable="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</button>`;
 }
