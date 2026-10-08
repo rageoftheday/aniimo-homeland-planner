@@ -74,6 +74,9 @@ jobs:
           test -s js/dom.js
           test -s js/importer.js
           test -s js/views.js
+          test -s data/homeland-icon-atlas.js
+          node --check data/homeland-icon-atlas.js
+          grep -q 'data/homeland-icon-atlas.js?v=1' index.html
           test -s js/home-snapshot.js
           test -s data/embedded-aniidex-catalog.js
           test -s data/egg-reference.js
@@ -94,9 +97,9 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.23.9' index.html
-          grep -q 'js/views.js?v=30.23.10' index.html
-          grep -q 'js/home-snapshot.js?v=8' index.html
+          grep -q 'css/app.css?v=30.23.10' index.html
+          grep -q 'js/views.js?v=30.23.11' index.html
+          grep -q 'js/home-snapshot.js?v=9' index.html
           grep -q 'js/importer.js?v=30.15.5' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
@@ -144,7 +147,7 @@ jobs:
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
-          grep -q 'js/app.js?v=30.21.12' index.html
+          grep -q 'js/app.js?v=30.21.13' index.html
           grep -q 'data-tab="aniimos"' index.html
           grep -q 'id="aniimosPane"' index.html
           grep -q 'Backup ▾' index.html
