@@ -217,7 +217,8 @@ function homelandLiveWorkerBadges(o,q){
   const matching=typeof workers!=='undefined'?workers.find(w=>String(w.id)===String(a.id)):null;
   const label=String(matching?.name||a.name||form.name||'Assigned Aniimo');
   const imageSrc=matching?.localPortrait||window.AniimoAssets?.portraitCandidates?.(label,matching?.form||form.form||'')?.[0]||form.head||'';
-  return '<span class="hpv2WorkerBadge hpv2LiveWorker" role="button" tabindex="0" title="Working here: '+esc(label)+' — click for worker selection">'+(imageSrc?'<img alt="'+esc(label)+'" src="'+esc(imageSrc)+'" loading="lazy" onerror="this.style.display=\'none\'">':'<span>👤</span>')+'</span>';
+  const art=window.AniimoIconAtlas?.character(label,26);
+  return '<span class="hpv2WorkerBadge hpv2LiveWorker" role="button" tabindex="0" title="Working here: '+esc(label)+' — click for worker selection">'+(art||(imageSrc?'<img alt="'+esc(label)+'" src="'+esc(imageSrc)+'" loading="lazy" onerror="this.style.display=\'none\'">':'<span>👤</span>'))+'</span>';
  }).join('');
 }
 function homelandObjectVisualHTML(o,big=false){
