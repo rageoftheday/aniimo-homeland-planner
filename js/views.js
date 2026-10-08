@@ -155,7 +155,7 @@ function homelandItemArtworkId(name){
  return id&&/^\\d+$/.test(id)?id:null;
 }
 function homelandIllustratedIconHTML(name,cssClass='hpv2IconGlyph',fallbackIcon=null){
- const mapped=window.AniimoIconAtlas?.html(name,40);
+ const mapped=window.AniimoIconAtlas?.html(name,40) || window.AniimoIconAtlas?.html(homelandItemArtworkId(name),40);
  if(mapped)return '<span class="'+cssClass+' hpv2ArtHolder">'+mapped+'</span>';
  const fallback=esc(fallbackIcon||homelandVisualIconForName(name)),id=homelandItemArtworkId(name);
  const fac=window.AniimoAssets?.facility?.(String(name||'').replace(/\\s*\\(level \\d+\\)$/i,''))||null;
@@ -231,8 +231,9 @@ function homelandObjectVisualHTML(o,big=false){
  const fallbackName=o?.cropName?homelandPlantedOutputName(o.cropName):o?.recipeName||o?.name||o?.label||'';
  const artName=currentName||(q&&q.recipe==null?o?.name:fallbackName);
  const icon=id!=null&&window.AniimoIconAtlas?.html(id,40);
+ const planned=o?.recipeName?window.AniimoIconAtlas?.html(o.recipeName,40):'';
  const badges=homelandLiveWorkerBadges(o,q);
- return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${icon||homelandIllustratedIconHTML(artName)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
+ return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${icon||planned||homelandIllustratedIconHTML(artName)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
 }
 function homelandPlotRole(n){
  const rows=homelandPlotObjects(n);if(!rows.length)return 'Purchased';
