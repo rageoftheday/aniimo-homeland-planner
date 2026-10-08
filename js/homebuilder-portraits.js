@@ -5,7 +5,10 @@
  const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const clean=s=>String(s??'').trim().replace(/\s+/g,' ');
  const formPart=s=>clean(s).replace(/\s+form$/i,'').replace(/^base(?:\s+form)?$/i,'').replace(/^normal$/i,'');
- const path=name=>'assets/homebuilder-aniimo-portraits/'+encodeURIComponent(name)+'.png';
+ const slug=s=>clean(s).normalize('NFKD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+ const path=name=>'assets/homebuilder-aniimo-portraits/'+slug(name)+'.png';
+ let manifest=null;
+ fetch('data/homebuilder-aniimo-portraits.json?v=1').then(r=>r.ok?r.json():null).then(m=>{manifest=m;window.HomebuilderPortraits?.hydrate(document);}).catch(()=>{});
  function candidates(worker){
   const species=clean(worker?.name),form=formPart(worker?.form),appearance=formPart(worker?.appearance);
   if(!species)return [];
@@ -16,7 +19,7 @@
    else names.push(v+' '+species);
   }
   names.push(species);
-  return [...new Set(names)].map(path);
+  return [...new Set(names)].map(n=>manifest?.assets?.[slug(n)]||path(n));
  }
  function html(worker,fallback){
   const paths=candidates(worker);
