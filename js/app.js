@@ -583,7 +583,7 @@ const recipeDB={
 // Preserve legacy names for saved layouts and add distinct level/recipe-ID variants.
 const HOMELAND_FAMILY_BY_ID={1017:'susuta',1019:'shelly',1026:'nimbi',1021:'iris',1035:'dewy',1001:'celestis',1023:'flutternym'};
 const HOMELAND_REFERENCE_RECIPE_IDS=new Set();
-(function populateReferenceStationRecipes(){
+function populateReferenceStationRecipes(){
  const data=window.HOMELAND_REFERENCE_DATA;
  if(!data?.recipes||!data?.facilities)return;
  const stations=new Map(data.facilities.map(f=>[String(f.type),f]));
