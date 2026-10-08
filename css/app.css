@@ -579,3 +579,12 @@ header{align-items:center}
 .snapshotStorageSummary span{font-size:10px;color:var(--muted)}
 .snapshotStorageSummary b{font-size:15px}
 @media(max-width:900px){.snapshotStorageSummary{grid-template-columns:1fr}}
+
+/* Aniimo assignments on map tiles and inspector */
+.hpv2Obj{position:absolute}
+.hpv2WorkerBadge{position:absolute;right:3px;bottom:3px;display:flex;align-items:center;justify-content:center;width:clamp(15px,22%,35px);aspect-ratio:1;border-radius:50%;background:#253c4b;border:2px solid #e5f9ff;overflow:hidden;box-shadow:0 1px 5px #0007;pointer-events:none;z-index:3}
+.hpv2WorkerBadge img{width:100%;height:100%;object-fit:cover}
+.hpv2AssignedPreview{display:flex;align-items:center;gap:9px;padding:8px 0}
+.hpv2AssignedPreview img{width:46px;height:46px;object-fit:contain;border:1px solid #476175;border-radius:50%;background:#233849}
+.hpv2AssignedPreview span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.hpv2AssignedPreview small{color:#9ab8cb}
