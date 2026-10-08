@@ -1946,6 +1946,72 @@ function applyPlannerState(d){
  normalizeLegacyNames();
  render();
 }
+const HOMELAND_LAYOUT_SAVE_PREFIX='aniimoHomelandLayoutV1:';
+function homelandLayoutProfileIdentity(){
+ const uid=String(aniidexImportMeta?.uid||'').trim();
+ if(uid)return {kind:'uid',id:uid};
+ const profileId=String(profileStore?.current||'default');
+ return {kind:'profile',id:profileId};
+}
+function homelandLayoutStorageKey(){
+ const who=homelandLayoutProfileIdentity();
+ return HOMELAND_LAYOUT_SAVE_PREFIX+who.kind+':'+who.id;
+}
+function homelandLayoutSnapshot(){
+ return {
+   format:'aniimo-homeland-layout-v1',
+   savedAt:Date.now(),
+   profile:homelandLayoutProfileIdentity(),
+   objects:JSON.parse(JSON.stringify(objects)),
+   idCounter,
+   maxOverrides:JSON.parse(JSON.stringify(maxOverrides||{})),
+   dimensionOverrides:JSON.parse(JSON.stringify(dimensionOverrides||{})),
+   placeLevelPrefs:JSON.parse(JSON.stringify(placeLevelPrefs||{}))
+ };
+}
+function homelandSavedLayout(){
+ try{
+   const raw=localStorage.getItem(homelandLayoutStorageKey());
+   if(!raw)return null;
+   const d=JSON.parse(raw);
+   return d&&d.format==='aniimo-homeland-layout-v1'&&Array.isArray(d.objects)?d:null;
+ }catch(_){return null}
+}
+function homelandLayoutStatusText(){
+ const d=homelandSavedLayout();
+ if(!d)return 'No browser save for this profile';
+ const when=new Date(Number(d.savedAt)||0);
+ return 'Saved in browser'+(Number.isFinite(when.getTime())?' • '+when.toLocaleString():'');
+}
+function saveHomelandBrowserLayout(){
+ const prior=homelandSavedLayout();
+ if(prior&&!confirm('Replace the saved browser layout for this profile?'))return false;
+ try{
+   const data=homelandLayoutSnapshot(),raw=JSON.stringify(data),key=homelandLayoutStorageKey();
+   localStorage.setItem(key,raw);
+   if(localStorage.getItem(key)!==raw)throw new Error('Browser storage verification failed');
+   render();
+   return true;
+ }catch(err){
+   alert('Could not save this layout in the browser: '+(err?.message||err));
+   return false;
+ }
+}
+function loadHomelandBrowserLayout(){
+ const d=homelandSavedLayout();
+ if(!d){alert('No browser-saved layout exists for this profile yet.');return false}
+ if(objects.length&&!confirm('Load the browser-saved layout for this profile?\n\nThis will replace the current map placement, but it will not replace the imported Aniidx profile, roster, RV, or UID.'))return false;
+ objects=JSON.parse(JSON.stringify(d.objects||[]));
+ idCounter=Number(d.idCounter)||Math.max(1,...objects.map(o=>(Number(o.id)||0)+1));
+ maxOverrides=JSON.parse(JSON.stringify(d.maxOverrides||{}));
+ dimensionOverrides=JSON.parse(JSON.stringify(d.dimensionOverrides||{}));
+ placeLevelPrefs=JSON.parse(JSON.stringify(d.placeLevelPrefs||{}));
+ selected=null;
+ normalizeLegacyNames();
+ render();
+ snapshotIntoCurrentProfile();
+ return true;
+}
 function tryBrowserSave(){
  const payload=JSON.stringify(currentPlannerState());
  localStorage.setItem(STABLE_SAVE_KEY,payload);
