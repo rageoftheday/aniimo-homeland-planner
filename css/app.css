@@ -618,3 +618,9 @@ header{align-items:center}
 .hpv2ArtImg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1;border-radius:inherit;pointer-events:none}
 .hpv2PieceIcon .hpv2ArtHolder{width:100%;height:100%;font-size:19px}
 .hpv2IconCircle:has(.hpv2ArtImg){background:rgba(32,55,64,.91)}
+
+/* Linked live worker chips remain inside their building and can open worker controls. */
+.hpv2WorkerBadge.hpv2LiveWorker{pointer-events:auto;cursor:pointer;outline-offset:2px}
+.hpv2WorkerBadge.hpv2LiveWorker:focus-visible{outline:2px solid #fff}
+.hpv2WorkerBadge .aniimoPortraitIcon{display:block!important;max-width:100%;max-height:100%}
+.aniimoAtlasIcon{vertical-align:middle;flex-shrink:0}
