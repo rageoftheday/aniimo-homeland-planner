@@ -25,7 +25,7 @@ for(const {name,form} of catalog){
 assert.deepEqual(missingSpecific,['Thornblade — Rainstorm Form'],'Review new unillustrated catalog variants');
 const loader=fs.readFileSync('js/homebuilder-portraits.js','utf8');
 assert(loader.includes('manifest?.assets?.[key]'),'Manifest lookup must be exact');
-assert(loader.includes('homebuilderPortraitFallback" aria-hidden="true">👤'),'Legacy sprites must not appear');
+assert(loader.includes('assets/homebuilder-aniimo-portraits/unassigned-aniimo.svg'),'Missing artwork must use the universal Aniimo placeholder');
 const view=fs.readFileSync('js/views.js','utf8');
 assert(view.includes('const live=assigned?[assigned]:[];'),'Unassigned map objects must have no badges');
 console.log('Circular portrait audit PASS: 208 valid PNGs, '+catalog.length+' built-in Aniimo entries, 1 missing form-specific variant (Rainstorm Thornblade).');
