@@ -18,13 +18,17 @@
  byName['quick sea salt']=byName['sea salt'];
  const special=(name)=>String(name||'').toLowerCase().trim().replace(/\s*\(quick\)$/,'').replace(/^quick /,'');
  function find(idOrName){return byId[String(idOrName)]||byName[special(idOrName)]||null;}
- function html(idOrName,size=24){
-   const v=find(idOrName);if(!v)return '';
+ // Percentage-based crop follows the actual tile width, including tiny farmland.
+ function sprite(v,size,portrait=false){
    const n=Math.max(12,Math.min(64,Number(size)||24));
-   // object-position is measured in source pixels, so scale the full image explicitly.
-   const scale=n/64;
-   return '<span class="aniimoAtlasIcon" aria-hidden="true" style="width:'+n+'px;height:'+n+'px;display:inline-block;vertical-align:middle;flex:none;overflow:hidden;position:relative"><img src="'+url+'" alt="" loading="lazy" decoding="async" style="position:absolute;max-width:none;width:'+(4031*scale)+'px;height:'+(4079*scale)+'px;left:-'+(v.x*scale)+'px;top:-'+(v.y*scale)+'px"></span>';
+   const cls=portrait?'aniimoAtlasIcon aniimoPortraitIcon':'aniimoAtlasIcon';
+   const aria=portrait?' role="img" aria-label="'+String(v.name).replace(/"/g,'&quot;')+'"':' aria-hidden="true"';
+   const crop='width:min(100%,'+n+'px);max-width:100%;aspect-ratio:1;display:inline-block;vertical-align:middle;flex:none;overflow:hidden;position:relative;'+(portrait?'border-radius:50%;':'');
+   // Explicit percentage sizes/offsets keep the original 64px crop at any displayed size.
+   const img='position:absolute;max-width:none;width:'+(4031/64*100)+'%;height:'+(4079/64*100)+'%;left:-'+(v.x/64*100)+'%;top:-'+(v.y/64*100)+'%;pointer-events:none';
+   return '<span class="'+cls+'"'+aria+' style="'+crop+'"><img src="'+url+'" alt="" loading="lazy" decoding="async" style="'+img+'"></span>';
  }
+ function html(idOrName,size=24){const v=find(idOrName);return v?sprite(v,size):'';}
  const charRows="Celestis:3962,134 Stellarys:1322,200 Helmut:398,200 Pawney:992,200 Rookey:1124,200 Wisptis:1454,200 Ignitis:728,200 Inferlupa:926,200 Hexxin:596,200 Dreaple:68,200 Dewy:2,200 Fragrancier:134,200 Helmwhelp:2840,134 Helgon:2708,134 Jawling:2972,134 Chirpi:68,68 Tromber:3368,134 Cornet:266,68 Tubster:3566,134 Flutternym:2444,134 Gracewing:1454,134 Nimbi:3104,134 Turbo:3764,134 Eko:2378,134 Eklue:2312,134 Infergon:3896,266 Emberpup:2774,2 Flameruff:3236,2 Scorchhowl:3566,2 Lavazar:3434,2 Magmarex:3500,2 Sparki:3698,2 Flamerion:2972,2 Squarrel:3962,2 Squashel:2,68 Fulmintis:662,332 Besauce:1850,332 Bulbly:3698,68 Veilfloat:134,134 Luminelle:3896,68 Bolty:3566,68 Blazen:3500,68 Fentuft:3830,68 Fenmane:3764,68 Dazmand:3698,398 Skippy:1256,68 Pranky:926,68 Susuta:1454,68 Popota:794,68 Piopiota:662,68 Panpanta:596,68 Shelly:1190,68 Sheldon:1124,68 Sherro:2,134 Jabster:3170,398 Fahloo:530,68 Erlath:464,68 Glacy:530,134 Bonesky:200,134 Fenrier:332,134 Glynsera:200,200 Geoclaw:464,134 Leafy:2642,68 Budclaw:992,134 Shrubclaw:1916,134 Hummin:1718,68 Tuckin:3368,68 Iris:1850,68 Irisal:2246,68 Irisalis:794,398 Somniwing:1454,398 Budsquire:1586,68 Thornblade:3170,68 Melloblum:2708,68 Pomegg:2906,68 Pomawk:2774,68 Morphling:1520,398 Pebbling:1850,134 Geodeback:1388,134 Minespine:1784,134 Cozite:1256,134 Bailite:728,134 Baleetle:794,134 Waleetle:2180,134 Bouldus:926,134 Cubbo:1322,134 Grizbo:1718,134 Helion:2906,398 Soleon:2972,398 Lunara:3038,398 Fennelun:3104,398";
  const characters={};
  for(const piece of charRows.split(' ')){
@@ -32,9 +36,8 @@
   const [x,y]=xy.split(',').map(Number);characters[name.toLowerCase()]={name,x,y,width:64,height:64};
  }
  function character(name,size=26){
-  const v=characters[String(name||'').toLowerCase().trim()];if(!v)return '';
-  const n=Math.max(12,Math.min(64,Number(size)||26)),scale=n/64;
-  return '<span class="aniimoAtlasIcon aniimoPortraitIcon" role="img" aria-label="'+v.name+'" style="display:inline-block;position:relative;overflow:hidden;flex:none;width:'+n+'px;height:'+n+'px;border-radius:50%;vertical-align:middle"><img src="'+url+'" alt="" loading="lazy" style="position:absolute;max-width:none;width:'+(4031*scale)+'px;height:'+(4079*scale)+'px;left:-'+(v.x*scale)+'px;top:-'+(v.y*scale)+'px"></span>';
+  const v=characters[String(name||'').toLowerCase().trim()];
+  return v?sprite(v,size,true):'';
  }
  window.AniimoIconAtlas={url,byId,byName,find,html,characters,character};
 })();
