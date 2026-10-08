@@ -155,6 +155,8 @@ function homelandItemArtworkId(name){
  return id&&/^\\d+$/.test(id)?id:null;
 }
 function homelandIllustratedIconHTML(name,cssClass='hpv2IconGlyph',fallbackIcon=null){
+ const mapped=window.AniimoIconAtlas?.html(name,40);
+ if(mapped)return '<span class="'+cssClass+' hpv2ArtHolder">'+mapped+'</span>';
  const fallback=esc(fallbackIcon||homelandVisualIconForName(name)),id=homelandItemArtworkId(name);
  const fac=window.AniimoAssets?.facility?.(String(name||'').replace(/\\s*\\(level \\d+\\)$/i,''))||null;
  // Material CDN path confirmed for Cotton (4001004), not assumed available for every ID.
@@ -178,10 +180,59 @@ function homelandObjectLevel(o){
  const v=Number(o?.facilityLevel||o?.placedLevel||0);
  return Number.isFinite(v)&&v>0?v:null;
 }
+// Live piece records link product and Aniimo by the same in-game piece number.
+function homelandLivePieceFor(o){
+ const raw=aniidexImportMeta?.home?.home||aniidexImportMeta?.home||{};
+ const queues=Array.isArray(raw.crops)?raw.crops:[];
+ if(!queues.length||!o)return null;
+ const uid=String(aniidexImportMeta?.profile?.profile?.uid||aniidexImportMeta?.profile?.uid||raw.uid||'');
+ let linkedId=o.livePieceId;
+ if(uid){try{const stored=JSON.parse(localStorage.getItem('homeland-live-links-v1:'+uid)||'{}');linkedId=stored[o.id+'|'+o.name+'|'+o.x+','+o.y]||linkedId;}catch(e){}}
+ if(linkedId){const linked=queues.find(q=>String(q.piece)===String(linkedId)&&String(dashboardFacilityName(q.facility)).toLowerCase()===String(o.name||'').toLowerCase());if(linked)return linked;}
+ const name=String(o.name||'').toLowerCase();
+ const sameType=objects.filter(x=>String(x.name||'').toLowerCase()===name).sort((a,b)=>Number(a.id)-Number(b.id));
+ const available=queues.filter(q=>String(dashboardFacilityName(q.facility)).toLowerCase()===name)
+   .sort((a,b)=>Number(a.piece)-Number(b.piece));
+ if(!available.length)return null;
+ const used=new Set();
+ const index=sameType.indexOf(o);
+ const sameLevel=available.filter(q=>Number(q.level)===Number(o.facilityLevel||o.placedLevel||0));
+ const pool=sameLevel.length>=sameType.filter(x=>Number(x.facilityLevel||x.placedLevel||0)===Number(o.facilityLevel||o.placedLevel||0)).length?sameLevel:available;
+ const matchOutput=(q)=>String(window.HomelandItemCatalog?.lookup(q.recipe,aniidexImportMeta?.catalog)?.name||window.AniimoIconAtlas?.find(q.recipe)?.name||'').toLowerCase();
+ for(const prev of sameType.slice(0,index)){
+   const prevExpected=String(prev.cropName||prev.recipeName||'').toLowerCase().replace(/\s*\(quick\)$/,'');
+   const candidate=pool.find(q=>!used.has(q.piece)&&(prevExpected&&matchOutput(q)===prevExpected));
+   const taken=candidate||pool.find(q=>!used.has(q.piece));if(taken)used.add(taken.piece);
+ }
+ const expected=String(o.cropName||o.recipeName||'').toLowerCase().replace(/\s*\(quick\)$/,'');
+ return pool.find(q=>!used.has(q.piece)&&expected&&matchOutput(q)===expected)||pool.find(q=>!used.has(q.piece))||null;
+}
+function homelandLiveWorkersFor(o,q){
+ if(!q||['Farmland','Woodland','Mine'].includes(o?.name))return [];
+ const raw=aniidexImportMeta?.home?.home||aniidexImportMeta?.home||{};
+ return (Array.isArray(raw.aniimo)?raw.aniimo:[]).filter(a=>a.piece!=null&&String(a.piece)===String(q.piece));
+}
+function homelandLiveWorkerBadges(o,q){
+ const live=homelandLiveWorkersFor(o,q);
+ return live.map(a=>{
+  const formId=String(a.form||'');
+  const form=window.ANIIMO_ASSET_MANIFEST?.aniimoForms?.[formId]||{};
+  const matching=typeof workers!=='undefined'?workers.find(w=>String(w.id)===String(a.id)):null;
+  const label=String(matching?.name||a.name||form.name||'Assigned Aniimo');
+  const imageSrc=matching?.localPortrait||window.AniimoAssets?.portraitCandidates?.(label,matching?.form||form.form||'')?.[0]||form.head||'';
+  const art=window.AniimoIconAtlas?.character(label,26);
+  return '<span class="hpv2WorkerBadge hpv2LiveWorker" role="button" tabindex="0" title="Working here: '+esc(label)+' — click for worker selection">'+(art||(imageSrc?'<img alt="'+esc(label)+'" src="'+esc(imageSrc)+'" loading="lazy" onerror="this.style.display=\'none\'">':'<span>👤</span>'))+'</span>';
+ }).join('');
+}
 function homelandObjectVisualHTML(o,big=false){
- const lv=homelandObjectLevel(o);
- const artName=o?.cropName?homelandPlantedOutputName(o.cropName):o?.name||o?.label||"";
- return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${homelandIllustratedIconHTML(artName)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}</span>`;
+ const lv=homelandObjectLevel(o),q=homelandLivePieceFor(o);
+ const id=q?.recipe!=null?q.recipe:null;
+ const currentName=id!=null?(window.AniimoIconAtlas?.find(id)?.name||window.HomelandItemCatalog?.lookup(id,aniidexImportMeta?.catalog)?.name||''):'';
+ const fallbackName=o?.cropName?homelandPlantedOutputName(o.cropName):o?.recipeName||o?.name||o?.label||'';
+ const artName=currentName||(q&&q.recipe==null?o?.name:fallbackName);
+ const icon=id!=null&&window.AniimoIconAtlas?.html(id,40);
+ const badges=homelandLiveWorkerBadges(o,q);
+ return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${icon||homelandIllustratedIconHTML(artName)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
 }
 function homelandPlotRole(n){
  const rows=homelandPlotObjects(n);if(!rows.length)return 'Purchased';
@@ -201,6 +252,7 @@ function setHomelandPlannerMode(mode,plot){
  renderHomelandPlannerV2();
 }
 function homelandAssignedPortraitHTML(o){
+ if(['Farmland','Woodland','Mine'].includes(o?.name))return '';
  if(!o?.workerId)return '';
  const w=typeof workers!=='undefined'?workers.find(x=>String(x.id)===String(o.workerId)):null;
  if(!w)return '';
@@ -213,7 +265,7 @@ function homelandMiniObject(o,p,big=false){
  const l=big&&p.full?o.x:Math.max(0,o.x-p.x),t=big&&p.full?o.y:Math.max(0,o.y-p.y);
  const title=homelandObjectTitle(o),lv=homelandObjectLevel(o);
  const style=p.full?`left:${l/80*100}%;top:${t/60*100}%;width:${o.w/80*100}%;height:${o.h/60*100}%`:`left:${l/20*100}%;top:${t/15*100}%;width:${Math.min(o.w,20)/20*100}%;height:${Math.min(o.h,15)/15*100}%`;
- const visual=homelandObjectVisualHTML(o,big)+homelandAssignedPortraitHTML(o);
+ const visual=homelandObjectVisualHTML(o,big)+(homelandLiveWorkersFor(o,homelandLivePieceFor(o)).length?'':homelandAssignedPortraitHTML(o));
  if(!big)return `<div class="hpv2Obj preview" aria-hidden="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</div>`;
  return `<button type="button" class="hpv2Obj big" data-hpv2-object="${o.id}" aria-pressed="${selected===o.id}" draggable="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</button>`;
 }
@@ -271,7 +323,7 @@ function renderHomelandPlannerV2(){
    const scroll=root.querySelector('.hpv2FullScroll');if(previousFullPosition&&scroll){scroll.scrollLeft=previousFullPosition.left;scroll.scrollTop=previousFullPosition.top;}
  }
  root.querySelectorAll('[data-hpv2-plot]').forEach(b=>b.addEventListener('click',()=>setHomelandPlannerMode('plot',b.dataset.hpv2Plot)));
- root.querySelectorAll('[data-hpv2-object]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();selected=Number(b.dataset.hpv2Object);render();}));
+ root.querySelectorAll('[data-hpv2-object]').forEach(b=>b.addEventListener('click',e=>{const workerClicked=!!e.target.closest('.hpv2LiveWorker');e.stopPropagation();selected=Number(b.dataset.hpv2Object);render();if(workerClicked)document.getElementById('actualWorkerSelect')?.focus();}));
  root.querySelectorAll('[data-hpv2-locked]').forEach(b=>b.addEventListener('click',()=>{const n=Number(b.dataset.hpv2Locked),u=HOMELAND_PLOT_UNLOCKS[n]||{};b.title=`Plot ${n}: unlock reference RV ${u.rv||'—'}, ${Number(u.cost||0).toLocaleString()} HC`;}));
  root.querySelectorAll('[data-hpv2-piece]').forEach(card=>card.addEventListener('dragstart',e=>{
    const name=card.dataset.hpv2Piece||'',item=catalog.find(x=>x.name===name),d=item?effectiveDims(item):null;
@@ -581,7 +633,7 @@ function fullRecipeRows(){
    const sellRaw=p.facts?.items?.[String(out.item??r.id)]?.sell;
    const supplementalSell=window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE?.entries?.[String(out.item??r.id)]?.sell;
    const sell=window.HomelandItemCatalog?.lookup(out.item??r.id,aniidexImportMeta?.catalog)?.sell??sellRaw??supplementalSell??null;
-   return {id:r.id,station,name,rv:recipeFacilityRv(r.facility,r.minLevel,p),level:Number(r.minLevel||1),kind:r.kind||'work',ingredients,work:r.workload??r.time??0,ability,abilityLevel,sell,family:HOMELAND_REFERENCE_FAMILY_IDS[r.steps?.find(x=>x.family)?.family]||null,plannerAvailable:plannerRecipeMatch(station,name)};
+   return {id:r.id,outputId:out.item??null,station,name,rv:recipeFacilityRv(r.facility,r.minLevel,p),level:Number(r.minLevel||1),kind:r.kind||'work',ingredients,work:r.workload??r.time??0,ability,abilityLevel,sell,family:HOMELAND_REFERENCE_FAMILY_IDS[r.steps?.find(x=>x.family)?.family]||null,plannerAvailable:plannerRecipeMatch(station,name)};
   })};
  }
  let rows=[];for(const [station,list] of Object.entries(recipeDB)){const sr=STATION_RULES[station]||{};for(const r of list)rows.push({station,name:r.name,rv:r.rv||1,level:1,kind:r.mode||'work',ingredients:r.ingredients||'—',work:r.work||0,ability:sr.ability||'—',abilityLevel:r.rec||1,sell:r.sell??null,family:FAMILY_RECIPE_RULES[station+'|'+r.name]?.family||null,plannerAvailable:true})}
@@ -603,7 +655,7 @@ function renderProductionTab(){
   const q=normalizeSearch(el('prodSearch').value),cur=el('prodRvFilter').value,coverage=el('prodPlannerFilter').value;
   const f=rows.filter(x=>(cur!=='current'||x.rv<=+rvLevel.value)&&(activeRecipeType==='all'||x.kind===activeRecipeType)&&(coverage==='all'||x.plannerAvailable===(coverage==='yes'))&&(!q||normalizeSearch(x.station+' '+x.name+' '+x.ingredients+' '+x.id+' '+x.ability).includes(q)));
   const sectionLabel=activeRecipeType==='all'?'All Recipes':recipeTypeLabel(activeRecipeType);
-  el('prodRecipeTable').innerHTML=`<div class="small" style="padding:7px 2px"><b>${esc(sectionLabel)}</b> · ${f.length.toLocaleString()} shown${q||cur!=='all'?' after filters':''}</div><table class="dataTable"><thead><tr><th>ID</th><th>Station</th><th>Recipe / Output</th><th>Facility Lv</th><th>RV</th><th>Ability</th><th>Ingredients</th><th>Work / Time</th><th>Sell</th><th>Family requirement</th><th>Map picker</th></tr></thead><tbody>${f.map(x=>`<tr><td><code>${esc(String(x.id??'—'))}</code></td><td>${esc(x.station)}</td><td><b>${esc(x.name)}</b></td><td>${x.level}</td><td>${x.rv}</td><td>${esc(x.ability||'—')}${x.abilityLevel?' Lv'+x.abilityLevel:''}</td><td>${esc(x.ingredients)}</td><td>${Number(x.work||0).toLocaleString()}</td><td>${x.sell===null||x.sell===undefined?'—':Number(x.sell).toLocaleString()+' HC'}</td><td>${esc(x.family||'—')}</td><td>${x.plannerAvailable?'Listed':'Reference only*'}</td></tr>`).join('')}</tbody></table>`;
+  el('prodRecipeTable').innerHTML=`<div class="small" style="padding:7px 2px"><b>${esc(sectionLabel)}</b> · ${f.length.toLocaleString()} shown${q||cur!=='all'?' after filters':''}</div><table class="dataTable"><thead><tr><th>ID</th><th>Station</th><th>Recipe / Output</th><th>Facility Lv</th><th>RV</th><th>Ability</th><th>Ingredients</th><th>Work / Time</th><th>Sell</th><th>Family requirement</th><th>Map picker</th></tr></thead><tbody>${f.map(x=>`<tr><td><code>${esc(String(x.id??'—'))}</code></td><td>${esc(x.station)}</td><td><b>(window.AniimoIconAtlas?.html(x.outputId||x.id,23)||window.AniimoIconAtlas?.html(x.name,23)||'') ${esc(x.name)}</b></td><td>${x.level}</td><td>${x.rv}</td><td>${esc(x.ability||'—')}${x.abilityLevel?' Lv'+x.abilityLevel:''}</td><td>${esc(x.ingredients)}</td><td>${Number(x.work||0).toLocaleString()}</td><td>${x.sell===null||x.sell===undefined?'—':Number(x.sell).toLocaleString()+' HC'}</td><td>${esc(x.family||'—')}</td><td>${x.plannerAvailable?'Listed':'Reference only*'}</td></tr>`).join('')}</tbody></table>`;
  };
  root.querySelectorAll('[data-recipe-kind]').forEach(b=>b.addEventListener('click',()=>{activeRecipeType=b.dataset.recipeKind||'all';root.querySelectorAll('[data-recipe-kind]').forEach(x=>x.classList.toggle('active',x.dataset.recipeKind===activeRecipeType));draw();}));
  el('prodSearch').addEventListener('input',draw);el('prodRvFilter').addEventListener('change',draw);el('prodPlannerFilter').addEventListener('change',draw);draw();
@@ -1048,7 +1100,10 @@ function renderDatabaseTab(){
  const wikiNames=new Set((window.WikiHomeland?.speciesList?.()||[]).map(x=>releasedByDex.get(String(x.dex))||x.name));
  const officialSpecies=window.WikiHomeland?.speciesList?.()||[];
  const officialDex=new Map(officialSpecies.map(x=>[String(Number(x.dex)),x]));
- const releasedMissingWiki=(speciesData.species||[]).filter(x=>!officialDex.has(String(Number(x.dex))));
+ // These two are confirmed released in the roster and family gates; only Wiki cache coverage is absent.
+ const confirmedWithoutWiki=new Set(['030|Somniwing','10001|Irisalis']);
+ const knownWikiGaps=(speciesData.species||[]).filter(x=>confirmedWithoutWiki.has(String(x.dex)+'|'+x.name)&&!officialDex.has(String(Number(x.dex))));
+ const releasedMissingWiki=(speciesData.species||[]).filter(x=>!officialDex.has(String(Number(x.dex)))&&!confirmedWithoutWiki.has(String(x.dex)+'|'+x.name));
  const officialMissingRoster=officialSpecies.filter(x=>!(speciesData.species||[]).some(y=>Number(y.dex)===Number(x.dex)));
  const noWikiForms=(speciesData.species||[]).filter(x=>{const w=officialDex.get(String(Number(x.dex)));return !!w&&!(w.forms||[]).length;});
  const gatedStations=new Set(locks.map(([k])=>k.split('|')[0]));
@@ -1083,13 +1138,14 @@ function renderDatabaseTab(){
  </div></div><div class="databaseScroll">
  <div class="databaseSection"><div class="sectionTitle">Aniimo species &amp; forms · coverage audit</div>
  <div class="small">Released roster: ${(speciesData.species||[]).length} species · Official Wiki snapshot: ${officialSpecies.length} species and ${wiki.counts?.forms||0} forms. Official Wiki cache: ${esc(window.WikiHomeland?.summary?.().scrapedAt||'unknown')}. Compare by Dex number; updates to the game's released roster require a fresh external reference.</div>
- <div class="small">${releasedMissingWiki.length} released entries missing from Wiki snapshot · ${officialMissingRoster.length} Wiki species absent from released roster · ${noWikiForms.length} Wiki entries without listed forms.</div>
+ <div class="small">${releasedMissingWiki.length} other released entries missing from Wiki snapshot · ${knownWikiGaps.length} confirmed released Aniimo awaiting Wiki data · ${officialMissingRoster.length} Wiki species absent from released roster · ${noWikiForms.length} Wiki entries without listed forms.</div>
  <button type="button" id="aniimoSpeciesAuditExport">Download Aniimo coverage CSV</button>
  <div class="tableWrap"><table class="dataTable"><thead><tr><th>Dex</th><th>Aniimo</th><th>Issue</th></tr></thead><tbody>
- ${releasedMissingWiki.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>Missing official Wiki data / forms</td></tr>`).join('')}
+ ${knownWikiGaps.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>Confirmed released — official Wiki cache missing species/forms</td></tr>`).join('')}
+ ${releasedMissingWiki.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>Missing official Wiki reference data / forms</td></tr>`).join('')}
  ${officialMissingRoster.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>Wiki entry not in released roster — verify release</td></tr>`).join('')}
  ${noWikiForms.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>No Wiki forms</td></tr>`).join('')}
- ${releasedMissingWiki.length+officialMissingRoster.length+noWikiForms.length?'':'<tr><td colspan="3">No discrepancies between the loaded references.</td></tr>'}
+ ${knownWikiGaps.length+releasedMissingWiki.length+officialMissingRoster.length+noWikiForms.length?'':'<tr><td colspan="3">No discrepancies between the loaded references.</td></tr>'}
  </tbody></table></div></div>
  <div class="databaseSection"><div class="sectionTitle">Home Market price reconciliation</div>
  <div class="small">Public Home Market prices and locally stored HC prices can disagree. Conflicts are flagged without changing inventory totals until the matching item ID and current market value are verified.</div>
@@ -1099,7 +1155,7 @@ function renderDatabaseTab(){
  <div class="small">Available unique item IDs: ${masterItems.length.toLocaleString()} · QuestLog imported IDs: ${questCount.toLocaleString()} · current profile stored IDs: ${examined.length}. Homeland reference is not the complete global game catalog. A missing sell value is unknown, not zero.</div>
  <div class="small">Current profile: ${unnamed.length} unnamed storage IDs · ${unpriced.length} storage IDs without a known sell price · ${unknownFood.length} food slots without verified energy.</div>
  <button type="button" id="itemAuditExportBtn">Download missing-item audit CSV</button>
- <div class="tableWrap"><table class="dataTable"><thead><tr><th>Item ID</th><th>Known name</th><th>Count</th><th>Missing</th></tr></thead><tbody>${itemAuditRows.slice(0,250).map(x=>`<tr><td><code>${esc(x.id)}</code></td><td>${esc(x.record.name||'Unknown')}</td><td>${Number(x.count).toLocaleString()}</td><td>${!x.record.name?'Name ':''}${x.record.sell==null?'Sell price':''}</td></tr>`).join('')||'<tr><td colspan="4">All stored IDs have names and known prices.</td></tr>'}</tbody></table></div>
+ <div class="tableWrap"><table class="dataTable"><thead><tr><th>Item ID</th><th>Known name</th><th>Count</th><th>Missing</th></tr></thead><tbody>${itemAuditRows.slice(0,250).map(x=>`<tr><td><code>${esc(x.id)}</code></td><td>${window.AniimoIconAtlas?.html(x.id,23)||''} ${esc(x.record.name||'Unknown')}</td><td>${Number(x.count).toLocaleString()}</td><td>${!x.record.name?'Name ':''}${x.record.sell==null?'Sell price':''}</td></tr>`).join('')||'<tr><td colspan="4">All stored IDs have names and known prices.</td></tr>'}</tbody></table></div>
  </div>
  <div class="databaseSection">
   <div class="sectionTitle">Complete Aniimo evolution roster</div>
@@ -1110,7 +1166,7 @@ function renderDatabaseTab(){
  </div>
  <div class="databaseSection databaseAniimoSection">
   <div class="databaseAniimoFixed"><div class="sectionTitle">Aniimo / forms</div><div class="small" style="margin-bottom:7px">Official Wiki forms are used first; legacy presets only fill a gap when the Wiki snapshot has no matching row.</div><div class="tableWrap databaseHeaderWrap"><table class="dataTable databaseHeaderTable"><colgroup><col style="width:14%"><col style="width:22%"><col style="width:28%"><col style="width:36%"></colgroup><thead><tr><th>Aniimo</th><th>Form</th><th>Family</th><th>Home Abilities</th></tr></thead></table></div></div>
-  <div class="databaseBodyScroll"><table class="dataTable databaseBodyTable"><colgroup><col style="width:14%"><col style="width:22%"><col style="width:28%"><col style="width:36%"></colgroup><tbody>${ani.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.form||'Base')}</td><td>${esc(familyLabelFor(c.name))}</td><td>${(c.abilities||[]).length?c.abilities.map(a=>esc(a[0])+' Lv'+a[1]).join(' • '):'Not loaded'}</td></tr>`).join('')}</tbody></table></div>
+  <div class="databaseBodyScroll"><table class="dataTable databaseBodyTable"><colgroup><col style="width:14%"><col style="width:22%"><col style="width:28%"><col style="width:36%"></colgroup><tbody>${ani.map(c=>`<tr><td>${window.AniimoIconAtlas?.character(c.name,22)||''} ${esc(c.name)}</td><td>${esc(c.form||'Base')}</td><td>${esc(familyLabelFor(c.name))}</td><td>${(c.abilities||[]).length?c.abilities.map(a=>esc(a[0])+' Lv'+a[1]).join(' • '):'Not loaded'}</td></tr>`).join('')}</tbody></table></div>
  </div>
  <div class="databaseSection databaseFamilySection">
   <div class="databaseFamilyFixed"><div class="sectionTitle">Family Requirements by Station & Recipe</div><div class="small" style="margin-bottom:7px">These are recipe-specific family gates on certain stations; a station can have different family requirements for different recipes.</div><div class="tableWrap databaseHeaderWrap"><table class="dataTable databaseHeaderTable"><colgroup><col style="width:38%"><col style="width:24%"><col style="width:38%"></colgroup><thead><tr><th>Station / Recipe</th><th>Required family</th><th>Accepted line</th></tr></thead></table></div></div>
@@ -1119,7 +1175,7 @@ function renderDatabaseTab(){
  </div></div>`;
  root.querySelector('#aniimoSpeciesAuditExport')?.addEventListener('click',()=>{
   const csv=x=>'"'+String(x??'').replace(/"/g,'""')+'"';
-  const rows=[['dex','name','issue'],...releasedMissingWiki.map(x=>[x.dex,x.name,'Missing Wiki species/forms']),...officialMissingRoster.map(x=>[x.dex,x.name,'Wiki only; verify release']),...noWikiForms.map(x=>[x.dex,x.name,'No Wiki forms'])];
+  const rows=[['dex','name','issue'],...knownWikiGaps.map(x=>[x.dex,x.name,'Confirmed released; Wiki cache lacks species/forms']),...releasedMissingWiki.map(x=>[x.dex,x.name,'Missing Wiki species/forms']),...officialMissingRoster.map(x=>[x.dex,x.name,'Wiki only; verify release']),...noWikiForms.map(x=>[x.dex,x.name,'No Wiki forms'])];
   const blob=new Blob([rows.map(row=>row.map(csv).join(',')).join('\\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=url;a.download='aniimo-species-form-coverage.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
  });
