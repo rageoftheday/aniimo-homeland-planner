@@ -19,12 +19,12 @@ function homelandSetFullZoom(value){
  const n=Math.max(25,Math.min(200,Math.round(Number(value)||100)));homelandFullZoom=n;localStorage.setItem('homelandFullZoom',String(n));
  const grid=document.querySelector('#homelandPlannerV2 .hpv2FullGrid');if(grid){const scroller=grid.closest('.hpv2FullScroll'),oldWidth=grid.getBoundingClientRect().width,oldHeight=grid.getBoundingClientRect().height;
  const cx=scroller.scrollLeft+scroller.clientWidth/2,cy=scroller.scrollTop+scroller.clientHeight/2;
- grid.style.width='max(100%,'+(960*n/100)+'px)';
+ grid.style.width=(960*n/100)+'px';
  const nx=grid.getBoundingClientRect().width/Math.max(1,oldWidth),ny=grid.getBoundingClientRect().height/Math.max(1,oldHeight);
  scroller.scrollLeft=cx*nx-scroller.clientWidth/2;scroller.scrollTop=cy*ny-scroller.clientHeight/2;
  }
- const v=document.getElementById('hpv2FullZoom');if(v)v.value=String(n);
- const label=document.getElementById('hpv2FullZoomLabel');if(label)label.textContent=n+'%';
+ const v=document.getElementById('zoomSlider');if(v)v.value=String(Math.min(150,n));
+ const label=document.getElementById('zoomLabel');if(label)label.textContent=n+'%';
 }
 const HOMELAND_PLOT_UNLOCKS={
  1:{rv:1,cost:0},2:{rv:2,cost:2000},3:{rv:3,cost:4000},4:{rv:4,cost:6000},
@@ -146,7 +146,7 @@ function renderHomelandPlannerV2(){
  const previousFullScroll=root.querySelector('.hpv2FullScroll');
  const previousFullPosition=previousFullScroll?{left:previousFullScroll.scrollLeft,top:previousFullScroll.scrollTop}:null;
  const toolbar=map.querySelector('.toolbar'),viewport=el('mapViewport'),legend=map.querySelector('.legend');
- if(toolbar)toolbar.hidden=true;if(viewport)viewport.hidden=true;if(legend)legend.hidden=true;
+ if(toolbar)toolbar.hidden=homelandPlannerMode!=='full';if(viewport)viewport.hidden=true;if(legend)legend.hidden=true;
  const mapLib=homelandMapLibrary(),mapEntries=homelandMapLibraryEntries(),mapCurrent=String(mapLib.current||'');
  const mapOptions=mapEntries.map(m=>`<option value="${esc(m.id)}"${String(m.id)===mapCurrent?' selected':''}>${esc(m.name||'Map Layout')}</option>`).join('');
  const noMaps=!mapEntries.length;
@@ -157,7 +157,7 @@ function renderHomelandPlannerV2(){
    root.innerHTML=modeBar+`<div class="hpv2FocusHead"><button onclick="setHomelandPlannerMode('overview')">← All Plots</button><div><h3>Plot ${n} · ${esc(homelandPlotRole(n))}</h3><span>${rows.length} placed object${rows.length===1?'':'s'} · 20×15 squares</span></div><div class="hpv2FocusMeta">RV ${unlock.rv||'—'} · ${Number(unlock.cost||0).toLocaleString()} HC unlock</div></div><div class="hpv2BuilderShell"><div class="hpv2BuilderMain"><div class="hpv2FocusGrid" data-hpv2-drop-plot="${n}"><div class="hpv2GridLines"></div>${rows.map(o=>homelandMiniObject(o,p,true)).join('')}</div><div class="hpv2FocusFoot"><span>Drag new pieces from the palette onto an exact square. Drag placed pieces to rearrange them inside Plot ${n}.</span></div></div><aside class="hpv2PiecePalette"><div class="hpv2PiecePaletteHead"><div><b>Single Pieces</b><span>${addOptions.length} unlocked / available</span></div><div class="hpv2BuilderTools"><label>Snap <select id="hpv2SnapSelect"><option value="1"${String(HOMELAND_BUILDER_SNAP)==='1'?' selected':''}>1 square</option><option value=".5"${String(HOMELAND_BUILDER_SNAP)==='.5'?' selected':''}>0.5 square</option><option value=".25"${String(HOMELAND_BUILDER_SNAP)==='.25'?' selected':''}>0.25 square</option><option value="free"${String(HOMELAND_BUILDER_SNAP)==='free'?' selected':''}>No snap</option></select></label><input id="hpv2PieceSearch" placeholder="Search pieces…"></div></div><div class="hpv2PieceList">${homelandPiecePaletteHTML(addOptions)||'<div class="small">No additional unlocked pieces are available.</div>'}</div></aside></div>`;
    if(homelandPlannerMode==='full'){
      const fullPlots=plotDefs.map(q=>`<div class="hpv2FullPlotLabel" style="left:${q.x/80*100}%;top:${q.y/60*100}%;width:25%;height:25%">Plot ${q.n}</div>`).join('');
-     root.innerHTML=modeBar+`<div class="hpv2FocusHead"><div><h3>Full Map Editor · 80×60</h3><span>All 16 plots together · drag across plot boundaries · ${objects.length} placed objects</span></div><div class="hpv2FullZoomTools"><button type="button" data-hpv2-zoom-step="-10" title="Zoom out">−</button><label>Board zoom <input id="hpv2FullZoom" type="range" min="25" max="200" step="5" value="${homelandFullZoom}"></label><b id="hpv2FullZoomLabel">${homelandFullZoom}%</b><button type="button" data-hpv2-zoom-step="10" title="Zoom in">+</button><button type="button" data-hpv2-zoom-fit="1">Fit</button></div></div><div class="hpv2BuilderShell"><div class="hpv2BuilderMain hpv2FullScroll"><div class="hpv2FocusGrid hpv2FullGrid" data-hpv2-drop-full="1" style="width:max(100%,${960*homelandFullZoom/100}px)"><div class="hpv2GridLines"></div>${fullPlots}${objects.map(o=>homelandMiniObject(o,{x:0,y:0,full:true},true)).join('')}</div><div class="hpv2FocusFoot"><span>Drag facilities anywhere in the whole map. Plot boundaries are guides, not clipping edges. Objects cannot overlap other facilities.</span></div></div><aside class="hpv2PiecePalette"><div class="hpv2PiecePaletteHead"><div><b>Single Pieces</b><span>${addOptions.length} unlocked / available</span></div><div class="hpv2BuilderTools"><label>Snap <select id="hpv2SnapSelect"><option value="1"${String(HOMELAND_BUILDER_SNAP)==='1'?' selected':''}>1 square</option><option value=".5"${String(HOMELAND_BUILDER_SNAP)==='.5'?' selected':''}>0.5 square</option><option value=".25"${String(HOMELAND_BUILDER_SNAP)==='.25'?' selected':''}>0.25 square</option><option value="free"${String(HOMELAND_BUILDER_SNAP)==='free'?' selected':''}>No snap</option></select></label><input id="hpv2PieceSearch" placeholder="Search pieces…"></div></div><div class="hpv2PieceList">${homelandPiecePaletteHTML(addOptions)}</div></aside></div>`;
+     root.innerHTML=modeBar+`<div class="hpv2FocusHead"><div><h3>Full Map Editor · 80×60</h3><span>All 16 plots together · drag across plot boundaries · ${objects.length} placed objects</span></div></div><div class="hpv2BuilderShell"><div class="hpv2BuilderMain hpv2FullScroll"><div class="hpv2FocusGrid hpv2FullGrid" data-hpv2-drop-full="1" style="width:${960*homelandFullZoom/100}px"><div class="hpv2GridLines"></div>${fullPlots}${objects.map(o=>homelandMiniObject(o,{x:0,y:0,full:true},true)).join('')}</div><div class="hpv2FocusFoot"><span>Drag facilities anywhere in the whole map. Plot boundaries are guides, not clipping edges. Objects cannot overlap other facilities.</span></div></div><aside class="hpv2PiecePalette"><div class="hpv2PiecePaletteHead"><div><b>Single Pieces</b><span>${addOptions.length} unlocked / available</span></div><div class="hpv2BuilderTools"><label>Snap <select id="hpv2SnapSelect"><option value="1"${String(HOMELAND_BUILDER_SNAP)==='1'?' selected':''}>1 square</option><option value=".5"${String(HOMELAND_BUILDER_SNAP)==='.5'?' selected':''}>0.5 square</option><option value=".25"${String(HOMELAND_BUILDER_SNAP)==='.25'?' selected':''}>0.25 square</option><option value="free"${String(HOMELAND_BUILDER_SNAP)==='free'?' selected':''}>No snap</option></select></label><input id="hpv2PieceSearch" placeholder="Search pieces…"></div></div><div class="hpv2PieceList">${homelandPiecePaletteHTML(addOptions)}</div></aside></div>`;
    }
  }else{
    const cards=plotDefs.map(p=>{
@@ -168,14 +168,8 @@ function renderHomelandPlannerV2(){
    root.innerHTML=modeBar+`<div class="hpv2Summary"><div><b>Home Overview</b><span>RV ${rvLevel.value} · ${openPlots.size} / 16 plots open · ${objects.length} placed objects</span></div><div class="hpv2SummaryHint">Overview only · no placement here. Open a plot to build. Locked cards show the reference RV + Home Coin unlock.</div></div><div class="hpv2PlotGrid">${cards}</div>`;
  }
  if(homelandPlannerMode==='full'){
+   if(window.zoomSlider)zoomSlider.value=String(Math.min(150,homelandFullZoom));if(window.zoomLabel)zoomLabel.textContent=homelandFullZoom+'%';
    const scroll=root.querySelector('.hpv2FullScroll');if(previousFullPosition&&scroll){scroll.scrollLeft=previousFullPosition.left;scroll.scrollTop=previousFullPosition.top;}
-   root.querySelectorAll('[data-hpv2-zoom-step]').forEach(b=>b.addEventListener('click',()=>homelandSetFullZoom(homelandFullZoom+Number(b.dataset.hpv2ZoomStep))));
-   root.querySelector('#hpv2FullZoom')?.addEventListener('input',e=>homelandSetFullZoom(e.target.value));
-   root.querySelector('[data-hpv2-zoom-fit]')?.addEventListener('click',()=>{
-     const scroller=root.querySelector('.hpv2FullScroll');if(!scroller)return;
-     homelandSetFullZoom(Math.max(25,Math.min(200,Math.floor(scroller.clientWidth/960*100/5)*5)));
-     scroller.scrollLeft=0;scroller.scrollTop=0;
-   });
  }
  root.querySelectorAll('[data-hpv2-plot]').forEach(b=>b.addEventListener('click',()=>setHomelandPlannerMode('plot',b.dataset.hpv2Plot)));
  root.querySelectorAll('[data-hpv2-object]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();selected=Number(b.dataset.hpv2Object);render();}));
