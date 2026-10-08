@@ -600,11 +600,14 @@ function populateReferenceStationRecipes(){
   const level=Number(ref.minLevel)||1;
   // Prefer explicit legacy selections by name, so saved recipes retain stable labels.
   // A distinct 402xxxx Quick Recipe must not become a fake "Sea Salt (Lv2)" entry.
-  const quickArt=window.HomelandLocalIcons?.quick('',ref.id)||'';
-  const wantedName=quickArt?'Quick '+info.name:info.name;
-  const sameOutput=current.filter(x=>String(x.outputItemId)===String(output.item)||x.name===info.name||x.name===wantedName);
+  const isQuick=ref.kind==='home'&&String(ref.id).startsWith('402')&&
+    !!window.HomelandLocalIcons?.quick('Quick '+info.name,ref.id);
+  const wantedName=isQuick?'Quick '+info.name:info.name;
+  const legacyBase=x=>String(x||'').toLowerCase().replace(/^quick\\s+/,'').replace(/\\s*[×x]\\s*\\d+\\s*$/,'').trim();
+  const sameOutput=current.filter(x=>String(x.outputItemId)===String(output.item)||legacyBase(x.name)===legacyBase(info.name));
   const existing=current.find(x=>String(x.recipeId)===String(ref.id))||
-    current.find(x=>x.name===wantedName&&x.recipeId==null)||
+    current.find(x=>!x.reference&&x.recipeId==null&&
+      (x.name===wantedName||(!isQuick&&!/^quick\\s/i.test(x.name)&&legacyBase(x.name)===legacyBase(wantedName))))||
     sameOutput.find(x=>x.reference&&Number(x.minLevel)===level&&String(x.recipeId)===String(ref.id));
   const name=existing?.name||((sameOutput.length||current.some(x=>x.name===wantedName))?wantedName+' (Lv'+level+' · #'+ref.id+')':wantedName);
   const ingredients=(ref.inputs||[]).map(x=>(getItem(x.item)?.name||'Item '+x.item)+' ×'+Number(x.qty||1)).join(' + ')||'—';
@@ -1586,7 +1589,11 @@ function renderRecipePanel(){
  if(!panel||!sel||!worker||!pers||!info)return;
  if(!stationHasRecipes(o)){panel.style.display='none';return}
  panel.style.display='block';const rv=+rvLevel.value,facLv=Number(o.facilityLevel||1);
- const list=recipeDB[o.name].filter(r=>!usableOnly.checked || (r.rv<=rv && recipeRequiredLevel(o.name,r)<=facLv && moduleReqMet(moduleRequirementForRecipe(o.name,r))));
+ // Verified reference recipes are the picker source of truth. Keep an older
+ // saved selection visible so existing maps can still be edited or cleared.
+ const stationRecipes=recipeDB[o.name],hasReferences=stationRecipes.some(r=>r.reference);
+ const list=stationRecipes.filter(r=>(!hasReferences||r.reference||r.name===o.recipeName)&&
+   (!usableOnly.checked || (r.rv<=rv && recipeRequiredLevel(o.name,r)<=facLv && moduleReqMet(moduleRequirementForRecipe(o.name,r)))));
  sel.innerHTML='<option value="">— choose recipe —</option>'+list.map(r=>{
    const needLv=recipeRequiredLevel(o.name,r);
    const mr=moduleRequirementForRecipe(o.name,r);
