@@ -624,3 +624,7 @@ header{align-items:center}
 .hpv2WorkerBadge.hpv2LiveWorker:focus-visible{outline:2px solid #fff}
 .hpv2WorkerBadge .aniimoPortraitIcon{display:block!important;max-width:100%;max-height:100%}
 .aniimoAtlasIcon{vertical-align:middle;flex-shrink:0}
+
+.liveFacilityLinkPanel{border:1px solid var(--border,rgba(160,180,200,.25));border-radius:10px;padding:10px;margin-top:12px;display:grid;gap:7px;background:rgba(120,150,160,.08)}
+.liveFacilityLinkPanel[hidden]{display:none!important}
+.liveFacilityLinkPanel select{width:100%;min-width:0;max-width:100%;padding:7px;border-radius:7px}
