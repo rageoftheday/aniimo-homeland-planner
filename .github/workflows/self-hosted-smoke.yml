@@ -221,7 +221,7 @@ jobs:
           grep -q 'productionIngredient' js/views.js
           grep -Fq "const selectedPath=recipeName?" js/views.js
           grep -Fq 'data-worker-species' js/views.js
-          grep -Fq 'data-worker-species="piopiota"' css/app.css
+          grep -Fq '.hpv2WorkerBadge .homebuilderPortraitImage' css/app.css
           grep -Fq 'const live=assigned?[assigned]:homelandLiveWorkersFor(o,q)' js/views.js
           node --check js/homebuilder-portraits.js
           grep -Fq 'js/homebuilder-portraits.js?v=1' index.html
