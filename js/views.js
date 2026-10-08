@@ -15,6 +15,27 @@ let homelandPlannerMode=localStorage.getItem('homelandPlannerMode')||'overview';
 if(!['overview','plot','full'].includes(homelandPlannerMode))homelandPlannerMode='overview';
 let homelandFocusedPlot=Number(localStorage.getItem('homelandFocusedPlot')||1);
 let homelandFullZoom=Math.max(25,Math.min(200,Number(localStorage.getItem('homelandFullZoom')||100)));
+function homelandAddVisiblePiece(item){
+ const scroller=document.querySelector('#homelandPlannerV2 .hpv2FullScroll');
+ const grid=scroller?.querySelector('.hpv2FullGrid'),d=effectiveDims(item);
+ if(!grid||!d.w||!d.h){addObject(item);return}
+ const cell=grid.getBoundingClientRect().width/80;
+ const x0=Math.max(0,Math.floor(scroller.scrollLeft/cell)),y0=Math.max(0,Math.floor(scroller.scrollTop/cell));
+ const x1=Math.min(80-d.w,Math.floor((scroller.scrollLeft+scroller.clientWidth)/cell-d.w));
+ const y1=Math.min(60-d.h,Math.floor((scroller.scrollTop+scroller.clientHeight)/cell-d.h));
+ const cx=(x0+x1)/2,cy=(y0+y1)/2,spots=[];
+ for(let y=y0;y<=y1;y+=.5)for(let x=x0;x<=x1;x+=.5){
+  if(!collide({id:-1,x,y,w:d.w,h:d.h}))spots.push({x,y,dist:(x-cx)**2+(y-cy)**2});
+ }
+ spots.sort((a,b)=>a.dist-b.dist);
+ if(spots.length)addObject(item,spots[0].x,spots[0].y);
+ else alert('No available space for '+item.name+' in the visible map area. Pan or zoom out.');
+}
+function homelandFitFullZoom(){
+ const scroller=document.querySelector('#homelandPlannerV2 .hpv2FullScroll');if(!scroller)return;
+ homelandSetFullZoom(Math.max(25,Math.min(200,Math.floor((scroller.clientWidth-20)/960*100/5)*5)));
+ scroller.scrollLeft=0;scroller.scrollTop=0;
+}
 function homelandSetFullZoom(value){
  const n=Math.max(25,Math.min(200,Math.round(Number(value)||100)));homelandFullZoom=n;localStorage.setItem('homelandFullZoom',String(n));
  const grid=document.querySelector('#homelandPlannerV2 .hpv2FullGrid');if(grid){const scroller=grid.closest('.hpv2FullScroll'),oldWidth=grid.getBoundingClientRect().width,oldHeight=grid.getBoundingClientRect().height;
@@ -168,7 +189,7 @@ function renderHomelandPlannerV2(){
    root.innerHTML=modeBar+`<div class="hpv2Summary"><div><b>Home Overview</b><span>RV ${rvLevel.value} · ${openPlots.size} / 16 plots open · ${objects.length} placed objects</span></div><div class="hpv2SummaryHint">Overview only · no placement here. Open a plot to build. Locked cards show the reference RV + Home Coin unlock.</div></div><div class="hpv2PlotGrid">${cards}</div>`;
  }
  if(homelandPlannerMode==='full'){
-   if(window.zoomSlider)zoomSlider.value=String(Math.min(150,homelandFullZoom));if(window.zoomLabel)zoomLabel.textContent=homelandFullZoom+'%';
+   if(window.zoomSlider){zoomSlider.max='200';zoomSlider.value=String(homelandFullZoom);}if(window.zoomLabel)zoomLabel.textContent=homelandFullZoom+'%';
    const scroll=root.querySelector('.hpv2FullScroll');if(previousFullPosition&&scroll){scroll.scrollLeft=previousFullPosition.left;scroll.scrollTop=previousFullPosition.top;}
  }
  root.querySelectorAll('[data-hpv2-plot]').forEach(b=>b.addEventListener('click',()=>setHomelandPlannerMode('plot',b.dataset.hpv2Plot)));
@@ -182,7 +203,7 @@ function renderHomelandPlannerV2(){
    if(e.dataTransfer)e.dataTransfer.effectAllowed='copy';
  }));
  root.querySelectorAll('[data-hpv2-piece-add]').forEach(btn=>btn.addEventListener('click',()=>{
-   const item=catalog.find(x=>x.name===btn.dataset.hpv2PieceAdd);if(item){if(homelandPlannerMode==='full')addObject(item);else addObjectToFocusedPlot(item);}
+   const item=catalog.find(x=>x.name===btn.dataset.hpv2PieceAdd);if(item){if(homelandPlannerMode==='full')homelandAddVisiblePiece(item);else addObjectToFocusedPlot(item);}
  }));
  root.querySelectorAll('[data-hpv2-piece-remove]').forEach(btn=>btn.addEventListener('click',()=>{
    if(homelandPlannerMode==='full')removeOneByName(btn.dataset.hpv2PieceRemove||'');else removeObjectFromFocusedPlotByName(btn.dataset.hpv2PieceRemove||'');
