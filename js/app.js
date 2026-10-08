@@ -719,7 +719,7 @@ const ANIIMO_CATALOG=[
  {name:'Turbo',form:'Rainstorm Form',family:'nimbi',abilities:[['Lightning',2],['Wind',3],['Leisure',3]],source:'verified'},
  {name:'Turbo',form:'Plateau Form',family:'nimbi',abilities:[['Ice',2],['Wind',3],['Leisure',3]],source:'verified'},
  {name:'Turbo',form:'Prismana Form',family:'nimbi',abilities:[['Wind',4],['Dark',3],['Leisure',4]],source:'verified'},
- {name:'Thornblade',form:'Rainstorm Form',family:'thornblade',abilities:[['Grass',3],['Lightning',2],['Artisanship',3]],source:'verified'},
+ {name:'Thornblade',form:'Thunderstorm Form',family:'thornblade',abilities:[['Grass',3],['Lightning',2],['Artisanship',3]],source:'verified'},
  {name:'Thornblade',form:'Prismana Form',family:'thornblade',abilities:[['Grass',4],['Water',3],['Artisanship',4]],source:'verified'},
  {name:'Cornet',form:'Base',family:'cornet',abilities:[['Wind',3]],source:'verified'},
  {name:'Cornet',form:'Beach Form',family:'cornet',abilities:[['Water',2],['Wind',3]],source:'verified'},
