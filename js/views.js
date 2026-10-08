@@ -235,7 +235,10 @@ function homelandObjectVisualHTML(o,big=false){
  // their produced item instead of their separate quick-recipe token.
  const selectedOutputId=selectedRecipe?.outputItemId??selectedRecipe?.outputId??
    (selectedRecipe?.recipeId!=null?window.AniimoIconAtlas?.outputItem(selectedRecipe.recipeId):null);
+ const quickSelection=/^quick\\s/i.test(recipeName)||/^quick\\s/i.test(selectedRecipe?.name||'');
+ const quickPath=quickSelection?window.HomelandLocalIcons?.quick(recipeName,selectedRecipe?.recipeId):'';
  const selectedIcon=recipeName?(
+   (quickPath?window.HomelandLocalIcons.image(quickPath,40):'')||
    (selectedOutputId!=null?window.AniimoIconAtlas?.html(selectedOutputId,40):'')||
    window.AniimoIconAtlas?.html(selectedRecipe?.name||recipeName,40)
  ):'';
