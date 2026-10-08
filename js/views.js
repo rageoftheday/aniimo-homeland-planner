@@ -213,9 +213,15 @@ function homelandLiveWorkersFor(o,q){
  return (Array.isArray(raw.aniimo)?raw.aniimo:[]).filter(a=>a.piece!=null&&String(a.piece)===String(q.piece));
 }
 function homelandLiveWorkerBadges(o,q){
- // A manually selected Aniimo overrides the stale imported live worker.
+ // Show only the actual planner assignment. The imported live piece can be
+ // stale after a worker was manually unassigned in the Homebuilder editor.
  const assigned=o?.workerId&&typeof workers!=='undefined'?workers.find(w=>String(w.id)===String(o.workerId)):null;
- const live=assigned?[assigned]:homelandLiveWorkersFor(o,q);
+ const live=assigned?[assigned]:[];
+ if(!live.length){
+  // Place an Aniimo-shaped empty slot only on facilities that can employ one.
+  if(typeof STATION_RULES==='undefined'||!STATION_RULES[o?.name])return '';
+  return '<span class="hpv2WorkerBadge hpv2UnassignedWorker" title="No Aniimo assigned"><img src="assets/homebuilder-aniimo-portraits/unassigned-aniimo.svg" alt="Unassigned Aniimo" loading="lazy"></span>';
+ }
  return live.map(a=>{
   const formId=String(a.form||'');
   const form=window.ANIIMO_ASSET_MANIFEST?.aniimoForms?.[formId]||{};
