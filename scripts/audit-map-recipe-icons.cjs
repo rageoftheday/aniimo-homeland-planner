@@ -30,6 +30,19 @@ for(const [station,rows] of Object.entries(db)){
 }
 // Every uploaded quick formula/recipe has a distinct PNG and must not be
 // replaced with the normal produced-item icon.
+const sandcastle=data.recipes.filter(r=>String(r.facility)==='1010006');
+assert.deepEqual(sandcastle.map(r=>String(r.id)).sort(),['4001049','4001069','4020060']);
+assert.equal(Number(sandcastle.find(r=>String(r.id)==='4001049').minLevel),3);
+assert.equal(Number(sandcastle.find(r=>String(r.id)==='4020060').minLevel),2);
+assert(source.includes("const wantedName=quickArt?'Quick '+info.name:info.name"),'Quick recipes must use correct legacy names');
+const cropStart=source.indexOf('const crops=');
+const cropFrom=cropStart+'const crops='.length,cropEnd=source.indexOf('\\n];',cropFrom);
+assert(cropStart>=0&&cropEnd>cropFrom,'Crop catalog unavailable');
+const crops=vm.runInNewContext('('+source.slice(cropFrom,cropEnd+2)+')');
+for(const crop of crops){
+ const key=String(crop.name).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+ assert(manifest.names.Items[key]||Object.values(data.items).some(x=>String(x.name).toLowerCase()===String(crop.name).toLowerCase()),'Missing selectable plant icon '+crop.name);
+}
 const quickIcons=Object.entries(assets).filter(([id,path])=>/^402\d+$/.test(id)&&/_quick_(?:recipe|formula)_/.test(path));
 assert.equal(quickIcons.length,27,'Expected 27 original quick icons');
 for(const [id,path] of quickIcons){
