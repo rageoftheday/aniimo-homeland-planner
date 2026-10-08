@@ -1042,7 +1042,10 @@ function renderDatabaseTab(){
  const unnamed=examined.filter(x=>!x.record.name),unpriced=examined.filter(x=>x.record.sell==null);
  const unknownFood=(home?.rawHome?.food||[]).filter(x=>master?.lookup(x.item,aniidexImportMeta?.catalog)?.energy==null);
  const itemAuditRows=examined.filter(x=>!x.record.name||x.record.sell==null);
- const marketReview=[{id:'4030014',name:'Huge Colorful Sugarcane',market:30000,url:'https://wikily.gg/aniimo/homeland-crafting'}];
+ // Never associate a market listing with an ID until the exact item variant is verified.
+ // 4030014 = Colorful Sugarcane, 10,000 HC (confirmed by in-game screenshot).
+ // 30,000 HC may describe Huge Colorful Sugarcane, whose ID remains unverified.
+ const marketReview=[];
  const priceConflicts=marketReview.map(x=>({...x,local:master?.lookup(x.id,aniidexImportMeta?.catalog)?.sell??null})).filter(x=>x.local!=null&&x.local!==x.market);
 
  const sourceBadge=c=>c.source==='official-wiki'?'<span class="sourceBadge official">Official Wiki</span>':c.source==='official'?'<span class="sourceBadge official">Official preset</span>':c.source==='verified'?'<span class="sourceBadge">Cross-checked</span>':'<span class="sourceBadge user">Name only</span>';
