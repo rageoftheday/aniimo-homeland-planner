@@ -94,8 +94,8 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.23.8' index.html
-          grep -q 'js/views.js?v=30.23.9' index.html
+          grep -q 'css/app.css?v=30.23.9' index.html
+          grep -q 'js/views.js?v=30.23.10' index.html
           grep -q 'js/home-snapshot.js?v=8' index.html
           grep -q 'js/importer.js?v=30.15.5' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
@@ -144,7 +144,7 @@ jobs:
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
-          grep -q 'js/app.js?v=30.21.11' index.html
+          grep -q 'js/app.js?v=30.21.12' index.html
           grep -q 'data-tab="aniimos"' index.html
           grep -q 'id="aniimosPane"' index.html
           grep -q 'Backup ▾' index.html
@@ -209,6 +209,20 @@ jobs:
           grep -Fq "Refresh this planner tab" js/importer.js
           node --check js/app.js
           node --check js/views.js
+          grep -Fq ".hpv2MapLibrary" css/app.css
+          grep -Fq ">Delete<" js/views.js
+          grep -Fq ">Rename<" js/views.js
+          grep -Fq ">Load<" js/views.js
+          grep -Fq "hpv2MapSelect" js/views.js
+          grep -Fq "Save Map" js/views.js
+          grep -Fq "New Map" js/views.js
+          grep -Fq "The currently loaded profile, UID, roster, RV, Aniidx snapshot, food, storage, and other profile data stay unchanged." js/app.js
+          grep -Fq "function deleteHomelandMapLayout" js/app.js
+          grep -Fq "function renameHomelandMapLayout" js/app.js
+          grep -Fq "function newHomelandMap" js/app.js
+          grep -Fq "function loadHomelandMapLayout" js/app.js
+          grep -Fq "function saveHomelandMapLayout" js/app.js
+          grep -Fq "const HOMELAND_MAP_LIBRARY_KEY" js/app.js
           grep -Fq "grid-template-columns:34px minmax(0,1fr) 72px" css/app.css
           grep -Fq ".hpv2PieceActions" css/app.css
           grep -Fq "function removeObjectFromFocusedPlotByName" js/app.js

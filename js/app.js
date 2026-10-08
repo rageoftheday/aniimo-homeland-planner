@@ -1928,6 +1928,104 @@ function currentPlannerState(){
    aniidexImportMeta
  };
 }
+
+const HOMELAND_MAP_LIBRARY_KEY='aniimoHomelandMapLibraryV1';
+function homelandMapLibrary(){
+ try{
+   const raw=localStorage.getItem(HOMELAND_MAP_LIBRARY_KEY);
+   if(!raw)return {format:'aniimo-homeland-map-library-v1',current:null,maps:{}};
+   const data=JSON.parse(raw);
+   if(data?.format==='aniimo-homeland-map-library-v1'&&data.maps)return data;
+ }catch(_){}
+ return {format:'aniimo-homeland-map-library-v1',current:null,maps:{}};
+}
+function saveHomelandMapLibrary(lib){
+ localStorage.setItem(HOMELAND_MAP_LIBRARY_KEY,JSON.stringify(lib));
+}
+function newHomelandMapId(){
+ return 'm'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+}
+function currentHomelandMapLayout(name='Map Layout',id=null){
+ return {
+   id:id||newHomelandMapId(),
+   name:String(name||'Map Layout').trim()||'Map Layout',
+   savedAt:Date.now(),
+   objects:JSON.parse(JSON.stringify(objects)),
+   idCounter,
+   maxOverrides:JSON.parse(JSON.stringify(maxOverrides||{})),
+   dimensionOverrides:JSON.parse(JSON.stringify(dimensionOverrides||{})),
+   placeLevelPrefs:JSON.parse(JSON.stringify(placeLevelPrefs||{}))
+ };
+}
+function homelandMapLibraryEntries(){
+ const lib=homelandMapLibrary();
+ return Object.values(lib.maps||{}).sort((a,b)=>(Number(b.savedAt)||0)-(Number(a.savedAt)||0));
+}
+function saveHomelandMapLayout(mapId=undefined){
+ try{
+   const lib=homelandMapLibrary();
+   const targetId=mapId===undefined?lib.current:mapId;
+   const existing=targetId?lib.maps?.[targetId]:null;
+   const defaultName=existing?.name||('Map '+(Object.keys(lib.maps||{}).length+1));
+   const name=prompt(existing?'Save map as:':'Map name:',defaultName);
+   if(name==null)return false;
+   const trimmed=String(name).trim();
+   if(!trimmed){alert('Enter a map name first.');return false}
+   const id=existing?.id||newHomelandMapId();
+   lib.maps[id]=currentHomelandMapLayout(trimmed,id);
+   lib.current=id;
+   saveHomelandMapLibrary(lib);
+   renderHomelandPlannerV2?.();
+   return true;
+ }catch(e){
+   alert('Could not save the map in this browser. '+(e?.message||e));
+   return false;
+ }
+}
+function loadHomelandMapLayout(mapId){
+ const lib=homelandMapLibrary(),data=lib.maps?.[String(mapId||'')];
+ if(!data){alert('Choose a saved map first.');return false}
+ if(objects.length&&!confirm('Load "'+data.name+'"?\n\nThis replaces only the planner map. The currently loaded profile, UID, roster, RV, Aniidx snapshot, food, storage, and other profile data stay unchanged.'))return false;
+ objects=JSON.parse(JSON.stringify(data.objects||[]));
+ idCounter=Number(data.idCounter)||Math.max(1,...objects.map(o=>(Number(o.id)||0)+1));
+ maxOverrides=JSON.parse(JSON.stringify(data.maxOverrides||{}));
+ dimensionOverrides=JSON.parse(JSON.stringify(data.dimensionOverrides||{}));
+ placeLevelPrefs=JSON.parse(JSON.stringify(data.placeLevelPrefs||{}));
+ selected=null;
+ normalizeLegacyNames();
+ lib.current=data.id;
+ saveHomelandMapLibrary(lib);
+ render();
+ snapshotIntoCurrentProfile?.();
+ return true;
+}
+function newHomelandMap(){
+ if(objects.length&&!confirm('Start a new blank map?\n\nThis clears only the planner map. Your loaded profile and locally saved maps are not deleted.'))return false;
+ objects=[];
+ idCounter=1;
+ selected=null;
+ const lib=homelandMapLibrary();lib.current=null;saveHomelandMapLibrary(lib);
+ render();
+ snapshotIntoCurrentProfile?.();
+ return true;
+}
+function renameHomelandMapLayout(mapId){
+ const lib=homelandMapLibrary(),data=lib.maps?.[String(mapId||'')];
+ if(!data){alert('Choose a saved map first.');return false}
+ const name=prompt('Rename map:',data.name||'Map Layout');
+ if(name==null)return false;
+ const trimmed=String(name).trim();if(!trimmed)return false;
+ data.name=trimmed;data.savedAt=Date.now();
+ saveHomelandMapLibrary(lib);renderHomelandPlannerV2?.();return true;
+}
+function deleteHomelandMapLayout(mapId){
+ const lib=homelandMapLibrary(),data=lib.maps?.[String(mapId||'')];
+ if(!data){alert('Choose a saved map first.');return false}
+ if(!confirm('Delete saved map "'+data.name+'"?\n\nThis does not clear the map currently open in the planner.'))return false;
+ delete lib.maps[data.id];
+ if(lib.current===data.id)lib.current=null;
+ saveHomelandMapLibrary(lib);renderHomelandPlannerV2?.();return true;
+}
 function applyPlannerState(d){
  rvLevel.value=d.rv||1;
  objects=Array.isArray(d.objects)?d.objects:[];
