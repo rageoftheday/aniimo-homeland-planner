@@ -17,19 +17,25 @@
    if(!variant)continue;
    names.push(variant.toLowerCase().includes(species.toLowerCase())?variant:variant+' '+species);
   }
-  names.push(species);
+  // An explicitly named form must never silently display its base species.
+  if(!form&&!appearance)names.push(species);
   const unique=[...new Set(names.map(slug))];
   // Resolve only registered portrait names. Unknown future form names must not
   // accidentally match another species/form from an approximate substring.
-  return unique.map(key=>manifest?.assets?.[key]||(!manifest?path(key):null)).filter(Boolean);
+  const found=unique.map(key=>manifest?.assets?.[key]||(!manifest?path(key):null)).filter(Boolean);
+  if(manifest&&!found.length){
+   window.HomebuilderMissingPortraits=window.HomebuilderMissingPortraits||new Set();
+   window.HomebuilderMissingPortraits.add((species+' — '+(form||appearance||'Base')).trim());
+  }
+  return found;
  }
  function html(worker,fallback){
   const paths=candidates(worker);
-  if(!paths.length)return fallback||'';
+  if(!paths.length)return '<span class="homebuilderPortraitSwap homebuilderPortraitMissing" title="Missing Aniimo portrait"><img class="homebuilderPortraitImage" src="assets/homebuilder-aniimo-portraits/unassigned-aniimo.svg" alt="Missing Aniimo portrait" /></span>';
   // New circular artwork is authoritative; never display the old atlas as a substitute.
   const payload=escapeHTML(JSON.stringify(paths));
   return '<span class="homebuilderPortraitSwap" data-portrait-candidates="'+payload+'">'+
-   '<span class="homebuilderPortraitFallback" aria-hidden="true">👤</span>'+
+   '<span class="homebuilderPortraitFallback" aria-hidden="true"><img src="assets/homebuilder-aniimo-portraits/unassigned-aniimo.svg" alt="" /></span>'+
    '<img class="homebuilderPortraitImage" alt="" loading="lazy" decoding="async" style="display:none" />'+
    '</span>';
  }
