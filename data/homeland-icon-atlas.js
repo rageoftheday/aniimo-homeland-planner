@@ -28,7 +28,28 @@
    const img='position:absolute;max-width:none;width:'+(4031/64*100)+'%;height:'+(4079/64*100)+'%;left:-'+(v.x/64*100)+'%;top:-'+(v.y/64*100)+'%;pointer-events:none';
    return '<span class="'+cls+'"'+aria+' style="'+crop+'"><img src="'+url+'" alt="" loading="lazy" decoding="async" style="'+img+'"></span>';
  }
- function html(idOrName,size=24){const v=find(idOrName);return v?sprite(v,size):'';}
+ // Resolve a recipe ID to its actual output item before looking up artwork.
+ function outputItem(value){
+   const id=String(value??'').trim(),reference=window.HOMELAND_REFERENCE_DATA||{};
+   const rows=reference.recipes||[];
+   const recipe=Array.isArray(rows)?rows.find(r=>String(r.id)===id):rows[id];
+   return String(recipe?.outputs?.[0]?.item??id);
+ }
+ function catalogItem(value){
+   const id=outputItem(value),ref=window.HOMELAND_REFERENCE_DATA?.items||{};
+   return {id,item:ref[id]||null};
+ }
+ function html(idOrName,size=24){
+   const direct=find(idOrName);if(direct)return sprite(direct,size);
+   const resolved=outputItem(idOrName),v=find(resolved);if(v)return sprite(v,size);
+   // The captured catalog provides ui_item_<ID> assets for items without atlas cells.
+   // Keep an ordinary icon fallback if this remote asset is not published.
+   const {id,item}=catalogItem(idOrName);
+   if(!item||!/^\\d+$/.test(id))return '';
+   const n=Math.max(12,Math.min(64,Number(size)||24));
+   const path='https://aniidex.com/images/items/'+encodeURIComponent(item.icon||'ui_item_'+id)+'.webp';
+   return '<span class="aniimoAtlasIcon aniimoCatalogIcon" title="'+String(item.name||'').replace(/"/g,'&quot;')+'" style="display:inline-flex;width:100%;max-width:'+n+'px;aspect-ratio:1;align-items:center;justify-content:center;overflow:hidden;vertical-align:middle"><span aria-hidden="true" style="font-size:55%;position:absolute">◈</span><img src="'+path+'" alt="" loading="lazy" decoding="async" onerror="this.remove()" style="position:relative;display:block;width:100%;height:100%;object-fit:contain"></span>';
+ }
  const charRows="Celestis:3962,134 Stellarys:1322,200 Helmut:398,200 Pawney:992,200 Rookey:1124,200 Wisptis:1454,200 Ignitis:728,200 Inferlupa:926,200 Hexxin:596,200 Dreaple:68,200 Dewy:2,200 Fragrancier:134,200 Helmwhelp:2840,134 Helgon:2708,134 Jawling:2972,134 Chirpi:68,68 Tromber:3368,134 Cornet:266,68 Tubster:3566,134 Flutternym:2444,134 Gracewing:1454,134 Nimbi:3104,134 Turbo:3764,134 Eko:2378,134 Eklue:2312,134 Infergon:3896,266 Emberpup:2774,2 Flameruff:3236,2 Scorchhowl:3566,2 Lavazar:3434,2 Magmarex:3500,2 Sparki:3698,2 Flamerion:2972,2 Squarrel:3962,2 Squashel:2,68 Fulmintis:662,332 Besauce:1850,332 Bulbly:3698,68 Veilfloat:134,134 Luminelle:3896,68 Bolty:3566,68 Blazen:3500,68 Fentuft:3830,68 Fenmane:3764,68 Dazmand:3698,398 Skippy:1256,68 Pranky:926,68 Susuta:1454,68 Popota:794,68 Piopiota:662,68 Panpanta:596,68 Shelly:1190,68 Sheldon:1124,68 Sherro:2,134 Jabster:3170,398 Fahloo:530,68 Erlath:464,68 Glacy:530,134 Bonesky:200,134 Fenrier:332,134 Glynsera:200,200 Geoclaw:464,134 Leafy:2642,68 Budclaw:992,134 Shrubclaw:1916,134 Hummin:1718,68 Tuckin:3368,68 Iris:1850,68 Irisal:2246,68 Irisalis:794,398 Somniwing:1454,398 Budsquire:1586,68 Thornblade:3170,68 Melloblum:2708,68 Pomegg:2906,68 Pomawk:2774,68 Morphling:1520,398 Pebbling:1850,134 Geodeback:1388,134 Minespine:1784,134 Cozite:1256,134 Bailite:728,134 Baleetle:794,134 Waleetle:2180,134 Bouldus:926,134 Cubbo:1322,134 Grizbo:1718,134 Helion:2906,398 Soleon:2972,398 Lunara:3038,398 Fennelun:3104,398";
  const characters={};
  for(const piece of charRows.split(' ')){
@@ -39,5 +60,5 @@
   const v=characters[String(name||'').toLowerCase().trim()];
   return v?sprite(v,size,true):'';
  }
- window.AniimoIconAtlas={url,byId,byName,find,html,characters,character};
+ window.AniimoIconAtlas={url,byId,byName,find,html,outputItem,catalogItem,characters,character};
 })();
