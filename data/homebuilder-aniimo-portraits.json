@@ -841,16 +841,8 @@
     "6999300": "assets/homebuilder-aniimo-portraits/sparkelf.png",
     "6999301": "assets/homebuilder-aniimo-portraits/prismana-sparkelf.png"
   },
-  "missingFormIds": [
-    {
-      "id": "1036300",
-      "name": "Soleon",
-      "form": ""
-    },
-    {
-      "id": "1037300",
-      "name": "Fennelun",
-      "form": ""
-    }
-  ]
+  "intentionallyExcludedFormIds": {
+    "1036300": "Soleon — user intentionally excluded",
+    "1037300": "Fennelun — user intentionally excluded"
+  }
 }
