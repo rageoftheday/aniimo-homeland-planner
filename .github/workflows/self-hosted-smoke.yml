@@ -315,7 +315,9 @@ jobs:
           grep -q "Purchased · nothing planned" js/views.js
           ! grep -q 'Legacy Board' js/views.js
           ! grep -q "setHomelandPlannerMode('legacy')" js/views.js
-          grep -q "if(!\['overview','plot'\].includes(homelandPlannerMode))homelandPlannerMode='overview'" js/views.js
+          grep -Fq "if(!['overview','plot','full'].includes(homelandPlannerMode))homelandPlannerMode='overview'" js/views.js
+          grep -Fq 'data-hpv2-drop-full' js/views.js
+          grep -Fq '.hpv2FullGrid' css/app.css
           grep -q "setHomelandPlannerMode('overview')" js/views.js
           grep -q 'hpv2PlotGrid' css/app.css
           grep -q 'hpv2FocusGrid' css/app.css
