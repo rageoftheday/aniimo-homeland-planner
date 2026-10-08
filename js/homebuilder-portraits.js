@@ -8,7 +8,7 @@
  const slug=s=>clean(s).normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
  const path=name=>'assets/homebuilder-aniimo-portraits/'+slug(name)+'.png';
  let manifest=null;
- fetch('data/homebuilder-aniimo-portraits.json?v=3').then(r=>r.ok?r.json():null).then(m=>{manifest=m;window.HomebuilderPortraits?.hydrate(document);}).catch(()=>{});
+ fetch('data/homebuilder-aniimo-portraits.json?v=4').then(r=>r.ok?r.json():null).then(m=>{manifest=m;window.HomebuilderPortraits?.hydrate(document);}).catch(()=>{});
  function candidates(worker){
   const species=clean(worker?.name),form=formPart(worker?.form),appearance=formPart(worker?.appearance);
   const formId=String(worker?.formId||worker?.form_id||worker?.variantId||worker?.variant||'').trim();

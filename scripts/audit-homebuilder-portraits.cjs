@@ -4,8 +4,10 @@ const entries=Object.entries(manifest.assets||{});
 assert.equal(entries.length,208,'Expected all 208 original circular portraits');
 for(const [key,path] of entries){
  assert(/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(key),'Invalid normalized key '+key);
- assert.equal(path,'assets/homebuilder-aniimo-portraits/'+key+'.png');
- const bytes=fs.readFileSync(path);
+ assert(/^assets\/homebuilder-aniimo-portraits\/by-form-id\/\d+_[a-z0-9-]+\.png$/.test(path),'Wrong numeric portrait path for '+key);
+ const matched=Object.entries(manifest.byFormId).find(([id,p])=>p.endsWith('/'+id+'_'+key+'.png'));
+ assert(matched,'No verified ID mapping for '+key);
+ const bytes=fs.readFileSync(matched[1]);
  assert(bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])),'Invalid PNG: '+path);
 }
 assert(manifest.assets['nighttime-piopiota'],'Nighttime Piopiota must resolve');
