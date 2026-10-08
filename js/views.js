@@ -190,7 +190,7 @@ function homelandMiniObject(o,p,big=false){
  const style=p.full?`left:${l/80*100}%;top:${t/60*100}%;width:${o.w/80*100}%;height:${o.h/60*100}%`:`left:${l/20*100}%;top:${t/15*100}%;width:${Math.min(o.w,20)/20*100}%;height:${Math.min(o.h,15)/15*100}%`;
  const visual=homelandObjectVisualHTML(o,big)+homelandAssignedPortraitHTML(o);
  if(!big)return `<div class="hpv2Obj preview" aria-hidden="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</div>`;
- return `<button type="button" class="hpv2Obj big${selected===o.id?' selected':''}" data-hpv2-object="${o.id}" draggable="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</button>`;
+ return `<button type="button" class="hpv2Obj big" data-hpv2-object="${o.id}" aria-pressed="${selected===o.id}" draggable="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</button>`;
 }
 function homelandPlotAddOptions(){
  return catalog.filter(item=>{
