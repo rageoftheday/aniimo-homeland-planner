@@ -967,7 +967,7 @@ function cropUnlockedForObject(c,o,rv){
 function rebuildCropPicker(){
  const rv=+rvLevel.value,hide=usableOnly.checked,current=objects.find(o=>o.id===selected);
  let arr=crops.filter(c=>{
-   if(current&&(current.name==='Farmland'||current.name==='Woodland')&&c.type!==current.name)return false;
+   if(!current||!['Farmland','Woodland'].includes(current.name)||c.type!==current.name)return false;
    return !hide || cropUnlockedForObject(c,current,rv);
  });
  cropSelect.innerHTML='<option value="">— choose —</option>'+arr
@@ -1366,16 +1366,35 @@ function renderAdvisor(){
    root.appendChild(card);
  }
 }
-function refreshWorkerSelectors(){
- const sel=el('actualWorkerSelect');if(!sel)return;const o=objects.find(x=>x.id===selected);const old=o?.workerId||'';sel.innerHTML='<option value="">Unassigned / manual</option>';
- if(o){const rule=STATION_RULES[o.name];for(const w of workers.filter(x=>x.active!==false||String(x.id)===String(old))){
- const lv=rule?workerAbilityLevel(w,rule.ability):0;if(rule&&!lv&&String(w.id)!==String(old))continue;
- const assigned=assignedObjectForWorker(w.id),busy=assigned&&assigned.id!==o.id;
- const op=document.createElement('option');op.value=w.id;op.textContent=`${w.name||'Unnamed'}${w.form?' — '+w.form:''}${rule?' | '+rule.ability+' Lv'+lv:''}${busy?' | move from '+assigned.name:''}`;sel.appendChild(op)
- }}sel.value=String(old||'');
+function workerEligibleForSelectedStation(w,o){
+ if(!o||!STATION_RULES[o.name]||w.active===false)return false;
+ const rule=STATION_RULES[o.name],abilityLv=workerAbilityLevel(w,rule.ability);
+ if(abilityLv<1)return false;
+ const familyLock=FAMILY_RECIPE_RULES[o.name+'|'+(o.recipeName||'')];
+ return !familyLock||familyForWorker(w)===familyLock.family;
 }
+function refreshWorkerSelectors(){
+ const sel=el('actualWorkerSelect');if(!sel)return;
+ const o=objects.find(x=>x.id===selected),old=String(o?.workerId||'');
+ sel.innerHTML='<option value="">Unassigned / manual</option>';
+ if(!o||!STATION_RULES[o.name]){sel.value='';return}
+ const rule=STATION_RULES[o.name];
+ const entries=workers.filter(w=>workerEligibleForSelectedStation(w,o));
+ for(const w of entries){
+   const lv=workerAbilityLevel(w,rule.ability),assigned=assignedObjectForWorker(w.id),busy=assigned&&assigned.id!==o.id;
+   const op=document.createElement('option');op.value=w.id;
+   op.textContent=`${w.name||'Unnamed'}${w.form?' — '+w.form:''} | ${rule.ability} Lv${lv}${busy?' | move from '+assigned.name:''}`;
+   sel.appendChild(op);
+ }
+ if(old&&!entries.some(w=>String(w.id)===old)){
+   const op=document.createElement('option');op.value=old;op.disabled=true;
+   op.textContent='Previously assigned Aniimo — incompatible with this recipe';sel.appendChild(op);
+ }
+ sel.value=old;
+}
+
 function applyWorkerToObject(o,workerId){
- if(!o)return;if(!workerId){delete o.workerId;render();return}const w=workers.find(x=>String(x.id)===String(workerId)),rule=STATION_RULES[o.name];if(!w)return;if(rule&&!workerAbilityLevel(w,rule.ability))return;
+ if(!o)return;if(!workerId){delete o.workerId;render();return}const w=workers.find(x=>String(x.id)===String(workerId)),rule=STATION_RULES[o.name];if(!w||!workerEligibleForSelectedStation(w,o))return;
  for(const other of objects)if(other.id!==o.id&&String(other.workerId||'')===String(w.id))delete other.workerId;
  o.workerId=w.id;if(rule){o.workerLevel=workerAbilityLevel(w,rule.ability)||1;o.personalityMult=personalityHas(w,rule.personality)?1.2:1}render();
 }
@@ -1534,7 +1553,7 @@ function updateRecipeInfo(){
  const c=recipeCalc(r,o.workerLevel||4,o.personalityMult||1),cycle=c.mins<1?(c.mins*60).toFixed(0)+' sec':c.mins.toFixed(2)+' min';
  info.innerHTML=`<b>${r.name}</b><br>Ingredients: ${r.ingredients}<br>Work: ${r.work.toLocaleString()} • recommends Lv ${r.rec}<br>Cycle: <b>${cycle}</b> • ${c.cycles.toFixed(2)} cycles/h<br>Sell/output: ${r.sell?'<span class="money">'+r.sell.toLocaleString()+' HC</span>':'<span class="warn">No direct coin value</span>'}<br>Gross station value: <span class="money">${Math.round(c.gross).toLocaleString()} HC/h</span>`;
 }
-function assignRecipe(o,name){if(!o||!recipeDB[o.name])return;const r=recipeDB[o.name].find(x=>x.name===name);if(!r)return;o.recipeName=r.name;o.workerLevel=Number(el('workerLevelSelect')?.value||4);o.personalityMult=Number(el('personalitySelect')?.value||1);render()}
+function assignRecipe(o,name){if(!o||!recipeDB[o.name])return;const r=recipeDB[o.name].find(x=>x.name===name);if(!r)return;o.recipeName=r.name;if(o.workerId){const w=workers.find(w=>String(w.id)===String(o.workerId));if(!w||!workerEligibleForSelectedStation(w,o))delete o.workerId;}o.workerLevel=Number(el('workerLevelSelect')?.value||4);o.personalityMult=Number(el('personalitySelect')?.value||1);render()}
 function clearRecipe(o){if(!o)return;delete o.recipeName;delete o.workerLevel;delete o.personalityMult;render()}
 function climateSpeedPercent(o){
  return Math.round(environmentFactor(o)*100);
@@ -1716,9 +1735,9 @@ function updateProductionSummary(){
 function renderAssignmentPanel(){
  const o=objects.find(x=>x.id===selected),panel=el('assignmentPanel'),preview=el('assignedWorkerPreview'),hint=el('assignmentHint');
  if(!panel||!preview||!hint)return;
- const eligible=!!o&&!['Farmland','Woodland'].includes(o.name);
+ const eligible=!!o&&!!STATION_RULES[o.name];
  panel.style.display=eligible?'block':'none';if(!eligible)return;
- const rule=STATION_RULES[o.name];hint.textContent=rule?'Requires '+rule.ability+' ability. Assign an active copy from the imported roster.':'Assign an owned Aniimo to this utility. Assigning a copy elsewhere moves it here.';
+ const rule=STATION_RULES[o.name];const lock=FAMILY_RECIPE_RULES[o.name+'|'+(o.recipeName||'')];hint.textContent='Requires '+rule.ability+' ability'+(lock?' and '+WORKER_FAMILIES[lock.family].label:'')+'. Only compatible active copies from the imported roster appear.';
  refreshWorkerSelectors();const w=workers.find(x=>String(x.id)===String(o.workerId||''));
  if(!w){preview.innerHTML='<span class="small">No Aniimo working here.</span>';return}
  const candidates=window.AniimoAssets?.portraitCandidates?.(w.name,w.form,w.appearance,w.sparklingHue)||[];
@@ -1727,8 +1746,8 @@ function renderAssignmentPanel(){
 }
 function updateInspector(){
  const o=objects.find(x=>x.id===selected);noneSelected.style.display=o?'none':'block';editor.style.display=o?'block':'none';
- if(!o){if(el('levelPanel'))el('levelPanel').style.display='none';if(el('cropPanel'))el('cropPanel').style.display='none';if(el('recipePanel'))el('recipePanel').style.display='none';return}
- selTitle.textContent=o.name;selSize.textContent=o.w+'×'+o.h;selPos.textContent=o.x+', '+o.y;const p=getPlotInfo(o);selPlot.textContent=p.plot;selLocal.textContent=p.local;labelInput.value=o.label;reqSelect.value=o.req;
+ if(!o){if(el('cropQuickPickLabel'))el('cropQuickPickLabel').style.display='none';if(el('assignmentPanel'))el('assignmentPanel').style.display='none';if(el('levelPanel'))el('levelPanel').style.display='none';if(el('cropPanel'))el('cropPanel').style.display='none';if(el('recipePanel'))el('recipePanel').style.display='none';return}
+ const cropKind=o.name==='Farmland'||o.name==='Woodland';if(el('cropQuickPickLabel')){el('cropQuickPickLabel').style.display=cropKind?'block':'none';el('cropQuickPickLabel').firstChild.textContent=o.name==='Woodland'?'Tree quick pick': 'Crop quick pick';}rebuildCropPicker();selTitle.textContent=o.name;selSize.textContent=o.w+'×'+o.h;selPos.textContent=o.x+', '+o.y;const p=getPlotInfo(o);selPlot.textContent=p.plot;selLocal.textContent=p.local;labelInput.value=o.label;reqSelect.value=o.req;
  const place=validArea(o)&&!collide(o),rs=reqSatisfied(o);reqStatus.innerHTML=`Placement: <b style="color:${place?'#62df8c':'#ff6971'}">${place?'VALID':'INVALID / COLLISION'}</b><br>Requirement: <b style="color:${rs?'#62df8c':'#ff6971'}">${o.req==='none'?'Neutral':(rs?'MET':'NOT MET')}</b><br>${climateNowText(o)}`;
  renderLevelPanel();renderCropCards();renderRecipePanel();renderAssignmentPanel();
 }
