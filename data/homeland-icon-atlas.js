@@ -36,12 +36,20 @@
    return String(recipe?.outputs?.[0]?.item??id);
  }
  function catalogItem(value){
-   const id=outputItem(value),ref=window.HOMELAND_REFERENCE_DATA?.items||{};
-   return {id,item:ref[id]||null};
+   const ref=window.HOMELAND_REFERENCE_DATA?.items||{};
+   let id=outputItem(value);
+   let item=ref[id]||null;
+   if(!item&&!/^\\d+$/.test(id)){
+     const key=id.toLowerCase().replace(/\\s*\\(quick\\)$/,'').replace(/^quick\\s+/,'').trim();
+     const matched=Object.entries(ref).find(([,x])=>String(x.name||'').toLowerCase()===key);
+     if(matched){id=matched[0];item=matched[1];}
+   }
+   return {id,item};
  }
  function html(idOrName,size=24){
    const direct=find(idOrName);if(direct)return sprite(direct,size);
    const resolved=outputItem(idOrName),v=find(resolved);if(v)return sprite(v,size);
+   const known=catalogItem(idOrName),knownSprite=find(known.id);if(knownSprite)return sprite(knownSprite,size);
    // The captured catalog provides ui_item_<ID> assets for items without atlas cells.
    // Keep an ordinary icon fallback if this remote asset is not published.
    const {id,item}=catalogItem(idOrName);
