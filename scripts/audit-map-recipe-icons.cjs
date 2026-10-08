@@ -36,7 +36,7 @@ assert.equal(Number(sandcastle.find(r=>String(r.id)==='4001049').minLevel),3);
 assert.equal(Number(sandcastle.find(r=>String(r.id)==='4020060').minLevel),2);
 assert(source.includes("const wantedName=quickArt?'Quick '+info.name:info.name"),'Quick recipes must use correct legacy names');
 const cropStart=source.indexOf('const crops=');
-const cropFrom=cropStart+'const crops='.length,cropEnd=source.indexOf('\\n];',cropFrom);
+const cropFrom=cropStart+'const crops='.length,cropEnd=source.indexOf('];',cropFrom);
 assert(cropStart>=0&&cropEnd>cropFrom,'Crop catalog unavailable');
 const crops=vm.runInNewContext('('+source.slice(cropFrom,cropEnd+2)+')');
 for(const crop of crops){
