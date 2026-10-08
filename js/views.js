@@ -155,6 +155,8 @@ function homelandItemArtworkId(name){
  return id&&/^\\d+$/.test(id)?id:null;
 }
 function homelandIllustratedIconHTML(name,cssClass='hpv2IconGlyph',fallbackIcon=null){
+ const mapped=window.AniimoIconAtlas?.html(name,40);
+ if(mapped)return '<span class="'+cssClass+' hpv2ArtHolder">'+mapped+'</span>';
  const fallback=esc(fallbackIcon||homelandVisualIconForName(name)),id=homelandItemArtworkId(name);
  const fac=window.AniimoAssets?.facility?.(String(name||'').replace(/\\s*\\(level \\d+\\)$/i,''))||null;
  // Material CDN path confirmed for Cotton (4001004), not assumed available for every ID.
@@ -178,10 +180,55 @@ function homelandObjectLevel(o){
  const v=Number(o?.facilityLevel||o?.placedLevel||0);
  return Number.isFinite(v)&&v>0?v:null;
 }
+// Live piece records link product and Aniimo by the same in-game piece number.
+function homelandLivePieceFor(o){
+ const raw=aniidexImportMeta?.home?.home||aniidexImportMeta?.home||{};
+ const queues=Array.isArray(raw.crops)?raw.crops:[];
+ if(!queues.length||!o)return null;
+ if(o.livePieceId){const linked=queues.find(q=>String(q.piece)===String(o.livePieceId));if(linked)return linked;}
+ const name=String(o.name||'').toLowerCase();
+ const sameType=objects.filter(x=>String(x.name||'').toLowerCase()===name).sort((a,b)=>Number(a.id)-Number(b.id));
+ const available=queues.filter(q=>String(dashboardFacilityName(q.facility)).toLowerCase()===name)
+   .sort((a,b)=>Number(a.piece)-Number(b.piece));
+ if(!available.length)return null;
+ const used=new Set();
+ const index=sameType.indexOf(o);
+ const sameLevel=available.filter(q=>Number(q.level)===Number(o.facilityLevel||o.placedLevel||0));
+ const pool=sameLevel.length>=sameType.filter(x=>Number(x.facilityLevel||x.placedLevel||0)===Number(o.facilityLevel||o.placedLevel||0)).length?sameLevel:available;
+ const matchOutput=(q)=>String(window.HomelandItemCatalog?.lookup(q.recipe,aniidexImportMeta?.catalog)?.name||window.AniimoIconAtlas?.find(q.recipe)?.name||'').toLowerCase();
+ for(const prev of sameType.slice(0,index)){
+   const prevExpected=String(prev.cropName||prev.recipeName||'').toLowerCase().replace(/\s*\(quick\)$/,'');
+   const candidate=pool.find(q=>!used.has(q.piece)&&(prevExpected&&matchOutput(q)===prevExpected));
+   const taken=candidate||pool.find(q=>!used.has(q.piece));if(taken)used.add(taken.piece);
+ }
+ const expected=String(o.cropName||o.recipeName||'').toLowerCase().replace(/\s*\(quick\)$/,'');
+ return pool.find(q=>!used.has(q.piece)&&expected&&matchOutput(q)===expected)||pool.find(q=>!used.has(q.piece))||null;
+}
+function homelandLiveWorkersFor(o,q){
+ if(!q||['Farmland','Woodland','Mine'].includes(o?.name))return [];
+ const raw=aniidexImportMeta?.home?.home||aniidexImportMeta?.home||{};
+ return (Array.isArray(raw.aniimo)?raw.aniimo:[]).filter(a=>a.piece!=null&&String(a.piece)===String(q.piece));
+}
+function homelandLiveWorkerBadges(o,q){
+ const live=homelandLiveWorkersFor(o,q);
+ return live.map(a=>{
+  const formId=String(a.form||'');
+  const form=window.ANIIMO_ASSET_MANIFEST?.aniimoForms?.[formId]||{};
+  const matching=typeof workers!=='undefined'?workers.find(w=>String(w.id)===String(a.id)):null;
+  const label=String(matching?.name||a.name||form.name||'Assigned Aniimo');
+  const imageSrc=matching?.localPortrait||window.AniimoAssets?.portraitCandidates?.(label,matching?.form||form.form||'')?.[0]||form.head||'';
+  return '<span class="hpv2WorkerBadge hpv2LiveWorker" role="button" tabindex="0" title="Working here: '+esc(label)+' — click for worker selection">'+(imageSrc?'<img alt="'+esc(label)+'" src="'+esc(imageSrc)+'" loading="lazy" onerror="this.style.display=\'none\'">':'<span>👤</span>')+'</span>';
+ }).join('');
+}
 function homelandObjectVisualHTML(o,big=false){
- const lv=homelandObjectLevel(o);
- const artName=o?.cropName?homelandPlantedOutputName(o.cropName):o?.name||o?.label||"";
- return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${homelandIllustratedIconHTML(artName)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}</span>`;
+ const lv=homelandObjectLevel(o),q=homelandLivePieceFor(o);
+ const id=q?.recipe!=null?q.recipe:null;
+ const currentName=id!=null?(window.AniimoIconAtlas?.find(id)?.name||window.HomelandItemCatalog?.lookup(id,aniidexImportMeta?.catalog)?.name||''):'';
+ const fallbackName=o?.cropName?homelandPlantedOutputName(o.cropName):o?.recipeName||o?.name||o?.label||'';
+ const artName=currentName||fallbackName;
+ const icon=id!=null&&window.AniimoIconAtlas?.html(id,40);
+ const badges=homelandLiveWorkerBadges(o,q);
+ return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${icon||homelandIllustratedIconHTML(artName)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
 }
 function homelandPlotRole(n){
  const rows=homelandPlotObjects(n);if(!rows.length)return 'Purchased';
@@ -213,7 +260,7 @@ function homelandMiniObject(o,p,big=false){
  const l=big&&p.full?o.x:Math.max(0,o.x-p.x),t=big&&p.full?o.y:Math.max(0,o.y-p.y);
  const title=homelandObjectTitle(o),lv=homelandObjectLevel(o);
  const style=p.full?`left:${l/80*100}%;top:${t/60*100}%;width:${o.w/80*100}%;height:${o.h/60*100}%`:`left:${l/20*100}%;top:${t/15*100}%;width:${Math.min(o.w,20)/20*100}%;height:${Math.min(o.h,15)/15*100}%`;
- const visual=homelandObjectVisualHTML(o,big)+homelandAssignedPortraitHTML(o);
+ const visual=homelandObjectVisualHTML(o,big)+(homelandLiveWorkersFor(o,homelandLivePieceFor(o)).length?'':homelandAssignedPortraitHTML(o));
  if(!big)return `<div class="hpv2Obj preview" aria-hidden="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</div>`;
  return `<button type="button" class="hpv2Obj big" data-hpv2-object="${o.id}" aria-pressed="${selected===o.id}" draggable="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</button>`;
 }
@@ -271,7 +318,7 @@ function renderHomelandPlannerV2(){
    const scroll=root.querySelector('.hpv2FullScroll');if(previousFullPosition&&scroll){scroll.scrollLeft=previousFullPosition.left;scroll.scrollTop=previousFullPosition.top;}
  }
  root.querySelectorAll('[data-hpv2-plot]').forEach(b=>b.addEventListener('click',()=>setHomelandPlannerMode('plot',b.dataset.hpv2Plot)));
- root.querySelectorAll('[data-hpv2-object]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();selected=Number(b.dataset.hpv2Object);render();}));
+ root.querySelectorAll('[data-hpv2-object]').forEach(b=>b.addEventListener('click',e=>{const workerClicked=!!e.target.closest('.hpv2LiveWorker');e.stopPropagation();selected=Number(b.dataset.hpv2Object);render();if(workerClicked)document.getElementById('actualWorkerSelect')?.focus();}));
  root.querySelectorAll('[data-hpv2-locked]').forEach(b=>b.addEventListener('click',()=>{const n=Number(b.dataset.hpv2Locked),u=HOMELAND_PLOT_UNLOCKS[n]||{};b.title=`Plot ${n}: unlock reference RV ${u.rv||'—'}, ${Number(u.cost||0).toLocaleString()} HC`;}));
  root.querySelectorAll('[data-hpv2-piece]').forEach(card=>card.addEventListener('dragstart',e=>{
    const name=card.dataset.hpv2Piece||'',item=catalog.find(x=>x.name===name),d=item?effectiveDims(item):null;
