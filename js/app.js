@@ -578,6 +578,46 @@ const recipeDB={
   {name:'Quick Scales',ingredients:'—',work:2700,rec:3,sell:2520,rv:18,mode:'resource'}
  ]
 };
+
+// Expand interactive station recipes from the bundled, offline Homeland reference.
+// Preserve legacy names for saved layouts and add distinct level/recipe-ID variants.
+const HOMELAND_FAMILY_BY_ID={1017:'susuta',1019:'shelly',1026:'nimbi',1021:'iris',1035:'dewy',1001:'celestis',1023:'flutternym'};
+const HOMELAND_REFERENCE_RECIPE_IDS=new Set();
+(function populateReferenceStationRecipes(){
+ const data=window.HOMELAND_REFERENCE_DATA;
+ if(!data?.recipes||!data?.facilities)return;
+ const stations=new Map(data.facilities.map(f=>[String(f.type),f]));
+ const getItem=id=>data.items?.[String(id)]||null;
+ for(const ref of data.recipes){
+  if(ref.kind==='crop')continue; // Crop and tree selection already has its own level-aware picker.
+  const facility=stations.get(String(ref.facility)),station=facility?.name;
+  if(!station||!STATION_RULES_PENDING_RECIPE_COMPAT(station))continue;
+  const output=ref.outputs?.[0],info=getItem(output?.item);
+  if(!output||!info?.name)continue;
+  const current=recipeDB[station]||(recipeDB[station]=[]);
+  const level=Number(ref.minLevel)||1;
+  const sameOutput=current.filter(x=>x.outputItemId===output.item||x.name===info.name);
+  const existing=sameOutput.find(x=>Number(x.minLevel||1)===level);
+  const name=existing?.name||((sameOutput.length||current.some(x=>x.name===info.name))?info.name+' (Lv'+level+' · #'+ref.id+')':info.name);
+  const ingredients=(ref.inputs||[]).map(x=>(getItem(x.item)?.name||'Item '+x.item)+' ×'+Number(x.qty||1)).join(' + ')||'—';
+  const step=ref.steps?.find(x=>x.skill)||null;
+  const facLv=facility.levels?.find(x=>Number(x.level)===level);
+  const family=HOMELAND_FAMILY_BY_ID[step?.family];
+  // Reference sells are per item; work produces output.qty per cycle.
+  const recipe={name,recipeId:ref.id,outputItemId:output.item,outputQty:Number(output.qty)||1,
+   ingredients,work:Number(ref.workload||ref.time)||0,rec:Number(step?.level)||1,
+   sell:Number(info.sell)||0,rv:Number(facLv?.rv)||1,minLevel:level,
+   mode:ref.kind==='home'?'resource':'processing',reference:true,
+   moduleGate:ref.gate?.module||null};
+  if(!recipe.work)continue;
+  if(existing){Object.assign(existing,recipe,{name:existing.name});}
+  else current.push(recipe);
+  HOMELAND_REFERENCE_RECIPE_IDS.add(String(ref.id));
+  if(family)FAMILY_RECIPE_RULES[station+'|'+name]={family};
+ }
+}
+function STATION_RULES_PENDING_RECIPE_COMPAT(station){return !!station&&station!=='Farmland'&&station!=='Woodland'}
+
 const processingRates={1:{1:60,2:180,3:240,4:300},2:{1:45,2:60,3:180,4:240},3:{1:30,2:45,3:60,4:180}};
 const resourceRates={1:{1:60,2:90,3:120,4:150},2:{1:45,2:75,3:105,4:135},3:{1:30,2:60,3:90,4:120}};
 
@@ -646,6 +686,7 @@ const FAMILY_RECIPE_RULES={
 
 // v29 starter Aniimo catalog. Verified entries are prefilled; name-only family entries remain editable.
 // Appearance (Sparkling / Umbral) is kept separate from form because appearance does not automatically imply different Home abilities.
+populateReferenceStationRecipes();
 const ANIIMO_CATALOG=[
  {name:'Pranky',form:'Base',family:'pranky',abilities:[['Water',2],['Hauling',2]],source:'verified'},
  {name:'Pranky',form:'Snowfield Form',family:'pranky',abilities:[['Water',2],['Ice',1],['Hauling',2]],source:'verified'},
@@ -803,7 +844,7 @@ function defaultWorker(){return {id:workerIdCounter++,name:'',form:'',appearance
 
 function recipeRequiredLevel(stationName,recipe){
  const arr=facilityLevels[stationName]||[];
- if(!arr.length)return 1;
+ if(recipe.minLevel)return Number(recipe.minLevel);if(!arr.length)return 1;
  let req=1;
  for(const d of arr){
    if((recipe.rv||1)>=d.rv) req=Math.max(req,d.lv);
@@ -811,7 +852,7 @@ function recipeRequiredLevel(stationName,recipe){
  return req;
 }
 function recipeRate(recipe,workerLevel,personality=1){const table=recipe.mode==='resource'?resourceRates:processingRates;const row=table[recipe.rec]||table[3];return (row[workerLevel]||row[4]||60)*personality}
-function recipeCalc(recipe,workerLevel,personality=1){const rate=recipeRate(recipe,workerLevel,personality),mins=rate>0?recipe.work/rate:0,cycles=mins>0?60/mins:0;return{rate,mins,cycles,gross:(recipe.sell||0)*cycles}}
+function recipeCalc(recipe,workerLevel,personality=1){const rate=recipeRate(recipe,workerLevel,personality),mins=rate>0?recipe.work/rate:0,cycles=mins>0?60/mins:0;return{rate,mins,cycles,gross:(recipe.sell||0)*(recipe.outputQty||1)*cycles}}
 
 
 let objects=[],selected=null,idCounter=1; let maxOverrides={}; let dimensionOverrides={}; let placeLevelPrefs={};
@@ -1551,7 +1592,7 @@ function updateRecipeInfo(){
  if(!stationHasRecipes(o)){info.innerHTML='';return}
  const r=recipeDB[o.name].find(x=>x.name===o.recipeName);if(!r){info.innerHTML='No recipe assigned.';return}
  const c=recipeCalc(r,o.workerLevel||4,o.personalityMult||1),cycle=c.mins<1?(c.mins*60).toFixed(0)+' sec':c.mins.toFixed(2)+' min';
- info.innerHTML=`<b>${r.name}</b><br>Ingredients: ${r.ingredients}<br>Work: ${r.work.toLocaleString()} • recommends Lv ${r.rec}<br>Cycle: <b>${cycle}</b> • ${c.cycles.toFixed(2)} cycles/h<br>Sell/output: ${r.sell?'<span class="money">'+r.sell.toLocaleString()+' HC</span>':'<span class="warn">No direct coin value</span>'}<br>Gross station value: <span class="money">${Math.round(c.gross).toLocaleString()} HC/h</span>`;
+ info.innerHTML=`<b>${r.name}</b><br>Ingredients: ${r.ingredients}<br>Work: ${r.work.toLocaleString()} • recommends Lv ${r.rec}<br>Cycle: <b>${cycle}</b> • ${c.cycles.toFixed(2)} cycles/h<br>Sell/output: ${r.sell?'<span class="money">'+(r.sell*(r.outputQty||1)).toLocaleString()+' HC / cycle</span>':'<span class="warn">No direct coin value</span>'}<br>Gross station value: <span class="money">${Math.round(c.gross).toLocaleString()} HC/h</span>`;
 }
 function assignRecipe(o,name){if(!o||!recipeDB[o.name])return;const r=recipeDB[o.name].find(x=>x.name===name);if(!r)return;o.recipeName=r.name;if(o.workerId){const w=workers.find(w=>String(w.id)===String(o.workerId));if(!w||!workerEligibleForSelectedStation(w,o))delete o.workerId;}o.workerLevel=Number(el('workerLevelSelect')?.value||4);o.personalityMult=Number(el('personalitySelect')?.value||1);render()}
 function clearRecipe(o){if(!o)return;delete o.recipeName;delete o.workerLevel;delete o.personalityMult;render()}
@@ -1646,10 +1687,11 @@ function calculateSupplyAudit(){
        addRate(consumed,q.item,use);
      }
      // Processing recipes in current DB produce one output per cycle.
-     addRate(available,r.name,sustainable);
-     addRate(produced,r.name,sustainable);
+     const producedName=r.reference?(window.HOMELAND_REFERENCE_DATA?.items?.[String(r.outputItemId)]?.name||r.name):r.name;
+     addRate(available,producedName,sustainable*(r.outputQty||1));
+     addRate(produced,producedName,sustainable*(r.outputQty||1));
      const util=potential>0?Math.min(1,sustainable/potential):0;
-     stationRows.push({name:o.name,recipe:r.name,potential,sustainable,util,gross:(r.sell||0)*sustainable});
+     stationRows.push({name:o.name,recipe:r.name,potential,sustainable,util,gross:(r.sell||0)*(r.outputQty||1)*sustainable});
      pending.splice(i,1);progress=true;
    }
    if(!progress)break;
