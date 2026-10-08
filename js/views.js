@@ -155,7 +155,7 @@ function homelandItemArtworkId(name){
  return id&&/^\\d+$/.test(id)?id:null;
 }
 function homelandIllustratedIconHTML(name,cssClass='hpv2IconGlyph',fallbackIcon=null){
- const mapped=window.AniimoIconAtlas?.html(name,40) || window.AniimoIconAtlas?.html(homelandItemArtworkId(name),40);
+ const mapped=window.AniimoIconAtlas?.html(name,40) || window.AniimoIconAtlas?.html(homelandItemArtworkId(name),40) || window.HomelandLocalIcons?.image(window.HomelandLocalIcons?.facility(name,1),40);
  if(mapped)return '<span class="'+cssClass+' hpv2ArtHolder">'+mapped+'</span>';
  const fallback=esc(fallbackIcon||homelandVisualIconForName(name)),id=homelandItemArtworkId(name);
  const fac=window.AniimoAssets?.facility?.(String(name||'').replace(/\\s*\\(level \\d+\\)$/i,''))||null;
