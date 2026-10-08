@@ -31,6 +31,53 @@ function homelandAddVisiblePiece(item){
  if(spots.length)addObject(item,spots[0].x,spots[0].y);
  else alert('No available space for '+item.name+' in the visible map area. Pan or zoom out.');
 }
+// Magnetically align dropped edges to nearby facilities, without allowing overlaps.
+// Move selected piece exactly half a grid cell per arrow press.
+function homelandNudgeSelected(key){
+ if(!['full','plot'].includes(homelandPlannerMode))return false;
+ const o=objects.find(x=>x.id===Number(selected));if(!o)return false;
+ const delta={ArrowLeft:[-.5,0],ArrowRight:[.5,0],ArrowUp:[0,-.5],ArrowDown:[0,.5]}[key];if(!delta)return false;
+ const nx=Math.round((o.x+delta[0])*2)/2,ny=Math.round((o.y+delta[1])*2)/2;
+ const proposed={...o,x:nx,y:ny};
+ if(nx<0||ny<0||nx+o.w>80||ny+o.h>60||collide(proposed)||!validArea(proposed))return true;
+ if(homelandPlannerMode==='plot'){
+  const plot=homelandPlotDef(homelandFocusedPlot);
+  if(!plot||nx<plot.x||ny<plot.y||nx+o.w>plot.x+20||ny+o.h>plot.y+15)return true;
+ }
+ o.x=nx;o.y=ny;render();
+ // Preserve keyboard focus on the selected object after render replaces the map DOM.
+ document.querySelector('#homelandPlannerV2 [data-hpv2-object="'+o.id+'"]')?.focus({preventScroll:true});
+ return true;
+}
+document.addEventListener('keydown',e=>{
+ if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)||e.altKey||e.ctrlKey||e.metaKey)return;
+ const tag=e.target?.tagName||'';
+ if(e.target?.isContentEditable||['INPUT','TEXTAREA','SELECT'].includes(tag)||e.target?.closest?.('[role="dialog"]'))return;
+ if(!document.getElementById('mapPane')?.closest('.tabPane.active'))return;
+ if(homelandNudgeSelected(e.key))e.preventDefault();
+});
+function homelandSnapAdjacent(candidate){
+ const clamp=(n,max)=>Math.max(0,Math.min(max,n));
+ const valid=(x,y)=>{const t={...candidate,x,y};return !collide(t)&&validArea(t)};
+ const near=objects.filter(o=>o.id!==candidate.id);
+ const possibilities=[{x:candidate.x,y:candidate.y,dist:Infinity}];
+ for(const o of near){
+  for(const nx of [o.x+o.w,o.x-candidate.w]){
+   if(Math.abs(nx-candidate.x)>.76)continue;
+   if(candidate.y>=o.y+o.h||candidate.y+candidate.h<=o.y)continue;
+   const x=clamp(nx,80-candidate.w),y=candidate.y;
+   if(valid(x,y))possibilities.push({x,y,dist:Math.abs(nx-candidate.x)});
+  }
+  for(const ny of [o.y+o.h,o.y-candidate.h]){
+   if(Math.abs(ny-candidate.y)>.76)continue;
+   if(candidate.x>=o.x+o.w||candidate.x+candidate.w<=o.x)continue;
+   const x=candidate.x,y=clamp(ny,60-candidate.h);
+   if(valid(x,y))possibilities.push({x,y,dist:Math.abs(ny-candidate.y)});
+  }
+ }
+ const best=possibilities.filter(p=>p.dist<Infinity).sort((a,b)=>a.dist-b.dist)[0];
+ return best?{...candidate,x:best.x,y:best.y}:candidate;
+}
 function homelandFitFullZoom(){
  const scroller=document.querySelector('#homelandPlannerV2 .hpv2FullScroll');if(!scroller)return;
  homelandSetFullZoom(Math.max(25,Math.min(200,Math.floor((scroller.clientWidth-20)/960*100/5)*5)));
@@ -143,7 +190,7 @@ function homelandMiniObject(o,p,big=false){
  const style=p.full?`left:${l/80*100}%;top:${t/60*100}%;width:${o.w/80*100}%;height:${o.h/60*100}%`:`left:${l/20*100}%;top:${t/15*100}%;width:${Math.min(o.w,20)/20*100}%;height:${Math.min(o.h,15)/15*100}%`;
  const visual=homelandObjectVisualHTML(o,big)+homelandAssignedPortraitHTML(o);
  if(!big)return `<div class="hpv2Obj preview" aria-hidden="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</div>`;
- return `<button type="button" class="hpv2Obj big" data-hpv2-object="${o.id}" draggable="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</button>`;
+ return `<button type="button" class="hpv2Obj big" data-hpv2-object="${o.id}" aria-pressed="${selected===o.id}" draggable="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</button>`;
 }
 function homelandPlotAddOptions(){
  return catalog.filter(item=>{
@@ -240,9 +287,9 @@ function renderHomelandPlannerV2(){
      const o=id?objects.find(o=>String(o.id)===String(id)):null,item=!o?catalog.find(c=>c.name===name):null;
      const w=o?.w??effectiveDims(item||{w:0,h:0}).w,h=o?.h??effectiveDims(item||{w:0,h:0}).h;
      const x=snapHomelandBuilderCoord(dx-(Number(anchor.x)||0),80-w),y=snapHomelandBuilderCoord(dy-(Number(anchor.y)||0),60-h);
-     const candidate={id:o?.id??-1,x,y,w,h};
+     const candidate=homelandSnapAdjacent({id:o?.id??-1,x,y,w,h});
      if(!w||!h||collide(candidate)){alert('That placement overlaps another building.');return}
-     if(o){o.x=x;o.y=y;selected=o.id;render()}else if(item){addObject(item,x,y)}
+     if(o){o.x=candidate.x;o.y=candidate.y;selected=o.id;render()}else if(item){addObject(item,candidate.x,candidate.y)}
    });
  }
  const dropGrid=root.querySelector('[data-hpv2-drop-plot]');
