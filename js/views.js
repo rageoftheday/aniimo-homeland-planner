@@ -232,10 +232,13 @@ function homelandObjectVisualHTML(o,big=false){
  const artName=currentName||(q&&q.recipe==null?o?.name:fallbackName);
  const icon=id!=null&&window.AniimoIconAtlas?.html(id,40);
  const planned=o?.recipeName?window.AniimoIconAtlas?.html(o.recipeName,40):'';
- const localFacility=!q?.recipe&&!o?.recipeName&&!o?.cropName?window.HomelandLocalIcons?.image(window.HomelandLocalIcons?.facility(o?.name,lv),40):'';
- const idleFacility=localFacility?'<span class="hpv2ArtHolder" style="position:relative">'+homelandIllustratedIconHTML(o?.name)+'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">'+localFacility+'</span></span>':'';
+ const facilityPath=window.HomelandLocalIcons?.facility(o?.name,lv);
+ const facilityArt=facilityPath?window.HomelandLocalIcons.image(facilityPath,40):'';
+ const productionArt=icon||planned||'';
+ const facilityWithFallback=facilityArt?'<span class="hpv2ArtHolder hpv2FacilityArt" style="position:relative">'+homelandIllustratedIconHTML(o?.name)+'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">'+facilityArt+'</span></span>':'';
+ const productionBadge=facilityWithFallback&&productionArt?'<span class="hpv2ProductionOverlay" title="Current production output">'+productionArt+'</span>':'';
  const badges=homelandLiveWorkerBadges(o,q);
- return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${icon||planned||idleFacility||homelandIllustratedIconHTML(artName)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
+ return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${facilityWithFallback||productionArt||homelandIllustratedIconHTML(artName)}${productionBadge}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
 }
 function homelandPlotRole(n){
  const rows=homelandPlotObjects(n);if(!rows.length)return 'Purchased';
