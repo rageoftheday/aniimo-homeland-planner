@@ -10,6 +10,7 @@ window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE={
     "400004":{name:"Red Cap",source:"https://aniimo.guide/en/items/red-cap"},
     "400005":{name:"Orange Cap",source:"https://aniimo.guide/en/items/orange-cap"},
     "400006":{name:"Blue Cap",source:"https://aniimo.guide/en/items/blue-cap"},
+    "400007":{name:"Sparkling Stone",source:"https://questlog.gg/aniimo/pt/db/item/400007",category:"Evolution Material"},
     "4010121":{name:"Pearl-Strung Blossom",source:"https://aniimo.guide/en/items/pearl-strung-blossom"},
     "4010122":{name:"Stardust Agate",source:"https://aniimo.guide/en/items/stardust-agate"},
     "4010123":{name:"Morning Star Bloom",source:"https://aniimo.guide/en/items/morning-star-bloom"},
