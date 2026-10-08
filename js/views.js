@@ -141,6 +141,27 @@ function homelandVisualIconForName(name){
  key=HOMELAND_PLANT_NAME_ALIASES[key]||key;
  return HOMELAND_CROP_ICONS[key]||HOMELAND_FACILITY_ICONS[key]||'◈';
 }
+// Resolve artwork by the game's stable item ID. External material images are
+// progressive enhancement: failed/missing URLs leave the readable emoji intact.
+function homelandItemArtworkId(name){
+ const normalized=String(name||'').trim().toLowerCase().replace(/\\s*\\(quick\\)$/,'');
+ const key=HOMELAND_PLANT_NAME_ALIASES[normalized]||normalized;
+ const manifest=window.ANIIMO_ASSET_MANIFEST?.items||{};
+ const ref=window.HOMELAND_REFERENCE_DATA?.items||{};
+ const explicit={'cherry blossom':'4001034','orange flower':'4001035','natural rubber':'4001022','bamboo':'4001017'};
+ const id=Object.keys(ref).find(id=>String(ref[id]?.name||'').toLowerCase()===key)
+   ||Object.keys(manifest).find(id=>String(manifest[id]?.name||'').toLowerCase()===key)
+   ||explicit[key];
+ return id&&/^\\d+$/.test(id)?id:null;
+}
+function homelandIllustratedIconHTML(name,cssClass='hpv2IconGlyph'){
+ const fallback=esc(homelandVisualIconForName(name)),id=homelandItemArtworkId(name);
+ const fac=window.AniimoAssets?.facility?.(String(name||'').replace(/\\s*\\(level \\d+\\)$/i,''))||null;
+ // Material CDN path confirmed for Cotton (4001004), not assumed available for every ID.
+ const artwork=id?'https://www.hideoutgacha.com/images/aniimo/database/materials/item_'+id+'.webp':fac?.icon||'';
+ return '<span class="'+cssClass+' hpv2ArtHolder"><span class="hpv2ArtFallback">'+fallback+'</span>'+
+   (artwork?'<img class="hpv2ArtImg" src="'+esc(artwork)+'" alt="" loading="lazy" decoding="async" onerror="this.remove()"/>':'')+'</span>';
+}
 function homelandPlantedOutputName(cropName){
  const meta=typeof cropProductionMeta!=='undefined'?cropProductionMeta?.[cropName]:null;
  return meta?.item||cropName;
@@ -157,7 +178,8 @@ function homelandObjectLevel(o){
 }
 function homelandObjectVisualHTML(o,big=false){
  const icon=homelandObjectVisualIcon(o),lv=homelandObjectLevel(o);
- return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true"><span class="hpv2IconGlyph">${esc(icon)}</span></span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}</span>`;
+ const artName=o?.cropName?homelandPlantedOutputName(o.cropName):o?.name||o?.label||"";
+ return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true"><span class="hpv2IconGlyph">${homelandIllustratedIconHTML(artName)}</span></span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}</span>`;
 }
 function homelandPlotRole(n){
  const rows=homelandPlotObjects(n);if(!rows.length)return 'Purchased';
@@ -205,7 +227,7 @@ function homelandPiecePaletteHTML(items){
    const d=effectiveDims(item),placed=objects.filter(o=>o.name===item.name).length,focusedPlaced=focused.filter(o=>o.name===item.name).length,limit=maxCount(item,rv);
    const search=normalizeSearch(item.cat+' '+item.name+' '+d.w+'x'+d.h);
    const addDisabled=placed>=limit?' disabled':'',removeDisabled=focusedPlaced<=0?' disabled':'';
-   return `<div class="hpv2PieceCard" draggable="true" data-hpv2-piece="${esc(item.name)}" data-piece-search="${esc(search)}"><div class="hpv2PieceIcon">${esc(homelandVisualIconForName(item.name))}</div><div class="hpv2PieceInfo"><b>${esc(item.name)}</b><span>${esc(item.cat)} · ${d.w}×${d.h}</span><small>${placed} placed / ${limit} max · ${focusedPlaced} in this plot</small></div><div class="hpv2PieceActions"><button type="button" data-hpv2-piece-remove="${esc(item.name)}" title="Remove one from this plot"${removeDisabled}>−</button><button type="button" data-hpv2-piece-add="${esc(item.name)}" title="Add to first legal free spot in this plot"${addDisabled}>+</button></div></div>`;
+   return `<div class="hpv2PieceCard" draggable="true" data-hpv2-piece="${esc(item.name)}" data-piece-search="${esc(search)}"><div class="hpv2PieceIcon">${homelandIllustratedIconHTML(item.name)}</div><div class="hpv2PieceInfo"><b>${esc(item.name)}</b><span>${esc(item.cat)} · ${d.w}×${d.h}</span><small>${placed} placed / ${limit} max · ${focusedPlaced} in this plot</small></div><div class="hpv2PieceActions"><button type="button" data-hpv2-piece-remove="${esc(item.name)}" title="Remove one from this plot"${removeDisabled}>−</button><button type="button" data-hpv2-piece-add="${esc(item.name)}" title="Add to first legal free spot in this plot"${addDisabled}>+</button></div></div>`;
  }).join('');
 }
 function renderHomelandPlannerV2(){
