@@ -231,13 +231,13 @@ function homelandObjectVisualHTML(o,big=false){
  const recipe=recipeName?(recipeDB?.[o?.name]||[]).find(r=>r.name===recipeName):null;
  const recipeId=recipe?.recipeId??recipe?.id;
  const outputId=recipe?.outputItemId??recipe?.outputId??(recipeId!=null?atlas?.outputItem(recipeId):null);
- const quick=!!recipeName&&(/(^quick\\s|\\(quick\\))/i.test(recipeName)||icons?.quick('',recipeId)&&/^402\\d+$/.test(String(recipeId)));
+ const quick=!!recipeName&&(recipeName.toLowerCase().startsWith('quick ')||recipeName.toLowerCase().includes('(quick)')||(!!icons?.quick('',recipeId)&&String(recipeId).startsWith('402')));
  const quickPath=quick?icons?.quick(recipeName,recipeId):'';
- const outputName=recipeName.replace(/^quick\\s+/i,'').replace(/\\s*\\(quick\\)/i,'').replace(/\\s*\\(lv\\d+.*\\)$/i,'').trim();
+ const outputName=recipeName.replace(/^quick /i,'').split(' (Lv')[0].replace(' (Quick)','').trim();
  const selectedPath=recipeName?(quickPath||icons?.file('Items',outputId??outputName)||icons?.file('Items',outputName)||icons?.file('Items',recipeName)):'';
  const recipeArt=recipeName?(icons?.image(selectedPath,40)||atlas?.html(outputId??outputName,40)||atlas?.html(recipeName,40)):'';
  const plantedName=cropName?homelandPlantedOutputName(cropName):'';
- const quickCrop=/\\(quick\\)/i.test(cropName);
+ const quickCrop=cropName.toLowerCase().includes('(quick)');
  const quickCropPath=quickCrop?icons?.quick('Quick '+plantedName):'';
  const plantedPath=cropName?(quickCropPath||icons?.file('Items',cropName)||icons?.file('Items',plantedName)):'';
  const plantedArt=cropName?(icons?.image(plantedPath,40)||atlas?.html(plantedName,40)||atlas?.html(cropName,40)):'';
