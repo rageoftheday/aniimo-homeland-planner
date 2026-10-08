@@ -601,3 +601,6 @@ header{align-items:center}
 .hpv2FullGrid>.hpv2Obj{z-index:2;overflow:visible}
 .hpv2FullGrid>.hpv2Obj .hpv2IconGlyph{font-size:clamp(10px,1.1vw,20px)!important}
 .hpv2FullGrid>.hpv2Obj .hpv2LevelText{font-size:clamp(8px,.75vw,12px)!important}
+
+/* Full-map-specific zoom controls, independent from the hidden legacy board toolbar. */
+.hpv2FullZoomTools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.hpv2FullZoomTools label{display:flex;align-items:center;gap:7px;font-size:11px}.hpv2FullZoomTools input{width:150px}.hpv2FullZoomTools button{min-width:34px}.hpv2FullZoomTools b{min-width:42px;text-align:center}
