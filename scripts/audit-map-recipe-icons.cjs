@@ -34,7 +34,7 @@ const sandcastle=data.recipes.filter(r=>String(r.facility)==='1010006');
 assert.deepEqual(sandcastle.map(r=>String(r.id)).sort(),['4001049','4001069','4020060']);
 assert.equal(Number(sandcastle.find(r=>String(r.id)==='4001049').minLevel),3);
 assert.equal(Number(sandcastle.find(r=>String(r.id)==='4020060').minLevel),2);
-assert(source.includes("const wantedName=quickArt?'Quick '+info.name:info.name"),'Quick recipes must use correct legacy names');
+assert(source.includes("const wantedName=isQuick?'Quick '+info.name:info.name"),'Quick recipes must use correct legacy names');
 const cropStart=source.indexOf('const crops=');
 const cropFrom=cropStart+'const crops='.length,cropEnd=source.indexOf('];',cropFrom);
 assert(cropStart>=0&&cropEnd>cropFrom,'Crop catalog unavailable');
