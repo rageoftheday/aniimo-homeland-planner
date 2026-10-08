@@ -99,10 +99,12 @@ function fitBoard(){
 }
 function actualBoard(){autoFit.checked=false;applyBoardScale(1)}
 function manualZoomPercent(p){
+ if(typeof homelandPlannerMode!=='undefined'&&homelandPlannerMode==='full'){autoFit.checked=false;homelandSetFullZoom(p);return}
  autoFit.checked=false;
  applyBoardScale((Number(p)||100)/100);
 }
 function zoomStep(delta){
+ if(typeof homelandPlannerMode!=='undefined'&&homelandPlannerMode==='full'){manualZoomPercent(Math.max(25,Math.min(200,homelandFullZoom+delta)));return}
  manualZoomPercent(Math.max(25,Math.min(150,Math.round(boardScale*100)+delta)));
 }
 function boardBuild(){
@@ -1960,12 +1962,12 @@ showLocked.onchange=()=>document.querySelectorAll('.lockedPlot').forEach(e=>e.st
 zoomOutBtn.onclick=()=>zoomStep(-10);
 zoomInBtn.onclick=()=>zoomStep(10);
 zoomSlider.addEventListener('input',()=>manualZoomPercent(zoomSlider.value));
-fitBtn.onclick=()=>{autoFit.checked=true;fitBoard()};
-actualBtn.onclick=()=>actualBoard();
+fitBtn.onclick=()=>{if(homelandPlannerMode==='full'){homelandFitFullZoom();return}autoFit.checked=true;fitBoard()};
+actualBtn.onclick=()=>{if(homelandPlannerMode==='full'){homelandSetFullZoom(100);return}actualBoard()};
 toggleLeftBtn.onclick=()=>toggleLeftPanel();
 toggleRightBtn.onclick=()=>toggleRightPanel();
 autoFit.onchange=()=>{if(autoFit.checked)fitBoard();else actualBoard()};
-centerBtn.onclick=()=>{const w=mapViewport||workspaceWrap;w.scrollLeft=(w.scrollWidth-w.clientWidth)/2;w.scrollTop=0};
+centerBtn.onclick=()=>{const w=homelandPlannerMode==='full'?document.querySelector('#homelandPlannerV2 .hpv2FullScroll'):(mapViewport||workspaceWrap);w.scrollLeft=(w.scrollWidth-w.clientWidth)/2;w.scrollTop=0};
 window.addEventListener('resize',()=>{if(autoFit.checked)fitBoard()});
 
 
