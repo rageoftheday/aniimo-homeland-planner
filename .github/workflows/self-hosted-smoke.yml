@@ -79,6 +79,7 @@ jobs:
           grep -Fq "const selectedPath=recipeName?" js/views.js
           grep -Fq 'hpv2LiveWorker .homelandLocalIcon' css/app.css
           node scripts/audit-map-recipe-icons.cjs
+          node scripts/audit-facility-recipe-catalog.cjs
           node --check data/homeland-local-icon-bridge.js
           test -s data/homeland-icon-atlas.js
           node --check data/homeland-icon-atlas.js
@@ -153,7 +154,7 @@ jobs:
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
-          grep -q 'js/app.js?v=30.21.15' index.html
+          grep -q 'js/app.js?v=30.21.16' index.html
           grep -q 'data-tab="aniimos"' index.html
           grep -q 'id="aniimosPane"' index.html
           grep -q 'Backup ▾' index.html
