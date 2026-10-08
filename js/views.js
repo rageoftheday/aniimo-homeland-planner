@@ -15,7 +15,7 @@ let homelandPieceQuery='';
 let homelandPlannerMode=localStorage.getItem('homelandPlannerMode')||'overview';
 if(!['overview','plot','full'].includes(homelandPlannerMode))homelandPlannerMode='overview';
 let homelandFocusedPlot=Number(localStorage.getItem('homelandFocusedPlot')||1);
-let homelandFullZoom=Math.max(25,Math.min(200,Number(localStorage.getItem('homelandFullZoom')||100)));
+let homelandFullZoom=Math.max(25,Math.min(400,Number(localStorage.getItem('homelandFullZoom')||100)));
 function homelandAddVisiblePiece(item){
  const scroller=document.querySelector('#homelandPlannerV2 .hpv2FullScroll');
  const grid=scroller?.querySelector('.hpv2FullGrid'),d=effectiveDims(item);
@@ -81,18 +81,18 @@ function homelandSnapAdjacent(candidate){
 }
 function homelandFitFullZoom(){
  const scroller=document.querySelector('#homelandPlannerV2 .hpv2FullScroll');if(!scroller)return;
- homelandSetFullZoom(Math.max(25,Math.min(200,Math.floor((scroller.clientWidth-20)/960*100/5)*5)));
+ homelandSetFullZoom(Math.max(25,Math.min(400,Math.floor((scroller.clientWidth-20)/960*100/5)*5)));
  scroller.scrollLeft=0;scroller.scrollTop=0;
 }
 function homelandSetFullZoom(value){
- const n=Math.max(25,Math.min(200,Math.round(Number(value)||100)));homelandFullZoom=n;localStorage.setItem('homelandFullZoom',String(n));
+ const n=Math.max(25,Math.min(400,Math.round(Number(value)||100)));homelandFullZoom=n;localStorage.setItem('homelandFullZoom',String(n));
  const grid=document.querySelector('#homelandPlannerV2 .hpv2FullGrid');if(grid){const scroller=grid.closest('.hpv2FullScroll'),oldWidth=grid.getBoundingClientRect().width,oldHeight=grid.getBoundingClientRect().height;
  const cx=scroller.scrollLeft+scroller.clientWidth/2,cy=scroller.scrollTop+scroller.clientHeight/2;
  grid.style.width=(960*n/100)+'px';
  const nx=grid.getBoundingClientRect().width/Math.max(1,oldWidth),ny=grid.getBoundingClientRect().height/Math.max(1,oldHeight);
  scroller.scrollLeft=cx*nx-scroller.clientWidth/2;scroller.scrollTop=cy*ny-scroller.clientHeight/2;
  }
- const v=document.getElementById('zoomSlider');if(v)v.value=String(Math.min(150,n));
+ const v=document.getElementById('zoomSlider');if(v)v.value=String(Math.min(400,n));
  const label=document.getElementById('zoomLabel');if(label)label.textContent=n+'%';
 }
 const HOMELAND_PLOT_UNLOCKS={
@@ -319,7 +319,7 @@ function renderHomelandPlannerV2(){
    root.innerHTML=modeBar+`<div class="hpv2Summary"><div><b>Home Overview</b><span>RV ${rvLevel.value} · ${openPlots.size} / 16 plots open · ${objects.length} placed objects</span></div><div class="hpv2SummaryHint">Overview only · no placement here. Open a plot to build. Locked cards show the reference RV + Home Coin unlock.</div></div><div class="hpv2PlotGrid">${cards}</div>`;
  }
  if(homelandPlannerMode==='full'){
-   if(window.zoomSlider){zoomSlider.max='200';zoomSlider.value=String(homelandFullZoom);}if(window.zoomLabel)zoomLabel.textContent=homelandFullZoom+'%';
+   if(window.zoomSlider){zoomSlider.max='400';zoomSlider.value=String(homelandFullZoom);}if(window.zoomLabel)zoomLabel.textContent=homelandFullZoom+'%';
    const scroll=root.querySelector('.hpv2FullScroll');if(previousFullPosition&&scroll){scroll.scrollLeft=previousFullPosition.left;scroll.scrollTop=previousFullPosition.top;}
  }
  root.querySelectorAll('[data-hpv2-plot]').forEach(b=>b.addEventListener('click',()=>setHomelandPlannerMode('plot',b.dataset.hpv2Plot)));
