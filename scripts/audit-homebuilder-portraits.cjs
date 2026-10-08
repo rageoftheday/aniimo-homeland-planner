@@ -22,10 +22,24 @@ for(const {name,form} of catalog){
  assert(manifest.assets[base]||manifest.assets[key],'No portrait for '+name+' '+form);
  if(form!=='Base'&&!manifest.assets[key])missingSpecific.push(name+' — '+form);
 }
-assert.deepEqual(missingSpecific,['Thornblade — Rainstorm Form'],'Review new unillustrated catalog variants');
+assert.deepEqual(missingSpecific,[],'Every built-in Aniimo form should have its correct portrait');
+const embedded=fs.readFileSync('data/embedded-aniidex-catalog.js','utf8');
+const catalogData=vm.runInNewContext(embedded+';EMBEDDED_ANIIDEX_CATALOG');
+const formLabels=catalogData.text.forms;
+assert.equal(Object.keys(formLabels).length,210,'Expected 210 official Aniidex form IDs');
+assert.equal(Object.keys(manifest.byFormId).length,208,'Expected exactly 208 mapped form IDs');
+const excluded=manifest.intentionallyExcludedFormIds;
+assert.deepEqual(Object.keys(excluded).sort(),['1036300','1037300'],'Intentional exclusions must be explicit');
+for(const [id,info] of Object.entries(formLabels)){
+ const key=slug((info.form?info.form.replace(/ form$/i,'')+' ':'')+info.name);
+ const file=manifest.byFormId[id];
+ if(excluded[id]){assert(!file,'Excluded form must not be mapped: '+id);continue}
+ assert.equal(file,manifest.assets[key],'Incorrect form ID mapping '+id+' '+key);
+}
+assert.equal(manifest.byFormId['1032301'],manifest.assets['thunderstorm-thornblade'],'Thunderstorm Thornblade must use 1032301');
 const loader=fs.readFileSync('js/homebuilder-portraits.js','utf8');
 assert(loader.includes('manifest?.assets?.[key]'),'Manifest lookup must be exact');
 assert(loader.includes('assets/homebuilder-aniimo-portraits/unassigned-aniimo.svg'),'Missing artwork must use the universal Aniimo placeholder');
 const view=fs.readFileSync('js/views.js','utf8');
 assert(view.includes('const live=assigned?[assigned]:[];'),'Unassigned map objects must have no badges');
-console.log('Circular portrait audit PASS: 208 valid PNGs, '+catalog.length+' built-in Aniimo entries, 1 missing form-specific variant (Rainstorm Thornblade).');
+console.log('Circular portrait audit PASS: 208 valid PNGs, '+catalog.length+' built-in Aniimo entries, 2 intentional omissions (Soleon and Fennelun).');
