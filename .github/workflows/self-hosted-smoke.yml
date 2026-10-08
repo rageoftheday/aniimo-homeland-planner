@@ -80,6 +80,7 @@ jobs:
           grep -Fq 'hpv2LiveWorker .homelandLocalIcon' css/app.css
           node scripts/audit-map-recipe-icons.cjs
           node scripts/audit-homebuilder-portraits.cjs
+          node scripts/audit-id-named-aniimo-portraits.cjs
           node scripts/audit-facility-recipe-catalog.cjs
           node --check data/homeland-local-icon-bridge.js
           test -s data/homeland-icon-atlas.js
