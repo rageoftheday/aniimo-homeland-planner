@@ -457,6 +457,7 @@ function recipeCatalogParts(){
  return {recipes:Array.isArray(recipes)?recipes:Object.entries(recipes||{}).map(([id,v])=>({id:Number(id),...v})),text,planner,facts,src};
 }
 function recipeItemName(id,p){
+ const common=window.HomelandItemCatalog?.lookup(id,aniidexImportMeta?.catalog);if(common?.name)return common.name;
  const key=String(id??''),direct=p.text?.items?.[key]??p.text?.items?.[Number(key)];
  if(typeof direct==='string')return direct;
  if(direct?.name||direct?.label)return String(direct.name||direct.label);
@@ -494,7 +495,7 @@ function fullRecipeRows(){
    const abilityLevel=r.steps?.find(x=>x?.skill)?.level||r.step?.level||'';
    const sellRaw=p.facts?.items?.[String(out.item??r.id)]?.sell;
    const supplementalSell=window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE?.entries?.[String(out.item??r.id)]?.sell;
-   const sell=sellRaw??supplementalSell??null;
+   const sell=window.HomelandItemCatalog?.lookup(out.item??r.id,aniidexImportMeta?.catalog)?.sell??sellRaw??supplementalSell??null;
    return {id:r.id,station,name,rv:recipeFacilityRv(r.facility,r.minLevel,p),level:Number(r.minLevel||1),kind:r.kind||'work',ingredients,work:r.workload??r.time??0,ability,abilityLevel,sell,family:HOMELAND_REFERENCE_FAMILY_IDS[r.steps?.find(x=>x.family)?.family]||null,plannerAvailable:plannerRecipeMatch(station,name)};
   })};
  }

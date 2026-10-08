@@ -23,47 +23,18 @@
   }
   function itemName(id){
     const key=String(id??'');
+    const unified=window.HomelandItemCatalog?.lookup(key,aniidexImportMeta?.catalog);
+    if(unified?.name)return unified.name;
     const egg=window.ANIIMO_EGG_REFERENCE?.entries?.[key];
     if(egg?.name)return egg.name;
-    const p=catalogParts();
-    const direct=p.liveText?.items?.[key]??p.liveText?.items?.[Number(key)]??p.embeddedText?.items?.[key]??p.embeddedText?.items?.[Number(key)];
-    if(typeof direct==='string')return direct;
-    if(direct?.name||direct?.label)return String(direct.name||direct.label);
-    const supplemental=window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE?.entries?.[key];
-    if(supplemental?.name)return String(supplemental.name);
-    const q=questlogItem(key);if(q?.name)return String(q.name);
-    const fact=itemFact(key);
-    if(fact?.name)return String(fact.name);
-    const slug=String(fact?.path||'').split('?')[0].replace(/\/+$/,'').split('/').pop()||'';
-    if(slug)return slug.replace(/[-_]+/g,' ').replace(/\b\w/g,m=>m.toUpperCase());
     return key?'Item '+key:'Unknown item';
   }
   function itemSellValue(id){
-    const fact=itemFact(id),raw=fact?.sell;
-    if(raw!==null&&raw!==undefined&&raw!==''){
-      const n=Number(raw);if(Number.isFinite(n)&&n>=0)return n;
-    }
-    const supplemental=window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE?.entries?.[String(id??'')],supplementalSell=supplemental?.sell;
-    if(supplementalSell!==null&&supplementalSell!==undefined&&supplementalSell!==''){
-      const n=Number(supplementalSell);if(Number.isFinite(n)&&n>=0)return n;
-    }
-    const q=questlogItem(id),sell=q?.sell;
-    if(sell!==null&&sell!==undefined&&sell!==''){
-      const n=Number(sell);if(Number.isFinite(n)&&n>=0)return n;
-    }
-    return null;
+    return window.HomelandItemCatalog?.lookup(id,aniidexImportMeta?.catalog)?.sell??null;
   }
   function homeCoin(n){return Number(n||0).toLocaleString()+' HC'}
   function foodEnergy(id){
-    const key=String(id??''),p=catalogParts();
-    const liveFact=p.liveFacts?.items?.[key]??p.liveFacts?.items?.[Number(key)]??null;
-    const embeddedFact=p.embeddedFacts?.items?.[key]??p.embeddedFacts?.items?.[Number(key)]??null;
-    const liveValue=Number(liveFact?.food);
-    if(Number.isFinite(liveValue)&&liveValue>0)return liveValue;
-    const embeddedValue=Number(embeddedFact?.food);
-    if(Number.isFinite(embeddedValue)&&embeddedValue>0)return embeddedValue;
-    const ref=window.ANIIMO_FOOD_ENERGY_REFERENCE?.entries?.[key],fallback=Number(ref?.energy);
-    return Number.isFinite(fallback)&&fallback>0?fallback:null;
+    return window.HomelandItemCatalog?.lookup(id,aniidexImportMeta?.catalog)?.energy??null;
   }
   function formatReserveMinutes(totalMinutes){
     if(!Number.isFinite(totalMinutes)||totalMinutes<=0)return '—';
@@ -112,6 +83,9 @@
     const foodResidents=Math.max(0,Number(h.rosterCount||0));
     const foodReserveMinutes=foodRate>0?foodEnergyTotal/foodRate:0;
     const foodReserveLabel=foodEnergyTotal>0&&foodRate>0?(foodUnknownUnits>0?'≥ '+formatReserveMinutes(foodReserveMinutes)+' from known foods':'≈ '+formatReserveMinutes(foodReserveMinutes)):'Unknown';
+    const missingFoodIds=[...new Set(food.filter(x=>foodEnergy(x.item)==null).map(x=>String(x.item)))];
+    const missingStorageIds=Object.keys(storage).filter(id=>!window.HomelandItemCatalog?.lookup(id,aniidexImportMeta?.catalog)?.name||itemSellValue(id)==null);
+
     const productionRows=queues.map(q=>{
       const outputs=Object.entries(q.output||{}).filter(([,v])=>Number(v)>0);
       const out=outputs.map(([id,v])=>itemName(id)+' ×'+Number(v)).join(' • ');
@@ -193,6 +167,7 @@
       '<details class="homeSnapshotDetails"><summary>Facility inventory ('+h.facilityPieces+' pieces / '+h.facilityRows.length+' types)</summary><div class="tableWrap homeFacilityTable"><table class="dataTable"><thead><tr><th>Facility</th><th>Total</th><th>Levels owned</th></tr></thead><tbody>'+facilityRows+'</tbody></table></div></details>'+
       '<details class="homeSnapshotDetails"><summary>RV modules</summary><div class="tableWrap"><table class="dataTable"><thead><tr><th>Module</th><th>Level</th><th>ID</th></tr></thead><tbody>'+moduleRows+'</tbody></table></div></details>'+
       '<details class="homeSnapshotDetails"><summary>Visitors / sync health</summary><div class="snapshotKeyRows"><div><span>Visitors</span><b>'+visitors.length+'</b></div><div><span>Visitor IDs</span><b>'+esc(visitors.join(', ')||'—')+'</b></div><div><span>Fresh</span><b>'+(h.meta?.home?.fresh===true?'Yes':h.meta?.home?.fresh===false?'No':'Unknown')+'</b></div><div><span>Cache seconds left</span><b>'+esc(String(h.meta?.home?.secondsLeft??'—'))+'</b></div><div><span>Region</span><b>'+esc(String(h.meta?.home?.region||'—'))+'</b></div><div><span>Server</span><b>'+esc(String(raw.server||'—'))+'</b></div></div></details>'+
+      '<details class="homeSnapshotDetails"><summary>Missing item data audit · '+missingFoodIds.length+' unknown food energies / '+missingStorageIds.length+' storage names or prices</summary><div class="small">Entries are checked against the common Homeland item catalog, the active Aniidx profile catalog, and verified reference overrides. Missing values remain unknown; they are never counted as zero.</div><div class="snapshotKeyRows"><div><span>Missing food energy IDs</span><b>'+esc(missingFoodIds.join(', ')||'None')+'</b></div><div><span>Missing storage name/price IDs</span><b>'+esc(missingStorageIds.join(', ')||'None')+'</b></div></div></details>'+
       '<details class="homeSnapshotDetails"><summary>Home storage ('+storageEntries.length+' item codes)</summary><div class="snapshotStorageSummary"><div><span>Known sell value</span><b>'+homeCoin(storageKnownValue)+'</b></div><div><span>Priced item codes</span><b>'+storagePricedCodes+' / '+storageEntries.length+'</b></div><div><span>Unpriced / unknown</span><b>'+Math.max(0,storageEntries.length-storagePricedCodes)+'</b></div></div><div class="small snapshotSectionIntro">Total includes only items with a verified sell price. Unknown values are shown as — and are not counted as zero.</div><div class="tableWrap snapshotStorageTable"><table class="dataTable"><thead><tr><th>Item</th><th>Item ID</th><th>Count</th><th>Sell each</th><th>Stack value</th></tr></thead><tbody>'+storageRows+'</tbody></table></div></details>';
     el('snapshotProductionMode')?.addEventListener('change',e=>{productionGroupMode=e.target.value==='individual'?'individual':'grouped';renderHomeSnapshotTab();});
     el('snapshotProductionSort')?.addEventListener('change',e=>{productionSort=e.target.value||'item';renderHomeSnapshotTab();});

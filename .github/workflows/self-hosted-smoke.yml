@@ -242,8 +242,10 @@ jobs:
           grep -Fq "class=\"hpv2Obj big\" data-hpv2-object" js/views.js
           grep -Fq "class=\"hpv2Obj preview\"" js/views.js
           node --check js/home-snapshot.js
-          grep -Fq "embeddedValue=Number(embeddedFact?.food)" js/home-snapshot.js
-          grep -Fq "liveValue=Number(liveFact?.food)" js/home-snapshot.js
+          grep -Fq 'window.HomelandItemCatalog?.lookup' js/home-snapshot.js
+          node --check js/homeland-item-catalog.js
+          grep -Fq 'js/homeland-item-catalog.js?v=1' index.html
+          grep -Fq 'missingFoodIds' js/home-snapshot.js
           node - <<'NODE'
           const fs=require('fs');
           const s=fs.readFileSync('data/embedded-aniidex-catalog.js','utf8');
@@ -355,8 +357,8 @@ jobs:
           grep -q 'Estimated food reserve' js/home-snapshot.js
           grep -q 'Stack value' js/home-snapshot.js
           grep -q 'function itemSellValue' js/home-snapshot.js
-          grep -q 'ANIIMO_QUESTLOG_ITEMS' js/home-snapshot.js
-          grep -q 'ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE' js/home-snapshot.js
+          grep -q 'ANIIMO_QUESTLOG_ITEMS' js/homeland-item-catalog.js
+          grep -q 'ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE' js/homeland-item-catalog.js
           grep -q 'Pearl-Strung Blossom' data/item-supplemental-reference.js
           grep -q 'Sunny Daisy' data/item-supplemental-reference.js
           grep -q 'Huge Rose' data/item-supplemental-reference.js
