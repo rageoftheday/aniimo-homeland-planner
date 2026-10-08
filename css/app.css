@@ -648,3 +648,12 @@ header{align-items:center}
 .hpv2Visual>.hpv2LevelText{flex:none;max-width:100%;white-space:nowrap}
 .hpv2WorkerBadge .aniimoAtlasIcon{width:100%!important;max-width:100%!important;max-height:100%!important;min-width:0!important;min-height:0!important}
 .hpv2WorkerBadge .aniimoAtlasIcon>img{max-width:none!important;max-height:none!important}
+
+
+/* Level-specific original building art + compact current-output marker. */
+.hpv2IconCircle .hpv2ProductionOverlay{position:absolute;right:-7%;bottom:-7%;display:flex;align-items:center;justify-content:center;width:47%;height:47%;min-width:15px;min-height:15px;border:1px solid #e5f9ff;border-radius:50%;background:#384653;box-shadow:0 1px 4px #0008;overflow:hidden;z-index:2}
+.hpv2ProductionOverlay .homelandIconWithFallback{width:100%!important;max-width:100%!important;height:100%}
+.hpv2ProductionOverlay .homelandLocalIcon{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important}
+.hpv2IconCircle .hpv2FacilityArt{display:flex;align-items:center;justify-content:center}
+.hpv2WorkerBadge.hpv2LiveWorker .homelandIconWithFallback{width:100%!important;max-width:100%!important;height:100%;border-radius:50%}
+.hpv2WorkerBadge.hpv2LiveWorker .homelandLocalIcon{width:100%!important;max-width:none!important;max-height:none!important;height:100%!important;object-fit:cover!important;transform:scale(1.65);transform-origin:50% 24%}
