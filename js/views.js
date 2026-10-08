@@ -1029,6 +1029,14 @@ function renderDatabaseTab(){
    const evo=(speciesData.evolutionFamilies||[]).find(f=>[...(f.path||[]),...(f.ends||[])].includes(name));
    return evo?evo.key+' evolution family':'—';
  };
+ const master=window.HomelandItemCatalog;
+ const masterItems=master?.allItems(aniidexImportMeta?.catalog)||[];
+ const questCount=window.ANIIMO_QUESTLOG_ITEMS?.counts?.items||0;
+ const home=dashboardHomeSnapshot?.(),stored=Object.entries(home?.rawHome?.storage||{}).filter(([,count])=>Number(count)>0);
+ const examined=stored.map(([id,count])=>({id,count,record:master?.lookup(id,aniidexImportMeta?.catalog)||{}}));
+ const unnamed=examined.filter(x=>!x.record.name),unpriced=examined.filter(x=>x.record.sell==null);
+ const unknownFood=(home?.rawHome?.food||[]).filter(x=>master?.lookup(x.item,aniidexImportMeta?.catalog)?.energy==null);
+ const itemAuditRows=examined.filter(x=>!x.record.name||x.record.sell==null);
  const sourceBadge=c=>c.source==='official-wiki'?'<span class="sourceBadge official">Official Wiki</span>':c.source==='official'?'<span class="sourceBadge official">Official preset</span>':c.source==='verified'?'<span class="sourceBadge">Cross-checked</span>':'<span class="sourceBadge user">Name only</span>';
  root.innerHTML=`<div class="databaseBrowser"><div class="databaseBrowserHead"><div class="v30Title">Database / Reference</div><div class="v30Sub">Offline facility/recipe facts plus the cached official Wiki Aniimo reference. User-entered copy data still overrides catalog defaults.</div><div class="dashboardGrid">
  <div class="metricCard"><div class="label">Planner reference data</div><div class="metric">${ref.ok?'✓':'!'}</div><div class="small">${ref.ok?'Offline facility / recipe data loaded':esc((ref.issues||[]).join(' • '))}</div></div>
@@ -1038,6 +1046,12 @@ function renderDatabaseTab(){
  <div class="metricCard"><div class="label">Family-gated stations</div><div class="metric">${gatedStations.size}</div><div class="small">${locks.length} station / recipe family rules</div></div>
  <div class="metricCard"><div class="label">Station work rules</div><div class="metric">${Object.keys(STATION_RULES).length}</div></div>
  </div></div><div class="databaseScroll">
+ <div class="databaseSection"><div class="sectionTitle">All Aniimo items · ID coverage audit</div>
+ <div class="small">Available unique item IDs: ${masterItems.length.toLocaleString()} · QuestLog imported IDs: ${questCount.toLocaleString()} · current profile stored IDs: ${examined.length}. Homeland reference is not the complete global game catalog. A missing sell value is unknown, not zero.</div>
+ <div class="small">Current profile: ${unnamed.length} unnamed storage IDs · ${unpriced.length} storage IDs without a known sell price · ${unknownFood.length} food slots without verified energy.</div>
+ <button type="button" id="itemAuditExportBtn">Download missing-item audit CSV</button>
+ <div class="tableWrap"><table class="dataTable"><thead><tr><th>Item ID</th><th>Known name</th><th>Count</th><th>Missing</th></tr></thead><tbody>${itemAuditRows.slice(0,250).map(x=>`<tr><td><code>${esc(x.id)}</code></td><td>${esc(x.record.name||'Unknown')}</td><td>${Number(x.count).toLocaleString()}</td><td>${!x.record.name?'Name ':''}${x.record.sell==null?'Sell price':''}</td></tr>`).join('')||'<tr><td colspan="4">All stored IDs have names and known prices.</td></tr>'}</tbody></table></div>
+ </div>
  <div class="databaseSection">
   <div class="sectionTitle">Complete Aniimo evolution roster</div>
   <div class="tableWrap"><table class="dataTable"><thead><tr><th>Evolution line</th><th>Members</th><th>Official Wiki coverage</th></tr></thead><tbody>
@@ -1054,6 +1068,14 @@ function renderDatabaseTab(){
   <div class="databaseFamilyBodyScroll"><table class="dataTable databaseBodyTable"><colgroup><col style="width:38%"><col style="width:24%"><col style="width:38%"></colgroup><tbody>${locks.map(([k,v])=>`<tr><td>${esc(k.replace('|',' — '))}</td><td>${esc(WORKER_FAMILIES[v.family]?.label||v.family)}</td><td>${esc((WORKER_FAMILIES[v.family]?.members||[]).join(' / '))}</td></tr>`).join('')}</tbody></table></div>
  </div>
  </div></div>`;
+ const auditBtn=root.querySelector('#itemAuditExportBtn');
+ auditBtn?.addEventListener('click',()=>{
+  const lines=['item_id,name,count,missing_name,missing_sell_price,source'];
+  const csv=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  for(const x of itemAuditRows)lines.push([x.id,x.record.name||'',x.count,!x.record.name,x.record.sell==null,x.record.source||''].map(csv).join(','));
+  const blob=new Blob([lines.join('\\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='aniimo-missing-items.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ });
 }
 let activePlanAdviceSection='suggestions';
 function setPlanAdviceSection(section){

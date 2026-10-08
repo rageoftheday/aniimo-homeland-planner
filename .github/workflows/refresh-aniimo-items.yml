@@ -1,0 +1,44 @@
+name: Refresh global Aniimo item catalog
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * 1'
+permissions:
+  contents: write
+jobs:
+  refresh-items:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download QuestLog item database
+        run: node tools/scrape-questlog-items.js
+        env:
+          QUESTLOG_DELAY_MS: '100'
+          QUESTLOG_MAX_LIST_PAGES: '250'
+      - name: Refuse incomplete or unreliable snapshots
+        run: |
+          node - <<'NODE'
+          const data=require('./data/questlog-items.json');
+          const n=data.items?.length||0;
+          const named=data.items?.filter(x=>x.name&&!/^Item \d+$/.test(x.name)).length||0;
+          const ids=new Set(data.items.map(x=>String(x.id)));
+          if(n<1000||named/n<0.90||ids.size!==n){
+            throw new Error('Rejecting incomplete items snapshot: '+JSON.stringify({items:n,named,unique:ids.size}));
+          }
+          console.log('Validated QuestLog items:',n,'named:',named);
+          NODE
+      - name: Commit verified catalog
+        run: |
+          if git diff --quiet -- data/questlog-items.js data/questlog-items.json; then
+            echo "No changes to items catalog."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/questlog-items.js data/questlog-items.json
+          git commit -m "data: refresh verified QuestLog Aniimo item catalog"
+          git push
