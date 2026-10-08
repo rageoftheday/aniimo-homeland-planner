@@ -38,7 +38,7 @@ assert(source.includes("const wantedName=quickArt?'Quick '+info.name:info.name")
 const cropStart=source.indexOf('const crops=');
 const cropFrom=cropStart+'const crops='.length,cropEnd=source.indexOf('];',cropFrom);
 assert(cropStart>=0&&cropEnd>cropFrom,'Crop catalog unavailable');
-const crops=vm.runInNewContext('('+source.slice(cropFrom,cropEnd+2)+')');
+const crops=vm.runInNewContext('('+source.slice(cropFrom,cropEnd+1)+')');
 for(const crop of crops){
  const key=String(crop.name).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
  assert(manifest.names.Items[key]||Object.values(data.items).some(x=>String(x.name).toLowerCase()===String(crop.name).toLowerCase()),'Missing selectable plant icon '+crop.name);
