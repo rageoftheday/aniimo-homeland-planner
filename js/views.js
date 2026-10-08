@@ -1022,6 +1022,11 @@ function renderDatabaseTab(){
  const wiki=window.WikiHomeland?.summary?.()||{counts:{species:0,forms:0,formsWithAbilities:0},warnings:[]};
  const releasedByDex=new Map((speciesData.species||[]).map(x=>[String(x.dex),x.name]));
  const wikiNames=new Set((window.WikiHomeland?.speciesList?.()||[]).map(x=>releasedByDex.get(String(x.dex))||x.name));
+ const officialSpecies=window.WikiHomeland?.speciesList?.()||[];
+ const officialDex=new Map(officialSpecies.map(x=>[String(Number(x.dex)),x]));
+ const releasedMissingWiki=(speciesData.species||[]).filter(x=>!officialDex.has(String(Number(x.dex))));
+ const officialMissingRoster=officialSpecies.filter(x=>!(speciesData.species||[]).some(y=>Number(y.dex)===Number(x.dex)));
+ const noWikiForms=(speciesData.species||[]).filter(x=>{const w=officialDex.get(String(Number(x.dex)));return !!w&&!(w.forms||[]).length;});
  const gatedStations=new Set(locks.map(([k])=>k.split('|')[0]));
  const familyLabelFor=name=>{
    const known=familyIdForCatalog({name});
@@ -1046,6 +1051,16 @@ function renderDatabaseTab(){
  <div class="metricCard"><div class="label">Family-gated stations</div><div class="metric">${gatedStations.size}</div><div class="small">${locks.length} station / recipe family rules</div></div>
  <div class="metricCard"><div class="label">Station work rules</div><div class="metric">${Object.keys(STATION_RULES).length}</div></div>
  </div></div><div class="databaseScroll">
+ <div class="databaseSection"><div class="sectionTitle">Aniimo species &amp; forms · coverage audit</div>
+ <div class="small">Released roster: ${(speciesData.species||[]).length} species · Official Wiki snapshot: ${officialSpecies.length} species and ${wiki.counts?.forms||0} forms. Official Wiki cache: ${esc(window.WikiHomeland?.summary?.().scrapedAt||'unknown')}. Compare by Dex number; updates to the game's released roster require a fresh external reference.</div>
+ <div class="small">${releasedMissingWiki.length} released entries missing from Wiki snapshot · ${officialMissingRoster.length} Wiki species absent from released roster · ${noWikiForms.length} Wiki entries without listed forms.</div>
+ <button type="button" id="aniimoSpeciesAuditExport">Download Aniimo coverage CSV</button>
+ <div class="tableWrap"><table class="dataTable"><thead><tr><th>Dex</th><th>Aniimo</th><th>Issue</th></tr></thead><tbody>
+ ${releasedMissingWiki.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>Missing official Wiki data / forms</td></tr>`).join('')}
+ ${officialMissingRoster.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>Wiki entry not in released roster — verify release</td></tr>`).join('')}
+ ${noWikiForms.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>No Wiki forms</td></tr>`).join('')}
+ ${releasedMissingWiki.length+officialMissingRoster.length+noWikiForms.length?'':'<tr><td colspan="3">No discrepancies between the loaded references.</td></tr>'}
+ </tbody></table></div></div>
  <div class="databaseSection"><div class="sectionTitle">All Aniimo items · ID coverage audit</div>
  <div class="small">Available unique item IDs: ${masterItems.length.toLocaleString()} · QuestLog imported IDs: ${questCount.toLocaleString()} · current profile stored IDs: ${examined.length}. Homeland reference is not the complete global game catalog. A missing sell value is unknown, not zero.</div>
  <div class="small">Current profile: ${unnamed.length} unnamed storage IDs · ${unpriced.length} storage IDs without a known sell price · ${unknownFood.length} food slots without verified energy.</div>
@@ -1068,6 +1083,12 @@ function renderDatabaseTab(){
   <div class="databaseFamilyBodyScroll"><table class="dataTable databaseBodyTable"><colgroup><col style="width:38%"><col style="width:24%"><col style="width:38%"></colgroup><tbody>${locks.map(([k,v])=>`<tr><td>${esc(k.replace('|',' — '))}</td><td>${esc(WORKER_FAMILIES[v.family]?.label||v.family)}</td><td>${esc((WORKER_FAMILIES[v.family]?.members||[]).join(' / '))}</td></tr>`).join('')}</tbody></table></div>
  </div>
  </div></div>`;
+ root.querySelector('#aniimoSpeciesAuditExport')?.addEventListener('click',()=>{
+  const csv=x=>'"'+String(x??'').replace(/"/g,'""')+'"';
+  const rows=[['dex','name','issue'],...releasedMissingWiki.map(x=>[x.dex,x.name,'Missing Wiki species/forms']),...officialMissingRoster.map(x=>[x.dex,x.name,'Wiki only; verify release']),...noWikiForms.map(x=>[x.dex,x.name,'No Wiki forms'])];
+  const blob=new Blob([rows.map(row=>row.map(csv).join(',')).join('\\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='aniimo-species-form-coverage.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ });
  const auditBtn=root.querySelector('#itemAuditExportBtn');
  auditBtn?.addEventListener('click',()=>{
   const lines=['item_id,name,count,missing_name,missing_sell_price,source'];
