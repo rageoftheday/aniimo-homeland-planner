@@ -601,7 +601,9 @@ function populateReferenceStationRecipes(){
   // Prefer explicit legacy selections by name, so saved recipes retain stable labels.
   // A distinct 402xxxx Quick Recipe must not become a fake "Sea Salt (Lv2)" entry.
   // Recipe identity is authoritative: do not depend on the PNG manifest's async load.
-  const isQuick=ref.kind==='home'&&['4020060','4020062','4020065','4020066'].includes(String(ref.id));
+  // Explicit recipe IDs identify all quick variants, regardless of their unlock level.
+  const QUICK_RECIPE_IDS=new Set(['4020033','4020035','4020043','4020044','4020054','4020055','4020056','4020057','4020059','4020060','4020061','4020062','4020063','4020064','4020065','4020066']);
+  const isQuick=QUICK_RECIPE_IDS.has(String(ref.id));
   const wantedName=isQuick?'Quick '+info.name:info.name;
   const legacyBase=x=>String(x||'').toLowerCase().replace(/^quick\s+/,'').replace(/\s*[×x]\s*\d+\s*$/,'').trim();
   const sameOutput=current.filter(x=>String(x.outputItemId)===String(output.item)||legacyBase(x.name)===legacyBase(info.name));
@@ -1592,7 +1594,7 @@ function renderRecipePanel(){
  // Verified reference recipes are the picker source of truth. Keep an older
  // saved selection visible so existing maps can still be edited or cleared.
  // Migrate the old generated label while preserving the same reference recipe ID.
- const legacyId=String(o.recipeName||'').match(/\\(Lv\\d+\\s*·\\s*#(\\d+)\\)$/)?.[1];
+ const legacyId=String(o.recipeName||'').match(/\(Lv\d+\s*·\s*#(\d+)\)$/)?.[1];
  if(legacyId){const canonical=recipeDB[o.name].find(r=>String(r.recipeId)===legacyId);if(canonical)o.recipeName=canonical.name;}
  const stationRecipes=recipeDB[o.name],hasReferences=stationRecipes.some(r=>r.reference);
  const list=stationRecipes.filter(r=>(!hasReferences||r.reference||r.name===o.recipeName)&&
