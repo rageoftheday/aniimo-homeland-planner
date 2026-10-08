@@ -40,8 +40,13 @@ const cropFrom=cropStart+'const crops='.length,cropEnd=source.indexOf('];',cropF
 assert(cropStart>=0&&cropEnd>cropFrom,'Crop catalog unavailable');
 const crops=vm.runInNewContext('('+source.slice(cropFrom,cropEnd+1)+')');
 for(const crop of crops){
- const key=String(crop.name).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
- assert(manifest.names.Items[key]||Object.values(data.items).some(x=>String(x.name).toLowerCase()===String(crop.name).toLowerCase()),'Missing selectable plant icon '+crop.name);
+ const name=String(crop.name),key=name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+ if(/\\(quick\\)/i.test(name)){
+  const base=key.replace(/_quick$/,'').replace(/^emerald_bamboo$/,'bamboo').replace(/^maple$/,'maple_syrup');
+  assert(manifest.names.Items['quick_recipe_'+base]||manifest.names.Items['quick_formula_'+base], 'Missing distinct quick crop icon '+name);
+ } else {
+  assert(manifest.names.Items[key]||Object.values(data.items).some(x=>String(x.name).toLowerCase()===name.toLowerCase()),'Missing selectable plant icon '+name);
+ }
 }
 const quickIcons=Object.entries(assets).filter(([id,path])=>/^402\d+$/.test(id)&&/_quick_(?:recipe|formula)_/.test(path));
 assert.equal(quickIcons.length,27,'Expected 27 original quick icons');
