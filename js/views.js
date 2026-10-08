@@ -226,19 +226,20 @@ function homelandLiveWorkerBadges(o,q){
 }
 function homelandObjectVisualHTML(o,big=false){
  const lv=homelandObjectLevel(o),q=homelandLivePieceFor(o);
- const id=q?.recipe!=null?q.recipe:null;
- const currentName=id!=null?(window.AniimoIconAtlas?.find(id)?.name||window.HomelandItemCatalog?.lookup(id,aniidexImportMeta?.catalog)?.name||''):'';
- const fallbackName=o?.cropName?homelandPlantedOutputName(o.cropName):o?.recipeName||o?.name||o?.label||'';
- const artName=currentName||(q&&q.recipe==null?o?.name:fallbackName);
- const icon=id!=null&&window.AniimoIconAtlas?.html(id,40);
- const planned=o?.recipeName?window.AniimoIconAtlas?.html(o.recipeName,40):'';
+ const recipeName=String(o?.recipeName||'').trim();
+ const plantedName=o?.cropName?homelandPlantedOutputName(o.cropName):'';
+ const liveId=q?.recipe!=null?String(q.recipe):'';
+ // A recipe explicitly selected in the editor is authoritative. Otherwise use the
+ // live production output; the level-specific building icon is only the idle fallback.
+ const selectedIcon=recipeName?(window.AniimoIconAtlas?.html(recipeName,40)||window.AniimoIconAtlas?.html(window.HomelandLocalIcons?.file('Items',recipeName),40)):'';
+ const plantedIcon=plantedName?window.AniimoIconAtlas?.html(plantedName,40):'';
+ const liveIcon=liveId?window.AniimoIconAtlas?.html(liveId,40):'';
+ const productionArt=selectedIcon||plantedIcon||liveIcon||'';
  const facilityPath=window.HomelandLocalIcons?.facility(o?.name,lv);
  const facilityArt=facilityPath?window.HomelandLocalIcons.image(facilityPath,40):'';
- const productionArt=icon||planned||'';
- const facilityWithFallback=facilityArt?'<span class="hpv2ArtHolder hpv2FacilityArt" style="position:relative">'+homelandIllustratedIconHTML(o?.name)+'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">'+facilityArt+'</span></span>':'';
- const productionBadge=facilityWithFallback&&productionArt?'<span class="hpv2ProductionOverlay" title="Current production output">'+productionArt+'</span>':'';
+ const idleArt=facilityArt?'<span class="hpv2ArtHolder hpv2FacilityArt" style="position:relative">'+homelandIllustratedIconHTML(o?.name)+'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">'+facilityArt+'</span></span>':'';
  const badges=homelandLiveWorkerBadges(o,q);
- return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${facilityWithFallback||productionArt||homelandIllustratedIconHTML(artName)}${productionBadge}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
+ return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${productionArt||idleArt||homelandIllustratedIconHTML(o?.name||o?.label)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
 }
 function homelandPlotRole(n){
  const rows=homelandPlotObjects(n);if(!rows.length)return 'Purchased';
