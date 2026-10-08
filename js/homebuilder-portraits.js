@@ -25,11 +25,11 @@
  }
  function html(worker,fallback){
   const paths=candidates(worker);
-  if(!paths.length)return fallback||'';
+  if(!paths.length)return '<span class="homebuilderPortraitFallback">'+placeholder+'</span>';
   // New circular artwork is authoritative; never display the old atlas as a substitute.
   const payload=escapeHTML(JSON.stringify(paths));
   return '<span class="homebuilderPortraitSwap" data-portrait-candidates="'+payload+'">'+
-   '<span class="homebuilderPortraitFallback" aria-hidden="true">👤</span>'+
+   '<span class="homebuilderPortraitFallback" aria-hidden="true">'+placeholder+'</span>'+
    '<img class="homebuilderPortraitImage" alt="" loading="lazy" decoding="async" style="display:none" />'+
    '</span>';
  }
