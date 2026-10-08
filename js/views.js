@@ -211,7 +211,7 @@ function renderHomelandPlannerV2(){
  const pieceSearch=el('hpv2PieceSearch');
  pieceSearch?.addEventListener('input',()=>{
    const q=normalizeSearch(pieceSearch.value);
-   root.querySelectorAll('[data-piece-search]').forEach(card=>card.hidden=!!q&&!String(card.dataset.pieceSearch||'').includes(q));
+   root.querySelectorAll('[data-piece-search]').forEach(card=>{const matched=!q||String(card.dataset.pieceSearch||'').includes(q);card.hidden=!matched;card.style.display=matched?'':'none';});
  });
  const snapSelect=el('hpv2SnapSelect');
  snapSelect?.addEventListener('change',()=>{setHomelandBuilderSnap(snapSelect.value);renderHomelandPlannerV2();});
