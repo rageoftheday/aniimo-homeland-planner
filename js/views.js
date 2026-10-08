@@ -212,10 +212,12 @@ function renderHomelandPlannerV2(){
  const map=el('mapPane');if(!map)return;
  let root=el('homelandPlannerV2');
  if(!root){root=document.createElement('div');root.id='homelandPlannerV2';map.insertBefore(root,map.firstChild)}
+ const oldPalette=root.querySelector('.hpv2PieceList');
+ const oldPaletteScroll=oldPalette?.scrollTop??0;
  const oldSearch=root.querySelector('#hpv2PieceSearch');
  const searchWasFocused=!!oldSearch&&document.activeElement===oldSearch;
  const searchCaret=searchWasFocused?oldSearch.selectionStart:null;
- if(oldSearch)homelandPieceQuery=oldSearch.value;
+ if(oldSearch&&oldSearch.value.trim())homelandPieceQuery=oldSearch.value;
  const previousFullScroll=root.querySelector('.hpv2FullScroll');
  const previousFullPosition=previousFullScroll?{left:previousFullScroll.scrollLeft,top:previousFullScroll.scrollTop}:null;
  const toolbar=map.querySelector('.toolbar'),viewport=el('mapViewport'),legend=map.querySelector('.legend');
@@ -255,17 +257,20 @@ function renderHomelandPlannerV2(){
    if(e.dataTransfer)e.dataTransfer.effectAllowed='copy';
  }));
  root.querySelectorAll('[data-hpv2-piece-add]').forEach(btn=>btn.addEventListener('click',()=>{
+   const liveSearch=root.querySelector('#hpv2PieceSearch');if(liveSearch)homelandPieceQuery=liveSearch.value;
    const item=catalog.find(x=>x.name===btn.dataset.hpv2PieceAdd);if(item){if(homelandPlannerMode==='full')homelandAddVisiblePiece(item);else addObjectToFocusedPlot(item);}
  }));
  root.querySelectorAll('[data-hpv2-piece-remove]').forEach(btn=>btn.addEventListener('click',()=>{
+   const liveSearch=root.querySelector('#hpv2PieceSearch');if(liveSearch)homelandPieceQuery=liveSearch.value;
    if(homelandPlannerMode==='full')removeOneByName(btn.dataset.hpv2PieceRemove||'');else removeObjectFromFocusedPlotByName(btn.dataset.hpv2PieceRemove||'');
  }));
- const pieceSearch=el('hpv2PieceSearch');
+ const pieceSearch=root.querySelector('#hpv2PieceSearch');
  const applyPieceFilter=()=>{
    const q=normalizeSearch(homelandPieceQuery);
    root.querySelectorAll('[data-piece-search]').forEach(card=>{const match=!q||String(card.dataset.pieceSearch||'').includes(q);card.hidden=!match;card.style.display=match?'':'none';});
  };
  if(pieceSearch){pieceSearch.value=homelandPieceQuery;applyPieceFilter();
+   const newPalette=root.querySelector('.hpv2PieceList');if(newPalette)newPalette.scrollTop=oldPaletteScroll;
    if(searchWasFocused){pieceSearch.focus({preventScroll:true});try{pieceSearch.setSelectionRange(searchCaret,searchCaret)}catch(_){}}
  }
  pieceSearch?.addEventListener('input',()=>{homelandPieceQuery=pieceSearch.value;applyPieceFilter();});
