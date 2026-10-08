@@ -11,6 +11,7 @@ for(const [key,path] of entries){
 assert(manifest.assets['nighttime-piopiota'],'Nighttime Piopiota must resolve');
 assert(manifest.assets['prismana-glacy'],'Prismana Glacy must resolve');
 assert(manifest.assets['sea-of-flowers-glacy'],'Sea of Flowers Glacy must resolve');
+assert(fs.readFileSync('assets/homebuilder-aniimo-portraits/unassigned-aniimo.svg','utf8').includes('<svg'),'Missing neutral Aniimo placeholder');
 const source=fs.readFileSync('js/app.js','utf8');
 const section=source.slice(source.indexOf('const ANIIMO_CATALOG=['),source.indexOf('];',source.indexOf('const ANIIMO_CATALOG=['))+2);
 const catalog=[...section.matchAll(/\{name:'([^']+)',form:'([^']+)'/g)].map(x=>({name:x[1],form:x[2]}));
