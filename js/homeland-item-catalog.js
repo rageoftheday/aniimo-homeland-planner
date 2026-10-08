@@ -6,6 +6,7 @@
  const supplemental=window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE?.entries||{};
  const foodReference=window.ANIIMO_FOOD_ENERGY_REFERENCE?.entries||{};
  const questlog=window.ANIIMO_QUESTLOG_ITEMS?.byId||{};
+ const thgl=window.ANIIMO_THGL_ITEMS?.byId||{};
  function record(id,catalog){
   const key=String(id??'');
   const live=catalog||{};
@@ -16,6 +17,7 @@
   const baseItem=entries[key];
   const supplementalItem=supplemental[key]||{};
   if(baseItem){name=baseItem.name||'';sell=setNumber(baseItem.sell,sell);energy=setNumber(baseItem.food,energy);icon=baseItem.icon||'';source='Homeland reference';}
+  if(thgl[key]?.name&&!name){name=thgl[key].name;source=thgl[key].url||'Aniimo.th.gl';}
   if(questlog[key]?.name&&!name){name=questlog[key].name;source=questlog[key].url||'QuestLog';}
   if(supplemental[key]){name=supplemental[key].name||name;sell=setNumber(supplemental[key].sell,sell);source=supplemental[key].source||source;}
   if(foodReference[key]){name=foodReference[key].name||name;energy=setNumber(foodReference[key].energy,energy);source=foodReference[key].source||source;}
@@ -35,7 +37,7 @@
   const keys=new Set(Object.keys(entries));
   const embedded=typeof EMBEDDED_ANIIDEX_CATALOG!=='undefined'?EMBEDDED_ANIIDEX_CATALOG:{};
   for(const c of [embedded,catalog||{}])for(const id of Object.keys(c?.hub?.facts?.items||c?.facts?.items||{}))keys.add(id);
-  for(const x of [supplemental,foodReference,questlog])for(const id of Object.keys(x))keys.add(id);
+  for(const x of [supplemental,foodReference,questlog,thgl])for(const id of Object.keys(x))keys.add(id);
   return [...keys].map(id=>record(id,catalog));
  }
  function recipes(){
