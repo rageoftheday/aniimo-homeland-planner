@@ -2003,6 +2003,7 @@ function newHomelandMap(){
  objects=[];
  idCounter=1;
  selected=null;
+ const lib=homelandMapLibrary();lib.current=null;saveHomelandMapLibrary(lib);
  render();
  snapshotIntoCurrentProfile?.();
  return true;
