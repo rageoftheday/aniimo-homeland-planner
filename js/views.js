@@ -230,7 +230,7 @@ function homelandObjectVisualHTML(o,big=false){
  const plantedName=o?.cropName?homelandPlantedOutputName(o.cropName):'';
  // The editor's None/cleared selection must show the default building artwork,
  // even when a stale live queue reports a previously running recipe.
- const selectedIcon=recipeName?(window.AniimoIconAtlas?.html(recipeName,40)||window.AniimoIconAtlas?.html(window.HomelandLocalIcons?.file('Items',recipeName),40)):'';
+ const selectedIcon=recipeName?window.AniimoIconAtlas?.html(recipeName,40):'';
  const plantedIcon=plantedName?window.AniimoIconAtlas?.html(plantedName,40):'';
  const productionArt=selectedIcon||plantedIcon||'';
  const facilityPath=window.HomelandLocalIcons?.facility(o?.name,lv);
