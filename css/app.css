@@ -610,3 +610,11 @@ header{align-items:center}
 
 /* Keep selected placement obvious during keyboard nudging. */
 .hpv2Obj.big[aria-pressed="true"]{outline:3px solid #51c9ff;outline-offset:-2px;z-index:6;box-shadow:0 0 0 2px rgba(3,42,72,.75),0 0 13px rgba(81,201,255,.5)}
+
+/* Game material artwork in Homeland map and build palette. Emoji stays below images
+   and becomes visible if a CDN/local source is missing. */
+.hpv2ArtHolder{position:relative!important;display:flex!important;align-items:center;justify-content:center;width:100%;height:100%;min-width:0;min-height:0;overflow:hidden}
+.hpv2ArtFallback{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:inherit;line-height:1}
+.hpv2ArtImg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1;border-radius:inherit;pointer-events:none}
+.hpv2PieceIcon .hpv2ArtHolder{width:100%;height:100%;font-size:19px}
+.hpv2IconCircle:has(.hpv2ArtImg){background:rgba(32,55,64,.91)}
