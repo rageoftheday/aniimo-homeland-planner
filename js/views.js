@@ -1083,13 +1083,23 @@ function rawAniidexBundleForView(){
 }
 function renderRawJsonTab(){
  const root=el('rawPane');if(!root)return;
+ // Full planner renders may replace Raw JSON while the user is still typing.
+ // Capture both the text and the selection BEFORE replacing the input.
+ const oldInput=root.querySelector('#rawJsonSearch');
+ const wasTyping=!!oldInput&&document.activeElement===oldInput;
+ const selection=wasTyping?{start:oldInput.selectionStart,end:oldInput.selectionEnd,direction:oldInput.selectionDirection}:null;
+ if(oldInput)rawJsonQuery=oldInput.value;
  const bundle=rawAniidexBundleForView();
  if(!bundle){root.innerHTML='<div class="v30Title">Raw JSON</div><div class="v30Sub">No Aniidx sync has been loaded yet.</div><div class="fullCard">Use Dashboard → Import / Sync first. The latest synced profile, Homeland snapshot, and planner reference data will appear here.</div>';return;}
  const full=JSON.stringify(bundle,null,2),lines=full.split('\n');
  const q=String(rawJsonQuery||'').trim().toLowerCase();
  const shown=q?lines.filter(line=>line.toLowerCase().includes(q)):lines;
  root.innerHTML=`<div class="rawJsonBrowser"><div class="rawJsonHead"><div><div class="v30Title">Raw JSON</div><div class="v30Sub">Latest synced Aniidx data retained by the planner. This is a read-only diagnostic/reference view.</div></div><div class="rawJsonActions"><input id="rawJsonSearch" value="${esc(rawJsonQuery)}" placeholder="Search JSON..."><button id="rawJsonCopy">Copy JSON</button><button id="rawJsonDownload">Download JSON</button></div><div class="small">${q?shown.length+' matching line'+(shown.length===1?'':'s')+' • ':''}${lines.length.toLocaleString()} total lines • ${full.length.toLocaleString()} characters</div></div><pre id="rawJsonPre" class="rawJsonPre">${esc(shown.join('\n'))}</pre></div>`;
- const search=el('rawJsonSearch');
+ const search=root.querySelector('#rawJsonSearch');
+ if(search&&wasTyping){
+   search.focus({preventScroll:true});
+   try{search.setSelectionRange(selection.start,selection.end,selection.direction||'none')}catch(_){}
+ }
  if(search)search.addEventListener('input',()=>{
    rawJsonQuery=search.value;
    const query=rawJsonQuery.trim().toLowerCase();
