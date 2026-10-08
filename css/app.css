@@ -588,3 +588,16 @@ header{align-items:center}
 .hpv2AssignedPreview img{width:46px;height:46px;object-fit:contain;border:1px solid #476175;border-radius:50%;background:#233849}
 .hpv2AssignedPreview span{display:flex;flex-direction:column;gap:3px;min-width:0}
 .hpv2AssignedPreview small{color:#9ab8cb}
+
+/* One continuous editing canvas across all 16 plots (80 x 60 squares). */
+.hpv2FullScroll{overflow:auto;max-height:75vh;min-height:420px;padding:10px}
+.hpv2FocusGrid.hpv2FullGrid{width:max(100%,960px);max-width:none;aspect-ratio:4/3;overflow:visible;border-radius:0}
+.hpv2FullGrid>.hpv2GridLines{
+ background-size:1.25% 1.6666666667%;
+ background-image:linear-gradient(to right,rgba(25,55,34,.27) 1px,transparent 1px),linear-gradient(to bottom,rgba(25,55,34,.27) 1px,transparent 1px);
+ pointer-events:none;
+}
+.hpv2FullPlotLabel{position:absolute;box-sizing:border-box;border:3px solid rgba(15,53,35,.72);padding:5px;font-size:12px;font-weight:800;color:#173e21;pointer-events:none;z-index:1}
+.hpv2FullGrid>.hpv2Obj{z-index:2;overflow:visible}
+.hpv2FullGrid>.hpv2Obj .hpv2IconGlyph{font-size:clamp(10px,1.1vw,20px)!important}
+.hpv2FullGrid>.hpv2Obj .hpv2LevelText{font-size:clamp(8px,.75vw,12px)!important}

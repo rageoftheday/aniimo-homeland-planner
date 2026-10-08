@@ -12,7 +12,7 @@ let aniimosRankScope=localStorage.getItem('aniimosRankScope')||'all';
 let activeMainTab='dashboard';
 let rawJsonQuery='';
 let homelandPlannerMode=localStorage.getItem('homelandPlannerMode')||'overview';
-if(!['overview','plot'].includes(homelandPlannerMode))homelandPlannerMode='overview';
+if(!['overview','plot','full'].includes(homelandPlannerMode))homelandPlannerMode='overview';
 let homelandFocusedPlot=Number(localStorage.getItem('homelandFocusedPlot')||1);
 const HOMELAND_PLOT_UNLOCKS={
  1:{rv:1,cost:0},2:{rv:2,cost:2000},3:{rv:3,cost:4000},4:{rv:4,cost:6000},
@@ -105,9 +105,9 @@ function homelandAssignedPortraitHTML(o){
  return '<span class="hpv2WorkerBadge" title="Working here: '+label+'">'+(src?'<img src="'+esc(src)+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">':'<span>👤</span>')+'</span>';
 }
 function homelandMiniObject(o,p,big=false){
- const l=Math.max(0,o.x-p.x),t=Math.max(0,o.y-p.y);
+ const l=big&&p.full?o.x:Math.max(0,o.x-p.x),t=big&&p.full?o.y:Math.max(0,o.y-p.y);
  const title=homelandObjectTitle(o),lv=homelandObjectLevel(o);
- const style=`left:${l/20*100}%;top:${t/15*100}%;width:${Math.min(o.w,20)/20*100}%;height:${Math.min(o.h,15)/15*100}%`;
+ const style=p.full?`left:${l/80*100}%;top:${t/60*100}%;width:${o.w/80*100}%;height:${o.h/60*100}%`:`left:${l/20*100}%;top:${t/15*100}%;width:${Math.min(o.w,20)/20*100}%;height:${Math.min(o.h,15)/15*100}%`;
  const visual=homelandObjectVisualHTML(o,big)+homelandAssignedPortraitHTML(o);
  if(!big)return `<div class="hpv2Obj preview" aria-hidden="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</div>`;
  return `<button type="button" class="hpv2Obj big" data-hpv2-object="${o.id}" draggable="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</button>`;
@@ -119,7 +119,7 @@ function homelandPlotAddOptions(){
  }).sort((a,b)=>a.cat.localeCompare(b.cat)||a.name.localeCompare(b.name));
 }
 function homelandPiecePaletteHTML(items){
- const rv=+rvLevel.value,focused=homelandPlotObjects(homelandFocusedPlot);
+ const rv=+rvLevel.value,focused=homelandPlannerMode==='full'?objects:homelandPlotObjects(homelandFocusedPlot);
  return items.map(item=>{
    const d=effectiveDims(item),placed=objects.filter(o=>o.name===item.name).length,focusedPlaced=focused.filter(o=>o.name===item.name).length,limit=maxCount(item,rv);
    const search=normalizeSearch(item.cat+' '+item.name+' '+d.w+'x'+d.h);
@@ -136,11 +136,15 @@ function renderHomelandPlannerV2(){
  const mapLib=homelandMapLibrary(),mapEntries=homelandMapLibraryEntries(),mapCurrent=String(mapLib.current||'');
  const mapOptions=mapEntries.map(m=>`<option value="${esc(m.id)}"${String(m.id)===mapCurrent?' selected':''}>${esc(m.name||'Map Layout')}</option>`).join('');
  const noMaps=!mapEntries.length;
- const modeBar=`<div class="hpv2ModeBar"><div><b>Homeland Planner</b><span>All Plots is overview-only. Saved maps are local to this browser and can be loaded with any profile.</span></div><div class="hpv2MapLibrary"><button type="button" onclick="newHomelandMap()">New Map</button><button type="button" onclick="saveHomelandMapLayout()">Save Map</button><button type="button" onclick="exportHomelandMapFile()">Export JSON</button><button type="button" onclick="importHomelandMapFile()">Import JSON</button><select id="hpv2MapSelect" aria-label="Saved map">${noMaps?'<option value="">No saved maps</option>':mapOptions}</select><button type="button" onclick="loadHomelandMapLayout(el('hpv2MapSelect')?.value)"${noMaps?' disabled':''}>Load</button><button type="button" onclick="renameHomelandMapLayout(el('hpv2MapSelect')?.value)"${noMaps?' disabled':''}>Rename</button><button type="button" onclick="deleteHomelandMapLayout(el('hpv2MapSelect')?.value)"${noMaps?' disabled':''}>Delete</button></div><div class="hpv2ModeActions"><button class="${homelandPlannerMode==='overview'?'active':''}" onclick="setHomelandPlannerMode('overview')">All Plots</button><button class="${homelandPlannerMode==='plot'?'active':''}" onclick="setHomelandPlannerMode('plot',homelandFocusedPlot)">Plot Editor</button></div></div>`;
- if(homelandPlannerMode==='plot'){
+ const modeBar=`<div class="hpv2ModeBar"><div><b>Homeland Planner</b><span>Full Map edits across plot borders; All Plots is overview-only. Saved maps are local to this browser and can be loaded with any profile.</span></div><div class="hpv2MapLibrary"><button type="button" onclick="newHomelandMap()">New Map</button><button type="button" onclick="saveHomelandMapLayout()">Save Map</button><button type="button" onclick="exportHomelandMapFile()">Export JSON</button><button type="button" onclick="importHomelandMapFile()">Import JSON</button><select id="hpv2MapSelect" aria-label="Saved map">${noMaps?'<option value="">No saved maps</option>':mapOptions}</select><button type="button" onclick="loadHomelandMapLayout(el('hpv2MapSelect')?.value)"${noMaps?' disabled':''}>Load</button><button type="button" onclick="renameHomelandMapLayout(el('hpv2MapSelect')?.value)"${noMaps?' disabled':''}>Rename</button><button type="button" onclick="deleteHomelandMapLayout(el('hpv2MapSelect')?.value)"${noMaps?' disabled':''}>Delete</button></div><div class="hpv2ModeActions"><button class="${homelandPlannerMode==='overview'?'active':''}" onclick="setHomelandPlannerMode('overview')">All Plots</button><button class="${homelandPlannerMode==='full'?'active':''}" onclick="setHomelandPlannerMode('full')">Full Map Editor</button><button class="${homelandPlannerMode==='plot'?'active':''}" onclick="setHomelandPlannerMode('plot',homelandFocusedPlot)">Plot Editor</button></div></div>`;
+ if(homelandPlannerMode==='plot'||homelandPlannerMode==='full'){
    const n=homelandFocusedPlot,p=homelandPlotDef(n)||homelandPlotDef(1),rows=homelandPlotObjects(n),unlock=HOMELAND_PLOT_UNLOCKS[n]||{};
    const addOptions=homelandPlotAddOptions();
    root.innerHTML=modeBar+`<div class="hpv2FocusHead"><button onclick="setHomelandPlannerMode('overview')">← All Plots</button><div><h3>Plot ${n} · ${esc(homelandPlotRole(n))}</h3><span>${rows.length} placed object${rows.length===1?'':'s'} · 20×15 squares</span></div><div class="hpv2FocusMeta">RV ${unlock.rv||'—'} · ${Number(unlock.cost||0).toLocaleString()} HC unlock</div></div><div class="hpv2BuilderShell"><div class="hpv2BuilderMain"><div class="hpv2FocusGrid" data-hpv2-drop-plot="${n}"><div class="hpv2GridLines"></div>${rows.map(o=>homelandMiniObject(o,p,true)).join('')}</div><div class="hpv2FocusFoot"><span>Drag new pieces from the palette onto an exact square. Drag placed pieces to rearrange them inside Plot ${n}.</span></div></div><aside class="hpv2PiecePalette"><div class="hpv2PiecePaletteHead"><div><b>Single Pieces</b><span>${addOptions.length} unlocked / available</span></div><div class="hpv2BuilderTools"><label>Snap <select id="hpv2SnapSelect"><option value="1"${String(HOMELAND_BUILDER_SNAP)==='1'?' selected':''}>1 square</option><option value=".5"${String(HOMELAND_BUILDER_SNAP)==='.5'?' selected':''}>0.5 square</option><option value=".25"${String(HOMELAND_BUILDER_SNAP)==='.25'?' selected':''}>0.25 square</option><option value="free"${String(HOMELAND_BUILDER_SNAP)==='free'?' selected':''}>No snap</option></select></label><input id="hpv2PieceSearch" placeholder="Search pieces…"></div></div><div class="hpv2PieceList">${homelandPiecePaletteHTML(addOptions)||'<div class="small">No additional unlocked pieces are available.</div>'}</div></aside></div>`;
+   if(homelandPlannerMode==='full'){
+     const fullPlots=plotDefs.map(q=>`<div class="hpv2FullPlotLabel" style="left:${q.x/80*100}%;top:${q.y/60*100}%;width:25%;height:25%">Plot ${q.n}</div>`).join('');
+     root.innerHTML=modeBar+`<div class="hpv2FocusHead"><div><h3>Full Map Editor · 80×60</h3><span>All 16 plots together · drag across plot boundaries · ${objects.length} placed objects</span></div></div><div class="hpv2BuilderShell"><div class="hpv2BuilderMain hpv2FullScroll"><div class="hpv2FocusGrid hpv2FullGrid" data-hpv2-drop-full="1"><div class="hpv2GridLines"></div>${fullPlots}${objects.map(o=>homelandMiniObject(o,{x:0,y:0,full:true},true)).join('')}</div><div class="hpv2FocusFoot"><span>Drag facilities anywhere in the whole map. Plot boundaries are guides, not clipping edges. Objects cannot overlap other facilities.</span></div></div><aside class="hpv2PiecePalette"><div class="hpv2PiecePaletteHead"><div><b>Single Pieces</b><span>${addOptions.length} unlocked / available</span></div><div class="hpv2BuilderTools"><label>Snap <select id="hpv2SnapSelect"><option value="1"${String(HOMELAND_BUILDER_SNAP)==='1'?' selected':''}>1 square</option><option value=".5"${String(HOMELAND_BUILDER_SNAP)==='.5'?' selected':''}>0.5 square</option><option value=".25"${String(HOMELAND_BUILDER_SNAP)==='.25'?' selected':''}>0.25 square</option><option value="free"${String(HOMELAND_BUILDER_SNAP)==='free'?' selected':''}>No snap</option></select></label><input id="hpv2PieceSearch" placeholder="Search pieces…"></div></div><div class="hpv2PieceList">${homelandPiecePaletteHTML(addOptions)}</div></aside></div>`;
+   }
  }else{
    const cards=plotDefs.map(p=>{
      const open=isPlotOpen(p.n),rows=homelandPlotObjects(p.n),u=HOMELAND_PLOT_UNLOCKS[p.n]||{},role=homelandPlotRole(p.n);
@@ -160,10 +164,10 @@ function renderHomelandPlannerV2(){
    if(e.dataTransfer)e.dataTransfer.effectAllowed='copy';
  }));
  root.querySelectorAll('[data-hpv2-piece-add]').forEach(btn=>btn.addEventListener('click',()=>{
-   const item=catalog.find(x=>x.name===btn.dataset.hpv2PieceAdd);if(item)addObjectToFocusedPlot(item);
+   const item=catalog.find(x=>x.name===btn.dataset.hpv2PieceAdd);if(item){if(homelandPlannerMode==='full')addObject(item);else addObjectToFocusedPlot(item);}
  }));
  root.querySelectorAll('[data-hpv2-piece-remove]').forEach(btn=>btn.addEventListener('click',()=>{
-   removeObjectFromFocusedPlotByName(btn.dataset.hpv2PieceRemove||'');
+   if(homelandPlannerMode==='full')removeOneByName(btn.dataset.hpv2PieceRemove||'');else removeObjectFromFocusedPlotByName(btn.dataset.hpv2PieceRemove||'');
  }));
  const pieceSearch=el('hpv2PieceSearch');
  pieceSearch?.addEventListener('input',()=>{
@@ -184,6 +188,24 @@ function renderHomelandPlannerV2(){
    }
    if(e.dataTransfer)e.dataTransfer.effectAllowed='move';
  }));
+ const fullGrid=root.querySelector('[data-hpv2-drop-full]');
+ if(fullGrid){
+   fullGrid.addEventListener('dragover',e=>{e.preventDefault();fullGrid.classList.add('dragTarget')});
+   fullGrid.addEventListener('dragleave',e=>{if(!fullGrid.contains(e.relatedTarget))fullGrid.classList.remove('dragTarget')});
+   fullGrid.addEventListener('drop',e=>{
+     e.preventDefault();fullGrid.classList.remove('dragTarget');
+     const rect=fullGrid.getBoundingClientRect(),dx=(e.clientX-rect.left)/rect.width*80,dy=(e.clientY-rect.top)/rect.height*60;
+     let anchor={x:0,y:0};try{anchor=JSON.parse(e.dataTransfer?.getData('application/x-aniimo-anchor')||'{}')}catch(_){}
+     const id=e.dataTransfer?.getData('application/x-aniimo-object');
+     const name=e.dataTransfer?.getData('application/x-aniimo-catalog')||e.dataTransfer?.getData('text/plain')||'';
+     const o=id?objects.find(o=>String(o.id)===String(id)):null,item=!o?catalog.find(c=>c.name===name):null;
+     const w=o?.w??effectiveDims(item||{w:0,h:0}).w,h=o?.h??effectiveDims(item||{w:0,h:0}).h;
+     const x=snapHomelandBuilderCoord(dx-(Number(anchor.x)||0),80-w),y=snapHomelandBuilderCoord(dy-(Number(anchor.y)||0),60-h);
+     const candidate={id:o?.id??-1,x,y,w,h};
+     if(!w||!h||collide(candidate)){alert('That placement overlaps another building.');return}
+     if(o){o.x=x;o.y=y;selected=o.id;render()}else if(item){addObject(item,x,y)}
+   });
+ }
  const dropGrid=root.querySelector('[data-hpv2-drop-plot]');
  if(dropGrid){
    dropGrid.addEventListener('dragover',e=>{e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect=e.dataTransfer.types.includes('application/x-aniimo-object')?'move':'copy';dropGrid.classList.add('dragTarget')});
