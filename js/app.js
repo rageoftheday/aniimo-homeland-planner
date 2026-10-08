@@ -1929,56 +1929,100 @@ function currentPlannerState(){
  };
 }
 
-const HOMELAND_LAYOUT_SAVE_KEY='aniimoHomelandSavedMapLayoutV1';
-function currentHomelandMapLayout(){
+const HOMELAND_MAP_LIBRARY_KEY='aniimoHomelandMapLibraryV1';
+function homelandMapLibrary(){
+ try{
+   const raw=localStorage.getItem(HOMELAND_MAP_LIBRARY_KEY);
+   if(!raw)return {format:'aniimo-homeland-map-library-v1',current:null,maps:{}};
+   const data=JSON.parse(raw);
+   if(data?.format==='aniimo-homeland-map-library-v1'&&data.maps)return data;
+ }catch(_){}
+ return {format:'aniimo-homeland-map-library-v1',current:null,maps:{}};
+}
+function saveHomelandMapLibrary(lib){
+ localStorage.setItem(HOMELAND_MAP_LIBRARY_KEY,JSON.stringify(lib));
+}
+function newHomelandMapId(){
+ return 'm'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+}
+function currentHomelandMapLayout(name='Map Layout',id=null){
  return {
-   format:'aniimo-homeland-map-layout-v1',
+   id:id||newHomelandMapId(),
+   name:String(name||'Map Layout').trim()||'Map Layout',
    savedAt:Date.now(),
    objects:JSON.parse(JSON.stringify(objects)),
    idCounter,
+   maxOverrides:JSON.parse(JSON.stringify(maxOverrides||{})),
    dimensionOverrides:JSON.parse(JSON.stringify(dimensionOverrides||{})),
    placeLevelPrefs:JSON.parse(JSON.stringify(placeLevelPrefs||{}))
  };
 }
-function findSavedHomelandMapLayout(){
- try{
-   const raw=localStorage.getItem(HOMELAND_LAYOUT_SAVE_KEY);
-   if(!raw)return null;
-   const data=JSON.parse(raw);
-   return data&&data.format==='aniimo-homeland-map-layout-v1'&&Array.isArray(data.objects)?data:null;
- }catch(_){return null}
+function homelandMapLibraryEntries(){
+ const lib=homelandMapLibrary();
+ return Object.values(lib.maps||{}).sort((a,b)=>(Number(b.savedAt)||0)-(Number(a.savedAt)||0));
 }
-function saveHomelandMapLayout(){
+function saveHomelandMapLayout(mapId=null){
  try{
-   const data=currentHomelandMapLayout();
-   localStorage.setItem(HOMELAND_LAYOUT_SAVE_KEY,JSON.stringify(data));
-   if(localStorage.getItem(HOMELAND_LAYOUT_SAVE_KEY)==null)throw new Error('Storage verification failed');
+   const lib=homelandMapLibrary();
+   const existing=mapId?lib.maps?.[mapId]:null;
+   const defaultName=existing?.name||('Map '+(Object.keys(lib.maps||{}).length+1));
+   const name=prompt(existing?'Save map as:':'Map name:',defaultName);
+   if(name==null)return false;
+   const trimmed=String(name).trim();
+   if(!trimmed){alert('Enter a map name first.');return false}
+   const id=existing?.id||newHomelandMapId();
+   lib.maps[id]=currentHomelandMapLayout(trimmed,id);
+   lib.current=id;
+   saveHomelandMapLibrary(lib);
    renderHomelandPlannerV2?.();
    return true;
  }catch(e){
-   alert('Could not save the map layout in this browser. '+(e?.message||e));
+   alert('Could not save the map in this browser. '+(e?.message||e));
    return false;
  }
 }
-function loadHomelandMapLayout(){
- const data=findSavedHomelandMapLayout();
- if(!data){alert('No saved map layout was found in this browser yet.');return false}
- if(objects.length&&!confirm('Load the saved map layout?\n\nThis replaces the pieces currently shown on the planner map, but keeps the currently loaded profile, UID, roster, RV, Aniidx data, food, storage, and other profile data.'))return false;
+function loadHomelandMapLayout(mapId){
+ const lib=homelandMapLibrary(),data=lib.maps?.[String(mapId||'')];
+ if(!data){alert('Choose a saved map first.');return false}
+ if(objects.length&&!confirm('Load "'+data.name+'"?\n\nThis replaces only the planner map. The currently loaded profile, UID, roster, RV, Aniidx snapshot, food, storage, and other profile data stay unchanged.'))return false;
  objects=JSON.parse(JSON.stringify(data.objects||[]));
  idCounter=Number(data.idCounter)||Math.max(1,...objects.map(o=>(Number(o.id)||0)+1));
+ maxOverrides=JSON.parse(JSON.stringify(data.maxOverrides||{}));
  dimensionOverrides=JSON.parse(JSON.stringify(data.dimensionOverrides||{}));
  placeLevelPrefs=JSON.parse(JSON.stringify(data.placeLevelPrefs||{}));
  selected=null;
  normalizeLegacyNames();
+ lib.current=data.id;
+ saveHomelandMapLibrary(lib);
  render();
  snapshotIntoCurrentProfile?.();
  return true;
 }
-function homelandSavedLayoutLabel(){
- const data=findSavedHomelandMapLayout();
- if(!data)return 'No saved map';
- const d=new Date(Number(data.savedAt)||0);
- return Number.isFinite(d.getTime())&&d.getTime()>0?'Saved '+d.toLocaleString():'Saved map available';
+function newHomelandMap(){
+ if(objects.length&&!confirm('Start a new blank map?\n\nThis clears only the planner map. Your loaded profile and locally saved maps are not deleted.'))return false;
+ objects=[];
+ idCounter=1;
+ selected=null;
+ render();
+ snapshotIntoCurrentProfile?.();
+ return true;
+}
+function renameHomelandMapLayout(mapId){
+ const lib=homelandMapLibrary(),data=lib.maps?.[String(mapId||'')];
+ if(!data){alert('Choose a saved map first.');return false}
+ const name=prompt('Rename map:',data.name||'Map Layout');
+ if(name==null)return false;
+ const trimmed=String(name).trim();if(!trimmed)return false;
+ data.name=trimmed;data.savedAt=Date.now();
+ saveHomelandMapLibrary(lib);renderHomelandPlannerV2?.();return true;
+}
+function deleteHomelandMapLayout(mapId){
+ const lib=homelandMapLibrary(),data=lib.maps?.[String(mapId||'')];
+ if(!data){alert('Choose a saved map first.');return false}
+ if(!confirm('Delete saved map "'+data.name+'"?\n\nThis does not clear the map currently open in the planner.'))return false;
+ delete lib.maps[data.id];
+ if(lib.current===data.id)lib.current=null;
+ saveHomelandMapLibrary(lib);renderHomelandPlannerV2?.();return true;
 }
 function applyPlannerState(d){
  rvLevel.value=d.rv||1;
@@ -1997,72 +2041,6 @@ function applyPlannerState(d){
  selected=null;
  normalizeLegacyNames();
  render();
-}
-const HOMELAND_LAYOUT_SAVE_PREFIX='aniimoHomelandLayoutV1:';
-function homelandLayoutProfileIdentity(){
- const uid=String(aniidexImportMeta?.uid||'').trim();
- if(uid)return {kind:'uid',id:uid};
- const profileId=String(profileStore?.current||'default');
- return {kind:'profile',id:profileId};
-}
-function homelandLayoutStorageKey(){
- const who=homelandLayoutProfileIdentity();
- return HOMELAND_LAYOUT_SAVE_PREFIX+who.kind+':'+who.id;
-}
-function homelandLayoutSnapshot(){
- return {
-   format:'aniimo-homeland-layout-v1',
-   savedAt:Date.now(),
-   profile:homelandLayoutProfileIdentity(),
-   objects:JSON.parse(JSON.stringify(objects)),
-   idCounter,
-   maxOverrides:JSON.parse(JSON.stringify(maxOverrides||{})),
-   dimensionOverrides:JSON.parse(JSON.stringify(dimensionOverrides||{})),
-   placeLevelPrefs:JSON.parse(JSON.stringify(placeLevelPrefs||{}))
- };
-}
-function homelandSavedLayout(){
- try{
-   const raw=localStorage.getItem(homelandLayoutStorageKey());
-   if(!raw)return null;
-   const d=JSON.parse(raw);
-   return d&&d.format==='aniimo-homeland-layout-v1'&&Array.isArray(d.objects)?d:null;
- }catch(_){return null}
-}
-function homelandLayoutStatusText(){
- const d=homelandSavedLayout();
- if(!d)return 'No browser save for this profile';
- const when=new Date(Number(d.savedAt)||0);
- return 'Saved in browser'+(Number.isFinite(when.getTime())?' • '+when.toLocaleString():'');
-}
-function saveHomelandBrowserLayout(){
- const prior=homelandSavedLayout();
- if(prior&&!confirm('Replace the saved browser layout for this profile?'))return false;
- try{
-   const data=homelandLayoutSnapshot(),raw=JSON.stringify(data),key=homelandLayoutStorageKey();
-   localStorage.setItem(key,raw);
-   if(localStorage.getItem(key)!==raw)throw new Error('Browser storage verification failed');
-   render();
-   return true;
- }catch(err){
-   alert('Could not save this layout in the browser: '+(err?.message||err));
-   return false;
- }
-}
-function loadHomelandBrowserLayout(){
- const d=homelandSavedLayout();
- if(!d){alert('No browser-saved layout exists for this profile yet.');return false}
- if(objects.length&&!confirm('Load the browser-saved layout for this profile?\n\nThis will replace the current map placement, but it will not replace the imported Aniidx profile, roster, RV, or UID.'))return false;
- objects=JSON.parse(JSON.stringify(d.objects||[]));
- idCounter=Number(d.idCounter)||Math.max(1,...objects.map(o=>(Number(o.id)||0)+1));
- maxOverrides=JSON.parse(JSON.stringify(d.maxOverrides||{}));
- dimensionOverrides=JSON.parse(JSON.stringify(d.dimensionOverrides||{}));
- placeLevelPrefs=JSON.parse(JSON.stringify(d.placeLevelPrefs||{}));
- selected=null;
- normalizeLegacyNames();
- render();
- snapshotIntoCurrentProfile();
- return true;
 }
 function tryBrowserSave(){
  const payload=JSON.stringify(currentPlannerState());
