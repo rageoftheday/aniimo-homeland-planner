@@ -2087,8 +2087,8 @@ function importHomelandMapFile(){
    lib.maps[id]={id,name,savedAt:Date.now(),objects:JSON.parse(JSON.stringify(map.objects)),
     idCounter:Number(map.idCounter)||Math.max(1,...map.objects.map(o=>(Number(o.id)||0)+1)),
     maxOverrides:map.maxOverrides||{},dimensionOverrides:map.dimensionOverrides||{},placeLevelPrefs:map.placeLevelPrefs||{}};
+   if(objects.length&&!confirm('Import "'+name+'" as a new saved map and open it?\\n\\nThis only replaces the current map. Your profile, Aniimo roster, and imported Aniidx data remain unchanged.'))return;
    lib.current=id;saveHomelandMapLibrary(lib);
-   if(objects.length&&!confirm('Import "'+name+'" as a new saved map and open it?\\n\\nThis only replaces the current map. Your profile, Aniimo roster, and imported Aniidx data remain unchanged.')){renderHomelandPlannerV2?.();return}
    loadHomelandMapLayout(id);
    alert('Map imported and saved locally: '+name);
   }catch(e){alert('Could not import map: '+(e?.message||String(e)))}
