@@ -14,6 +14,7 @@
   let name='',sell=null,energy=null,icon='',source='';
   const setNumber=(v,current)=>v!=null&&v!==''&&Number.isFinite(Number(v))&&Number(v)>=0?Number(v):current;
   const baseItem=entries[key];
+  const supplementalItem=supplemental[key]||{};
   if(baseItem){name=baseItem.name||'';sell=setNumber(baseItem.sell,sell);energy=setNumber(baseItem.food,energy);icon=baseItem.icon||'';source='Homeland reference';}
   if(questlog[key]?.name&&!name){name=questlog[key].name;source=questlog[key].url||'QuestLog';}
   if(supplemental[key]){name=supplemental[key].name||name;sell=setNumber(supplemental[key].sell,sell);source=supplemental[key].source||source;}
@@ -27,7 +28,8 @@
    else if(txt?.name||txt?.label)name=txt.name||txt.label;
   }
   if(!name){const fact=live?.hub?.facts?.items?.[key]||live?.facts?.items?.[key]||embedded?.hub?.facts?.items?.[key];const slug=String(fact?.path||'').split('?')[0].split('/').filter(Boolean).pop();if(slug)name=slug.split('-').map(w=>w[0]?.toUpperCase()+w.slice(1)).join(' ');}
-  return {id:key,name:name||null,sell,energy,icon,source:source||'Aniidx reference',category:questlog[key]?.category||null,type:questlog[key]?.type||null,rarity:questlog[key]?.rarity||null,questlogSell:questlog[key]?.sell??null};
+  if(supplementalItem.nonSellable===true)sell=null;
+  return {id:key,name:name||null,sell,energy,icon,nonSellable:supplementalItem.nonSellable===true,buyPrice:supplementalItem.buyPrice??null,buyCurrency:supplementalItem.buyCurrency||null,priceEvidence:supplementalItem.priceEvidence||null,source:source||'Aniidx reference',category:questlog[key]?.category||null,type:questlog[key]?.type||null,rarity:questlog[key]?.rarity||null,questlogSell:questlog[key]?.sell??null};
  }
  function allItems(catalog){
   const keys=new Set(Object.keys(entries));
