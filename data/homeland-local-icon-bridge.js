@@ -19,16 +19,19 @@
    if(value==null||!this.manifest)return '';
    const assets=this.manifest.assets?.[category]||{},names=this.manifest.names?.[category]||{};
    const id=String(value).trim(),key=slug(value),alias=aliases[key]||key;
-   // Some accelerated recipes have their own inventory icons (e.g. 4020060 Quick Sea Salt).
-   // Production requests should show the produced item, not that recipe-token graphic.
+   // Exact accelerated recipe IDs represent their own artwork, not the regular output.
+   if(/^402\d+$/.test(id)&&/_quick_(?:formula|recipe)_/.test(assets[id]||''))return assets[id];
+   if(/^quick_/.test(key)){
+    const quickArt=this.quick(id);
+    if(quickArt)return quickArt;
+   }
+   // Other recipe IDs may need resolving to their produced inventory item.
    if(category==='Items'||category==='Recipes'){
     const rec=window.HOMELAND_REFERENCE_DATA?.recipes;
     const recipe=Array.isArray(rec)?rec.find(x=>String(x.id)===id):rec?.[id];
     const output=recipe?.outputs?.[0]?.item;
     if(output!=null&&String(output)!==id){
-     const outputId=String(output);
-     const itemAssets=this.manifest.assets?.Items||{};
-     const recipeAssets=this.manifest.assets?.Recipes||{};
+     const outputId=String(output),itemAssets=this.manifest.assets?.Items||{},recipeAssets=this.manifest.assets?.Recipes||{};
      if(itemAssets[outputId]||recipeAssets[outputId])return itemAssets[outputId]||recipeAssets[outputId];
     }
    }
