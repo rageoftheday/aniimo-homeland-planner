@@ -28,6 +28,15 @@ for(const [station,rows] of Object.entries(db)){
   if(!output||!pathFor(output))failures.push('Map recipe '+station+' / '+recipe.name+': no output PNG');
  }
 }
+// Every uploaded quick formula/recipe has a distinct PNG and must not be
+// replaced with the normal produced-item icon.
+const quickIcons=Object.entries(assets).filter(([id,path])=>/^402\d+$/.test(id)&&/_quick_(?:recipe|formula)_/.test(path));
+assert.equal(quickIcons.length,27,'Expected 27 original quick icons');
+for(const [id,path] of quickIcons){
+ assert(pathFor(id)===path,'Quick artwork lost for '+id);
+ const short=path.split('/').pop().replace(/^402\d+_quick_(?:formula|recipe)_/,'').replace(/\.png$/,'');
+ assert(short.length>0,'Missing quick image name for '+id);
+}
 const quick=data.recipes.find(r=>String(r.id)==='4020060');
 assert.equal(String(quick.outputs?.[0]?.item),'4001069','Quick Sea Salt must yield Sea Salt');
 assert(pathFor('4001069').endsWith('/4001069_sea_salt.png'));
