@@ -41,7 +41,7 @@ assert(cropStart>=0&&cropEnd>cropFrom,'Crop catalog unavailable');
 const crops=vm.runInNewContext('('+source.slice(cropFrom,cropEnd+1)+')');
 for(const crop of crops){
  const name=String(crop.name),key=name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
- if(/\\(quick\\)/i.test(name)){
+ if(name.toLowerCase().includes('(quick)')){
   const base=key.replace(/_quick$/,'').replace(/^emerald_bamboo$/,'bamboo').replace(/^maple$/,'maple_syrup');
   assert(manifest.names.Items['quick_recipe_'+base]||manifest.names.Items['quick_formula_'+base], 'Missing distinct quick crop icon '+name);
  } else {
