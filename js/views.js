@@ -226,29 +226,26 @@ function homelandLiveWorkerBadges(o,q){
 }
 function homelandObjectVisualHTML(o,big=false){
  const lv=homelandObjectLevel(o),q=homelandLivePieceFor(o);
- const recipeName=String(o?.recipeName||'').trim();
- const plantedName=o?.cropName?homelandPlantedOutputName(o.cropName):'';
- // The editor's None/cleared selection must show the default building artwork,
- // even when a stale live queue reports a previously running recipe.
- const selectedRecipe=recipeName?(recipeDB?.[o?.name]||[]).find(r=>r.name===recipeName):null;
- // Map selections carry outputItemId (not outputId); quick recipes must show
- // their produced item instead of their separate quick-recipe token.
- const selectedOutputId=selectedRecipe?.outputItemId??selectedRecipe?.outputId??
-   (selectedRecipe?.recipeId!=null?window.AniimoIconAtlas?.outputItem(selectedRecipe.recipeId):null);
- const quickSelection=/^quick\s/i.test(recipeName)||/^quick\s/i.test(selectedRecipe?.name||'')||(/^402\d+$/.test(String(selectedRecipe?.recipeId||''))&&!!window.HomelandLocalIcons?.quick('',selectedRecipe?.recipeId));
- const quickPath=quickSelection?window.HomelandLocalIcons?.quick(recipeName,selectedRecipe?.recipeId):'';
- const selectedIcon=recipeName?(
-   (quickPath?window.HomelandLocalIcons.image(quickPath,40):'')||
-   (selectedOutputId!=null?window.AniimoIconAtlas?.html(selectedOutputId,40):'')||
-   window.AniimoIconAtlas?.html(selectedRecipe?.name||recipeName,40)
- ):'';
- const plantedIcon=plantedName?window.AniimoIconAtlas?.html(plantedName,40):'';
- const productionArt=selectedIcon||plantedIcon||'';
- const facilityPath=window.HomelandLocalIcons?.facility(o?.name,lv);
- const facilityArt=facilityPath?window.HomelandLocalIcons.image(facilityPath,40):'';
+ const recipeName=String(o?.recipeName||'').trim(),cropName=String(o?.cropName||'').trim();
+ const icons=window.HomelandLocalIcons,atlas=window.AniimoIconAtlas;
+ const recipe=recipeName?(recipeDB?.[o?.name]||[]).find(r=>r.name===recipeName):null;
+ const recipeId=recipe?.recipeId??recipe?.id;
+ const outputId=recipe?.outputItemId??recipe?.outputId??(recipeId!=null?atlas?.outputItem(recipeId):null);
+ const quick=!!recipeName&&(recipeName.toLowerCase().startsWith('quick ')||recipeName.toLowerCase().includes('(quick)')||(!!icons?.quick('',recipeId)&&String(recipeId).startsWith('402')));
+ const quickPath=quick?icons?.quick(recipeName,recipeId):'';
+ const outputName=recipeName.replace(/^quick /i,'').split(' (Lv')[0].replace(' (Quick)','').trim();
+ const selectedPath=recipeName?(quickPath||icons?.file('Items',outputId??outputName)||icons?.file('Items',outputName)||icons?.file('Items',recipeName)):'';
+ const recipeArt=recipeName?(icons?.image(selectedPath,40)||atlas?.html(outputId??outputName,40)||atlas?.html(recipeName,40)):'';
+ const plantedName=cropName?homelandPlantedOutputName(cropName):'';
+ const quickCrop=cropName.toLowerCase().includes('(quick)');
+ const quickCropPath=quickCrop?icons?.quick('Quick '+plantedName):'';
+ const plantedPath=cropName?(quickCropPath||icons?.file('Items',cropName)||icons?.file('Items',plantedName)):'';
+ const plantedArt=cropName?(icons?.image(plantedPath,40)||atlas?.html(plantedName,40)||atlas?.html(cropName,40)):'';
+ const facilityPath=icons?.facility(o?.name,lv);
+ const facilityArt=facilityPath?icons.image(facilityPath,40):'';
  const idleArt=facilityArt?'<span class="hpv2ArtHolder hpv2FacilityArt" style="position:relative">'+homelandIllustratedIconHTML(o?.name)+'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">'+facilityArt+'</span></span>':'';
  const badges=homelandLiveWorkerBadges(o,q);
- return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${productionArt||idleArt||homelandIllustratedIconHTML(o?.name||o?.label)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
+ return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${recipeArt||plantedArt||idleArt||homelandIllustratedIconHTML(o?.name||o?.label)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
 }
 function homelandPlotRole(n){
  const rows=homelandPlotObjects(n);if(!rows.length)return 'Purchased';

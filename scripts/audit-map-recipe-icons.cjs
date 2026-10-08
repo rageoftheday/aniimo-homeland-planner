@@ -30,6 +30,25 @@ for(const [station,rows] of Object.entries(db)){
 }
 // Every uploaded quick formula/recipe has a distinct PNG and must not be
 // replaced with the normal produced-item icon.
+const sandcastle=data.recipes.filter(r=>String(r.facility)==='1010006');
+assert.deepEqual(sandcastle.map(r=>String(r.id)).sort(),['4001049','4001069','4020060']);
+assert.equal(Number(sandcastle.find(r=>String(r.id)==='4001049').minLevel),3);
+assert.equal(Number(sandcastle.find(r=>String(r.id)==='4020060').minLevel),2);
+assert(source.includes("const wantedName=quickArt?'Quick '+info.name:info.name"),'Quick recipes must use correct legacy names');
+const cropStart=source.indexOf('const crops=');
+const cropFrom=cropStart+'const crops='.length,cropEnd=source.indexOf('];',cropFrom);
+assert(cropStart>=0&&cropEnd>cropFrom,'Crop catalog unavailable');
+const crops=vm.runInNewContext('('+source.slice(cropFrom,cropEnd+1)+')');
+for(const crop of crops){
+ const name=String(crop.name),key=name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+ if(name.toLowerCase().includes('(quick)')){
+  const base=key.replace(/_quick$/,'').replace(/^emerald_bamboo$/,'bamboo').replace(/^maple$/,'maple_syrup');
+  assert(manifest.names.Items['quick_recipe_'+base]||manifest.names.Items['quick_formula_'+base], 'Missing distinct quick crop icon '+name);
+ } else {
+  const output=String(crop.output||'').split(' ×')[0].toLowerCase().replace(/[^a-z0-9]+/g,'_');
+  assert(manifest.names.Items[key]||manifest.names.Items[output]||Object.values(data.items).some(x=>String(x.name).toLowerCase()===name.toLowerCase()),'Missing selectable plant icon '+name);
+ }
+}
 const quickIcons=Object.entries(assets).filter(([id,path])=>/^402\d+$/.test(id)&&/_quick_(?:recipe|formula)_/.test(path));
 assert.equal(quickIcons.length,27,'Expected 27 original quick icons');
 for(const [id,path] of quickIcons){
@@ -43,7 +62,7 @@ assert(pathFor('4001069').endsWith('/4001069_sea_salt.png'));
 assert(pathFor('4001049').endsWith('/4001049_pearl.png'));
 assert(pathFor('4020060').endsWith('/4020060_quick_recipe_sea_salt.png'));
 const views=fs.readFileSync('js/views.js','utf8');
-assert(views.includes('selectedRecipe?.outputItemId'),'Map renderer must prefer actual item ID');
-assert(views.includes('productionArt||idleArt'),'None must restore building artwork');
+assert(views.includes('recipe?.outputItemId'),'Map renderer must prefer actual item ID');
+assert(views.includes('recipeArt||plantedArt||idleArt'),'None must restore building artwork');
 if(failures.length){console.error(failures.join('\n'));process.exitCode=1;}
 else console.log('Map recipe PNG audit passed:',data.recipes.length,'reference outputs;',count,'legacy map recipes;',composite,'composite Mine exceptions. All remaining icons found.');
