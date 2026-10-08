@@ -76,7 +76,7 @@ jobs:
           test -s js/views.js
           grep -q 'data/homeland-local-icon-bridge.js?v=3' index.html
           test -s data/homeland-local-icon-bridge.js
-          grep -Fq 'hpv2ProductionOverlay' js/views.js
+          grep -Fq 'const productionArt=selectedIcon||plantedIcon' js/views.js
           grep -Fq 'hpv2LiveWorker .homelandLocalIcon' css/app.css
           node --check data/homeland-local-icon-bridge.js
           test -s data/homeland-icon-atlas.js
