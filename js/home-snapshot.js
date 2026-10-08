@@ -66,18 +66,19 @@
     const root=el('snapshotPane');if(!root)return;
     const h=dashboardHomeSnapshot();
     if(!h.meta){root.innerHTML='<div class="v30Title">Home Snapshot</div><div class="homeSnapshotEmpty"><b>No synced Homeland snapshot yet.</b><span>Use Dashboard → Import / Sync first.</span></div>';return}
+    const icon=(id,size=22)=>window.AniimoIconAtlas?.html(id,size)||'';
     const raw=h.rawHome||{},pc=h.profileHome||{},sc=raw.comfort||{},eggs=Array.isArray(raw.eggs)?raw.eggs:[],food=Array.isArray(raw.food)?raw.food:[],queues=Array.isArray(raw.crops)?raw.crops:[],storage=raw.storage||{},visitors=Array.isArray(raw.visitors)?raw.visitors:[];
     const captured=h.captured?formatAniidexSyncTime(Number(h.captured)>1e12?Number(h.captured):Number(h.captured)*1000):'Unknown';
     const mods=Object.entries(pc.rv_modules||{}).filter(([,v])=>Number(v)>0).length;
     const eggRows=eggs.map(e=>{
       const id=String(e.item??''),ref=window.ANIIMO_EGG_REFERENCE?.entries?.[id]||{};
-      return '<tr><td><b>'+esc(ref.name||itemName(id))+'</b>'+(ref.guarantee?'<div class="small">'+esc(ref.guarantee)+' guaranteed</div>':'')+'</td><td><code>'+esc(id)+'</code></td><td>'+String(e.piece??'—')+'</td><td>'+esc(hatchAt(e.ends))+'</td><td data-egg-end="'+String(e.ends||0)+'">'+esc(remaining(e.ends))+'</td></tr>';
+      return '<tr><td><b>'+icon(id,22)+esc(ref.name||itemName(id))+'</b>'+(ref.guarantee?'<div class="small">'+esc(ref.guarantee)+' guaranteed</div>':'')+'</td><td><code>'+esc(id)+'</code></td><td>'+String(e.piece??'—')+'</td><td>'+esc(hatchAt(e.ends))+'</td><td data-egg-end="'+String(e.ends||0)+'">'+esc(remaining(e.ends))+'</td></tr>';
     }).join('')||'<tr><td colspan="5">No active eggs.</td></tr>';
     let foodEnergyTotal=0,foodKnownUnits=0,foodUnknownUnits=0;
     const foodRows=food.map(x=>{
       const count=Number(x.count||0),energy=foodEnergy(x.item);
       if(energy==null)foodUnknownUnits+=count;else{foodKnownUnits+=count;foodEnergyTotal+=energy*count;}
-      return '<tr><td>'+x.slot+'</td><td><b>'+esc(itemName(x.item))+'</b></td><td><code>'+esc(String(x.item))+'</code></td><td>'+count.toLocaleString()+'</td><td>'+(energy==null?'—':energy.toLocaleString())+'</td></tr>';
+      return '<tr><td>'+x.slot+'</td><td><b>'+icon(x.item,22)+esc(itemName(x.item))+'</b></td><td><code>'+esc(String(x.item))+'</code></td><td>'+count.toLocaleString()+'</td><td>'+(energy==null?'—':energy.toLocaleString())+'</td></tr>';
     }).join('')||'<tr><td colspan="5">No food slots returned.</td></tr>';
     const foodRate=Math.max(0,Number(raw.food_speed||0));
     const foodResidents=Math.max(0,Number(h.rosterCount||0));
@@ -133,10 +134,10 @@
       qRows=grouped.map(g=>{
         const pieceDetails=g.pieces.slice().sort((a,b)=>Number(a.piece)-Number(b.piece)).map(x=>'<div class="small">Piece '+esc(x.piece)+' · Lv '+esc(x.level)+' · '+esc(x.facility)+' · '+esc(x.status)+(x.progress!=null?' · '+x.progress+'%':'')+(x.output!=='—'?' · '+esc(x.output):'')+'</div>').join('');
         const detail=g.count>1?'<details class="snapshotProductionPieces"><summary>'+g.count+' pieces</summary>'+pieceDetails+'</details>':'<div class="small">Piece '+esc(g.pieces[0]?.piece||'—')+' · Lv '+esc(g.pieces[0]?.level||'—')+'</div>';
-        return '<tr><td><b>'+esc(g.facility)+'</b>'+detail+'</td><td><b>'+esc(g.recipeName)+'</b>'+(g.recipeId?'<div class="small"><code>'+esc(g.recipeId)+'</code></div>':'')+'</td><td>'+esc(g.status)+(g.readyCount?'<div class="small">'+g.readyCount+' ready</div>':'')+'</td><td>'+(g.progress!=null?g.progress+'% avg':'—')+'</td><td>'+esc(g.output)+'</td></tr>';
+        return '<tr><td><b>'+esc(g.facility)+'</b>'+detail+'</td><td><b>'+icon(g.recipeId,22)+esc(g.recipeName)+'</b>'+(g.recipeId?'<div class="small"><code>'+esc(g.recipeId)+'</code></div>':'')+'</td><td>'+esc(g.status)+(g.readyCount?'<div class="small">'+g.readyCount+' ready</div>':'')+'</td><td>'+(g.progress!=null?g.progress+'% avg':'—')+'</td><td>'+esc(g.output)+'</td></tr>';
       }).join('');
     }else{
-      qRows=productionRows.sort(sortProduction).map(row=>'<tr><td><b>'+esc(row.facility)+'</b><div class="small">Piece '+esc(row.piece)+' · Lv '+esc(row.level)+'</div></td><td><b>'+esc(row.recipeName)+'</b>'+(row.recipeId?'<div class="small"><code>'+esc(row.recipeId)+'</code></div>':'')+'</td><td>'+esc(row.status)+'</td><td>'+(row.progress!=null?row.progress+'%':'—')+'</td><td>'+esc(row.output)+'</td></tr>').join('');
+      qRows=productionRows.sort(sortProduction).map(row=>'<tr><td><b>'+esc(row.facility)+'</b><div class="small">Piece '+esc(row.piece)+' · Lv '+esc(row.level)+'</div></td><td><b>'+icon(row.recipeId,22)+esc(row.recipeName)+'</b>'+(row.recipeId?'<div class="small"><code>'+esc(row.recipeId)+'</code></div>':'')+'</td><td>'+esc(row.status)+'</td><td>'+(row.progress!=null?row.progress+'%':'—')+'</td><td>'+esc(row.output)+'</td></tr>').join('');
     }
     qRows=qRows||'<tr><td colspan="5">No production pieces returned.</td></tr>';
     const facilityRows=h.facilityRows.map(x=>'<tr><td><b>'+esc(x.name)+'</b></td><td>'+x.total+'</td><td>'+esc(x.levels)+'</td></tr>').join('');
@@ -145,7 +146,7 @@
     const storageRows=storageEntries.sort((a,b)=>itemName(a[0]).localeCompare(itemName(b[0]))).map(([id,v])=>{
       const count=Number(v)||0,sell=itemSellValue(id),stack=sell==null?null:sell*count;
       if(sell!=null){storagePricedCodes++;storageKnownValue+=stack;}
-      return '<tr><td><b>'+esc(itemName(id))+'</b></td><td><code>'+esc(id)+'</code></td><td>'+count.toLocaleString()+'</td><td>'+(sell==null?'—':homeCoin(sell))+'</td><td>'+(stack==null?'—':'<b>'+homeCoin(stack)+'</b>')+'</td></tr>';
+      return '<tr><td><b>'+icon(id,22)+esc(itemName(id))+'</b></td><td><code>'+esc(id)+'</code></td><td>'+count.toLocaleString()+'</td><td>'+(sell==null?'—':homeCoin(sell))+'</td><td>'+(stack==null?'—':'<b>'+homeCoin(stack)+'</b>')+'</td></tr>';
     }).join('');
     const moduleNames={2:'Rest Module',3:'Ecological Module',4:'Kitchen Module',5:'Resource Detector',6:'Crafting Module',7:'Power Module',8:'Plant Research Module',9:'Incubation Reaction Module',10:'Signal Transmitter'};
     const moduleRows=Object.entries(pc.rv_modules||{}).sort((a,b)=>Number(a[0])-Number(b[0])).map(([id,lv])=>'<tr><td>'+esc(moduleNames[id]||('Module '+id))+'</td><td>Lv '+Number(lv||0)+'</td><td><code>'+esc(id)+'</code></td></tr>').join('');
