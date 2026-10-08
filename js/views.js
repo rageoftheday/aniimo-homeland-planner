@@ -32,6 +32,30 @@ function homelandAddVisiblePiece(item){
  else alert('No available space for '+item.name+' in the visible map area. Pan or zoom out.');
 }
 // Magnetically align dropped edges to nearby facilities, without allowing overlaps.
+// Move selected piece exactly half a grid cell per arrow press.
+function homelandNudgeSelected(key){
+ if(!['full','plot'].includes(homelandPlannerMode))return false;
+ const o=objects.find(x=>x.id===Number(selected));if(!o)return false;
+ const delta={ArrowLeft:[-.5,0],ArrowRight:[.5,0],ArrowUp:[0,-.5],ArrowDown:[0,.5]}[key];if(!delta)return false;
+ const nx=Math.round((o.x+delta[0])*2)/2,ny=Math.round((o.y+delta[1])*2)/2;
+ const proposed={...o,x:nx,y:ny};
+ if(nx<0||ny<0||nx+o.w>80||ny+o.h>60||collide(proposed)||!validArea(proposed))return true;
+ if(homelandPlannerMode==='plot'){
+  const plot=homelandPlotDef(homelandFocusedPlot);
+  if(!plot||nx<plot.x||ny<plot.y||nx+o.w>plot.x+20||ny+o.h>plot.y+15)return true;
+ }
+ o.x=nx;o.y=ny;render();
+ // Preserve keyboard focus on the selected object after render replaces the map DOM.
+ document.querySelector('#homelandPlannerV2 [data-hpv2-object="'+o.id+'"]')?.focus({preventScroll:true});
+ return true;
+}
+document.addEventListener('keydown',e=>{
+ if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)||e.altKey||e.ctrlKey||e.metaKey)return;
+ const tag=e.target?.tagName||'';
+ if(e.target?.isContentEditable||['INPUT','TEXTAREA','SELECT'].includes(tag)||e.target?.closest?.('[role="dialog"]'))return;
+ if(!document.getElementById('mapPane')?.closest('.tabPane.active'))return;
+ if(homelandNudgeSelected(e.key))e.preventDefault();
+});
 function homelandSnapAdjacent(candidate){
  const clamp=(n,max)=>Math.max(0,Math.min(max,n));
  const valid=(x,y)=>{const t={...candidate,x,y};return !collide(t)&&validArea(t)};
@@ -166,7 +190,7 @@ function homelandMiniObject(o,p,big=false){
  const style=p.full?`left:${l/80*100}%;top:${t/60*100}%;width:${o.w/80*100}%;height:${o.h/60*100}%`:`left:${l/20*100}%;top:${t/15*100}%;width:${Math.min(o.w,20)/20*100}%;height:${Math.min(o.h,15)/15*100}%`;
  const visual=homelandObjectVisualHTML(o,big)+homelandAssignedPortraitHTML(o);
  if(!big)return `<div class="hpv2Obj preview" aria-hidden="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</div>`;
- return `<button type="button" class="hpv2Obj big" data-hpv2-object="${o.id}" draggable="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</button>`;
+ return `<button type="button" class="hpv2Obj big${selected===o.id?' selected':''}" data-hpv2-object="${o.id}" draggable="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</button>`;
 }
 function homelandPlotAddOptions(){
  return catalog.filter(item=>{
