@@ -232,8 +232,9 @@ function homelandObjectVisualHTML(o,big=false){
  const artName=currentName||(q&&q.recipe==null?o?.name:fallbackName);
  const icon=id!=null&&window.AniimoIconAtlas?.html(id,40);
  const planned=o?.recipeName?window.AniimoIconAtlas?.html(o.recipeName,40):'';
+ const idleFacility=!q?.recipe&&!o?.recipeName&&!o?.cropName?window.HomelandLocalIcons?.image(window.HomelandLocalIcons?.facility(o?.name,lv),40):'';
  const badges=homelandLiveWorkerBadges(o,q);
- return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${icon||planned||homelandIllustratedIconHTML(artName)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
+ return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${icon||planned||idleFacility||homelandIllustratedIconHTML(artName)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
 }
 function homelandPlotRole(n){
  const rows=homelandPlotObjects(n);if(!rows.length)return 'Purchased';
