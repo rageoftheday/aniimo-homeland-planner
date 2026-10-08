@@ -1961,10 +1961,11 @@ function homelandMapLibraryEntries(){
  const lib=homelandMapLibrary();
  return Object.values(lib.maps||{}).sort((a,b)=>(Number(b.savedAt)||0)-(Number(a.savedAt)||0));
 }
-function saveHomelandMapLayout(mapId=null){
+function saveHomelandMapLayout(mapId=undefined){
  try{
    const lib=homelandMapLibrary();
-   const existing=mapId?lib.maps?.[mapId]:null;
+   const targetId=mapId===undefined?lib.current:mapId;
+   const existing=targetId?lib.maps?.[targetId]:null;
    const defaultName=existing?.name||('Map '+(Object.keys(lib.maps||{}).length+1));
    const name=prompt(existing?'Save map as:':'Map name:',defaultName);
    if(name==null)return false;
