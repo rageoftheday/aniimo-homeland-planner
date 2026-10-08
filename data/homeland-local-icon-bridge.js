@@ -44,6 +44,18 @@
    }
    return '';
   },
+  // Quick recipes have distinct original artwork, separate from their regular outputs.
+  // Use the original recipe PNG when named Quick; never substitute the standard product.
+  quick(name,recipeId){
+   if(!this.manifest)return '';
+   const files=this.manifest.assets?.Items||{},names=this.manifest.names?.Items||{};
+   const id=String(recipeId??'');
+   if(/^402\d+$/.test(id)&&/\/(?:402\d+)_quick_(?:recipe|formula)_/.test(files[id]||''))return files[id];
+   const base=slug(name).replace(/^quick_/,'').replace(/_level_\d+.*$/,'').replace(/_lv\d+.*$/,'');
+   const aliases={'fresh_water':'fresh_water','plain_fresh_water':'fresh_water','natural_mineral_spring':'natural_mineral_water'};
+   const key=aliases[base]||base;
+   return names['quick_recipe_'+key]||names['quick_formula_'+key]||'';
+  },
   facility(name,level){
    if(!this.manifest)return '';
    let nameKey=slug(name).replace(/_level_\d+$/,'');
