@@ -11,7 +11,8 @@
  fetch('data/homebuilder-aniimo-portraits.json?v=4').then(r=>r.ok?r.json():null).then(m=>{manifest=m;window.HomebuilderPortraits?.hydrate(document);}).catch(()=>{});
  function candidates(worker){
   const species=clean(worker?.name),form=formPart(worker?.form),appearance=formPart(worker?.appearance);
-  const formId=String(worker?.formId||worker?.form_id||worker?.variantId||worker?.variant||'').trim();
+  const rawId=worker?.formId??worker?.form_id??worker?.variantId??worker?.variant??worker?.form;
+  const formId=/^\d{6,8}$/.test(String(rawId??''))?String(rawId):'';
   if(!species)return [];
   // Authoritative reference ID from the imported Aniimo record wins over names.
   if(manifest&&formId&&manifest.byFormId){
