@@ -609,4 +609,4 @@ header{align-items:center}
 .hpv2PieceCard[hidden]{display:none!important}
 
 /* Keep selected placement obvious during keyboard nudging. */
-.hpv2Obj.big.selected{outline:3px solid #51c9ff;outline-offset:-2px;z-index:6;box-shadow:0 0 0 2px rgba(3,42,72,.75),0 0 13px rgba(81,201,255,.5)}
+.hpv2Obj.big[aria-pressed="true"]{outline:3px solid #51c9ff;outline-offset:-2px;z-index:6;box-shadow:0 0 0 2px rgba(3,42,72,.75),0 0 13px rgba(81,201,255,.5)}
