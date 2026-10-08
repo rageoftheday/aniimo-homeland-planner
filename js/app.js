@@ -104,7 +104,7 @@ function manualZoomPercent(p){
  applyBoardScale((Number(p)||100)/100);
 }
 function zoomStep(delta){
- if(typeof homelandPlannerMode!=='undefined'&&homelandPlannerMode==='full'){manualZoomPercent(Math.max(25,Math.min(200,homelandFullZoom+delta)));return}
+ if(typeof homelandPlannerMode!=='undefined'&&homelandPlannerMode==='full'){manualZoomPercent(Math.max(25,Math.min(400,homelandFullZoom+delta)));return}
  manualZoomPercent(Math.max(25,Math.min(150,Math.round(boardScale*100)+delta)));
 }
 function boardBuild(){
