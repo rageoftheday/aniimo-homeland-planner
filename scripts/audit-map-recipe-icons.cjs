@@ -45,7 +45,8 @@ for(const crop of crops){
   const base=key.replace(/_quick$/,'').replace(/^emerald_bamboo$/,'bamboo').replace(/^maple$/,'maple_syrup');
   assert(manifest.names.Items['quick_recipe_'+base]||manifest.names.Items['quick_formula_'+base], 'Missing distinct quick crop icon '+name);
  } else {
-  assert(manifest.names.Items[key]||Object.values(data.items).some(x=>String(x.name).toLowerCase()===name.toLowerCase()),'Missing selectable plant icon '+name);
+  const output=String(crop.output||'').split(' ×')[0].toLowerCase().replace(/[^a-z0-9]+/g,'_');
+  assert(manifest.names.Items[key]||manifest.names.Items[output]||Object.values(data.items).some(x=>String(x.name).toLowerCase()===name.toLowerCase()),'Missing selectable plant icon '+name);
  }
 }
 const quickIcons=Object.entries(assets).filter(([id,path])=>/^402\d+$/.test(id)&&/_quick_(?:recipe|formula)_/.test(path));
