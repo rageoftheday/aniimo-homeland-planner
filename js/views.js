@@ -1042,6 +1042,9 @@ function renderDatabaseTab(){
  const unnamed=examined.filter(x=>!x.record.name),unpriced=examined.filter(x=>x.record.sell==null);
  const unknownFood=(home?.rawHome?.food||[]).filter(x=>master?.lookup(x.item,aniidexImportMeta?.catalog)?.energy==null);
  const itemAuditRows=examined.filter(x=>!x.record.name||x.record.sell==null);
+ const marketReview=[{id:'4030014',name:'Huge Colorful Sugarcane',market:30000,url:'https://wikily.gg/aniimo/homeland-crafting'}];
+ const priceConflicts=marketReview.map(x=>({...x,local:master?.lookup(x.id,aniidexImportMeta?.catalog)?.sell??null})).filter(x=>x.local!=null&&x.local!==x.market);
+
  const sourceBadge=c=>c.source==='official-wiki'?'<span class="sourceBadge official">Official Wiki</span>':c.source==='official'?'<span class="sourceBadge official">Official preset</span>':c.source==='verified'?'<span class="sourceBadge">Cross-checked</span>':'<span class="sourceBadge user">Name only</span>';
  root.innerHTML=`<div class="databaseBrowser"><div class="databaseBrowserHead"><div class="v30Title">Database / Reference</div><div class="v30Sub">Offline facility/recipe facts plus the cached official Wiki Aniimo reference. User-entered copy data still overrides catalog defaults.</div><div class="dashboardGrid">
  <div class="metricCard"><div class="label">Planner reference data</div><div class="metric">${ref.ok?'✓':'!'}</div><div class="small">${ref.ok?'Offline facility / recipe data loaded':esc((ref.issues||[]).join(' • '))}</div></div>
@@ -1061,6 +1064,10 @@ function renderDatabaseTab(){
  ${noWikiForms.map(x=>`<tr><td>${esc(x.dex)}</td><td>${esc(x.name)}</td><td>No Wiki forms</td></tr>`).join('')}
  ${releasedMissingWiki.length+officialMissingRoster.length+noWikiForms.length?'':'<tr><td colspan="3">No discrepancies between the loaded references.</td></tr>'}
  </tbody></table></div></div>
+ <div class="databaseSection"><div class="sectionTitle">Home Market price reconciliation</div>
+ <div class="small">Public Home Market prices and locally stored HC prices can disagree. Conflicts are flagged without changing inventory totals until the matching item ID and current market value are verified.</div>
+ <div class="tableWrap"><table class="dataTable"><thead><tr><th>Item ID</th><th>Item</th><th>Planner HC</th><th>Published Home Market HC</th><th>Reference</th></tr></thead><tbody>${priceConflicts.map(x=>`<tr><td><code>${esc(x.id)}</code></td><td>${esc(x.name)}</td><td>${x.local.toLocaleString()} HC</td><td>${x.market.toLocaleString()} HC</td><td><a href="${esc(x.url)}" target="_blank" rel="noopener">Review source</a></td></tr>`).join('')||'<tr><td colspan="5">No documented discrepancies.</td></tr>'}</tbody></table></div>
+ </div>
  <div class="databaseSection"><div class="sectionTitle">All Aniimo items · ID coverage audit</div>
  <div class="small">Available unique item IDs: ${masterItems.length.toLocaleString()} · QuestLog imported IDs: ${questCount.toLocaleString()} · current profile stored IDs: ${examined.length}. Homeland reference is not the complete global game catalog. A missing sell value is unknown, not zero.</div>
  <div class="small">Current profile: ${unnamed.length} unnamed storage IDs · ${unpriced.length} storage IDs without a known sell price · ${unknownFood.length} food slots without verified energy.</div>
