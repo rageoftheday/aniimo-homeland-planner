@@ -221,7 +221,7 @@ function homelandLiveWorkerBadges(o,q){
   const label=String(matching?.name||a.name||form.name||'Assigned Aniimo');
   const imageSrc=matching?.localPortrait||window.AniimoAssets?.portraitCandidates?.(label,matching?.form||form.form||'')?.[0]||form.head||'';
   const art=window.AniimoIconAtlas?.character(label,26);
-  return '<span class="hpv2WorkerBadge hpv2LiveWorker" role="button" tabindex="0" title="Working here: '+esc(label)+' — click for worker selection">'+(art||(imageSrc?'<img alt="'+esc(label)+'" src="'+esc(imageSrc)+'" loading="lazy" onerror="this.style.display=\'none\'">':'<span>👤</span>'))+'</span>';
+  return '<span class="hpv2WorkerBadge hpv2LiveWorker" data-worker-species="'+esc(label.toLowerCase().replace(/[^a-z0-9]+/g,'-'))+'" role="button" tabindex="0" title="Working here: '+esc(label)+' — click for worker selection">'+(art||(imageSrc?'<img alt="'+esc(label)+'" src="'+esc(imageSrc)+'" loading="lazy" onerror="this.style.display=\'none\'">':'<span>👤</span>'))+'</span>';
  }).join('');
 }
 function homelandObjectVisualHTML(o,big=false){
