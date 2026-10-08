@@ -1084,7 +1084,15 @@ function renderRawJsonTab(){
  const q=String(rawJsonQuery||'').trim().toLowerCase();
  const shown=q?lines.filter(line=>line.toLowerCase().includes(q)):lines;
  root.innerHTML=`<div class="rawJsonBrowser"><div class="rawJsonHead"><div><div class="v30Title">Raw JSON</div><div class="v30Sub">Latest synced Aniidx data retained by the planner. This is a read-only diagnostic/reference view.</div></div><div class="rawJsonActions"><input id="rawJsonSearch" value="${esc(rawJsonQuery)}" placeholder="Search JSON..."><button id="rawJsonCopy">Copy JSON</button><button id="rawJsonDownload">Download JSON</button></div><div class="small">${q?shown.length+' matching line'+(shown.length===1?'':'s')+' • ':''}${lines.length.toLocaleString()} total lines • ${full.length.toLocaleString()} characters</div></div><pre id="rawJsonPre" class="rawJsonPre">${esc(shown.join('\n'))}</pre></div>`;
- const search=el('rawJsonSearch');if(search)search.addEventListener('input',()=>{rawJsonQuery=search.value;renderRawJsonTab();setTimeout(()=>el('rawJsonSearch')?.focus(),0);});
+ const search=el('rawJsonSearch');
+ if(search)search.addEventListener('input',()=>{
+   rawJsonQuery=search.value;
+   const query=rawJsonQuery.trim().toLowerCase();
+   const matches=query?lines.filter(line=>line.toLowerCase().includes(query)):lines;
+   const pre=el('rawJsonPre');if(pre)pre.textContent=matches.join('\n');
+   const count=root.querySelector('.rawJsonHead>.small');
+   if(count)count.textContent=(query?matches.length+' matching line'+(matches.length===1?'':'s')+' • ':'')+lines.length.toLocaleString()+' total lines • '+full.length.toLocaleString()+' characters';
+ });
  const copy=el('rawJsonCopy');if(copy)copy.onclick=async()=>{try{await navigator.clipboard.writeText(full);copy.textContent='Copied ✓';setTimeout(()=>{if(el('rawJsonCopy'))el('rawJsonCopy').textContent='Copy JSON'},1200)}catch{copy.textContent='Copy failed'}};
  const dl=el('rawJsonDownload');if(dl)dl.onclick=()=>{const blob=new Blob([full],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Aniimo_Homeland_'+String(bundle.uid||'sync')+'_raw.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);};
 }
