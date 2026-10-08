@@ -624,3 +624,12 @@ header{align-items:center}
 .hpv2WorkerBadge.hpv2LiveWorker:focus-visible{outline:2px solid #fff}
 .hpv2WorkerBadge .aniimoPortraitIcon{display:block!important;max-width:100%;max-height:100%}
 .aniimoAtlasIcon{vertical-align:middle;flex-shrink:0}
+
+.liveFacilityLinkPanel{border:1px solid var(--border,rgba(160,180,200,.25));border-radius:10px;padding:10px;margin-top:12px;display:grid;gap:7px;background:rgba(120,150,160,.08)}
+.liveFacilityLinkPanel[hidden]{display:none!important}
+.liveFacilityLinkPanel select{width:100%;min-width:0;max-width:100%;padding:7px;border-radius:7px}
+
+.homelandIconGallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(116px,1fr));gap:9px;padding:12px 0}
+.homelandIconGalleryTile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:102px;padding:9px;border:1px solid rgba(142,167,184,.22);border-radius:10px;text-align:center;background:rgba(145,170,180,.06)}
+.homelandIconGalleryTile span:not(.aniimoAtlasIcon){font-size:12px;line-height:1.2}
+.homelandIconGalleryTile small{font-size:10px;opacity:.68}

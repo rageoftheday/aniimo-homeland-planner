@@ -1789,12 +1789,34 @@ function renderAssignmentPanel(){
  const src=w.localPortrait||candidates[0]||w.portrait||'';
  preview.innerHTML=(src?'<img src="'+esc(src)+'" alt="'+esc(w.name||'Aniimo')+'" onerror="this.style.display=\'none\'">':'')+'<span><b>'+esc(w.name||'Unnamed Aniimo')+'</b><small>'+esc(w.form||'Base form')+(rule?' · '+esc(rule.ability)+' Lv'+workerAbilityLevel(w,rule.ability):'')+'</small></span>';
 }
+function updateLiveFacilityLink(o){
+ let pane=document.getElementById('liveFacilityLinkPanel');
+ if(!pane){pane=document.createElement('div');pane.id='liveFacilityLinkPanel';pane.className='liveFacilityLinkPanel';editor.appendChild(pane);}
+ const raw=aniidexImportMeta?.home?.home||aniidexImportMeta?.home||{};
+ const queues=Array.isArray(raw.crops)?raw.crops:[];
+ const candidates=o?queues.filter(q=>String(dashboardFacilityName(q.facility)).toLowerCase()===String(o.name||'').toLowerCase()):[];
+ if(!o||!candidates.length){pane.hidden=true;return;}pane.hidden=false;
+ const uid=String(aniidexImportMeta?.profile?.profile?.uid||aniidexImportMeta?.profile?.uid||raw.uid||'');
+ const storageKey='homeland-live-links-v1:'+uid,objectKey=o.id+'|'+o.name+'|'+o.x+','+o.y;
+ let links={};try{links=JSON.parse(localStorage.getItem(storageKey)||'{}')||{};}catch(e){}
+ const current=String(links[objectKey]||o.livePieceId||'');
+ pane.innerHTML='<label for="liveFacilityPieceSelect"><b>Live facility link</b></label><div class="small">Link this drawn building to a real piece. Stored for this profile only; leave blank for automatic matching.</div><select id="liveFacilityPieceSelect"><option value="">Automatic match</option>'+
+ candidates.map(q=>{const item=window.AniimoIconAtlas?.find(q.recipe)?.name||window.HomelandItemCatalog?.lookup(q.recipe,aniidexImportMeta?.catalog)?.name||'Idle';return '<option value="'+esc(q.piece)+'">Piece '+esc(q.piece)+' · Lv '+esc(q.level)+' · '+esc(item)+'</option>';}).join('')+'</select>';
+ const select=pane.querySelector('select');select.value=current;
+ if(select.value!==current)select.value='';
+ select.addEventListener('change',()=>{
+   if(!uid)return;
+   if(select.value)links[objectKey]=select.value;else delete links[objectKey];
+   localStorage.setItem(storageKey,JSON.stringify(links));
+   render();
+ });
+}
 function updateInspector(){
  const o=objects.find(x=>x.id===selected);noneSelected.style.display=o?'none':'block';editor.style.display=o?'block':'none';
- if(!o){if(el('cropQuickPickLabel'))el('cropQuickPickLabel').style.display='none';if(el('assignmentPanel'))el('assignmentPanel').style.display='none';if(el('levelPanel'))el('levelPanel').style.display='none';if(el('cropPanel'))el('cropPanel').style.display='none';if(el('recipePanel'))el('recipePanel').style.display='none';return}
+ if(!o){if(el('liveFacilityLinkPanel'))el('liveFacilityLinkPanel').hidden=true;if(el('cropQuickPickLabel'))el('cropQuickPickLabel').style.display='none';if(el('assignmentPanel'))el('assignmentPanel').style.display='none';if(el('levelPanel'))el('levelPanel').style.display='none';if(el('cropPanel'))el('cropPanel').style.display='none';if(el('recipePanel'))el('recipePanel').style.display='none';return}
  const cropKind=o.name==='Farmland'||o.name==='Woodland';if(el('cropQuickPickLabel')){el('cropQuickPickLabel').style.display=cropKind?'block':'none';el('cropQuickPickLabel').firstChild.textContent=o.name==='Woodland'?'Tree quick pick': 'Crop quick pick';}rebuildCropPicker();selTitle.textContent=o.name;selSize.textContent=o.w+'×'+o.h;selPos.textContent=o.x+', '+o.y;const p=getPlotInfo(o);selPlot.textContent=p.plot;selLocal.textContent=p.local;labelInput.value=o.label;reqSelect.value=o.req;
  const place=validArea(o)&&!collide(o),rs=reqSatisfied(o);reqStatus.innerHTML=`Placement: <b style="color:${place?'#62df8c':'#ff6971'}">${place?'VALID':'INVALID / COLLISION'}</b><br>Requirement: <b style="color:${rs?'#62df8c':'#ff6971'}">${o.req==='none'?'Neutral':(rs?'MET':'NOT MET')}</b><br>${climateNowText(o)}`;
- renderLevelPanel();renderCropCards();renderRecipePanel();renderAssignmentPanel();
+ renderLevelPanel();renderCropCards();renderRecipePanel();renderAssignmentPanel();updateLiveFacilityLink(o);
 }
 
 labelInput.oninput=()=>{const o=objects.find(x=>x.id===selected);if(o){o.label=labelInput.value;render()}};
