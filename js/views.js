@@ -177,9 +177,9 @@ function homelandObjectLevel(o){
  return Number.isFinite(v)&&v>0?v:null;
 }
 function homelandObjectVisualHTML(o,big=false){
- const icon=homelandObjectVisualIcon(o),lv=homelandObjectLevel(o);
+ const lv=homelandObjectLevel(o);
  const artName=o?.cropName?homelandPlantedOutputName(o.cropName):o?.name||o?.label||"";
- return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true"><span class="hpv2IconGlyph">${homelandIllustratedIconHTML(artName)}</span></span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}</span>`;
+ return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${homelandIllustratedIconHTML(artName)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}</span>`;
 }
 function homelandPlotRole(n){
  const rows=homelandPlotObjects(n);if(!rows.length)return 'Purchased';
