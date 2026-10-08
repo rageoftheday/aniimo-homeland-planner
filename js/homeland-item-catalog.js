@@ -22,11 +22,11 @@
   for(const c of sources.reverse()){
    const fact=c?.hub?.facts?.items?.[key]||c?.facts?.items?.[key];
    const txt=c?.text?.items?.[key]||c?.hub?.text?.items?.[key]||c?.siteText?.items?.[key];
-   if(fact){sell=setNumber(fact.sell,sell);energy=setNumber(fact.food,energy);icon=fact.icon||icon; if(!name&&fact.path)name=String(fact.path).replace(/\\/?\\??[^/]*$/,'');}
+   if(fact){sell=setNumber(fact.sell,sell);energy=setNumber(fact.food,energy);icon=fact.icon||icon; if(!name&&fact.path){const slug=String(fact.path).split('?')[0].split('/').filter(Boolean).pop();if(slug)name=slug.split('-').map(w=>w[0]?.toUpperCase()+w.slice(1)).join(' ');}}
    if(typeof txt==='string'&&txt)name=txt;
    else if(txt?.name||txt?.label)name=txt.name||txt.label;
   }
-  if(!name){const fact=live?.hub?.facts?.items?.[key]||live?.facts?.items?.[key]||embedded?.hub?.facts?.items?.[key];const slug=String(fact?.path||'').split('?')[0].replace(/\\/+$/,'').split('/').pop();if(slug)name=slug.replace(/[-_]+/g,' ').replace(/\\b\\w/g,c=>c.toUpperCase());}
+  if(!name){const fact=live?.hub?.facts?.items?.[key]||live?.facts?.items?.[key]||embedded?.hub?.facts?.items?.[key];const slug=String(fact?.path||'').split('?')[0].split('/').filter(Boolean).pop();if(slug)name=slug.split('-').map(w=>w[0]?.toUpperCase()+w.slice(1)).join(' ');}
   return {id:key,name:name||null,sell,energy,icon,source:source||'Aniidx reference'};
  }
  function allItems(catalog){
