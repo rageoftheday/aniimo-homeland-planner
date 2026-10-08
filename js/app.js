@@ -1769,7 +1769,7 @@ el('personalitySelect').addEventListener('change',()=>{const o=objects.find(x=>x
 el('clearRecipeBtn').addEventListener('click',()=>{const o=objects.find(x=>x.id===selected);clearRecipe(o)});
 rotateBtn.onclick=()=>{const o=objects.find(x=>x.id===selected);if(o){[o.w,o.h]=[o.h,o.w];render()}};
 deleteBtn.onclick=()=>{objects=objects.filter(x=>x.id!==selected);selected=null;render()};
-duplicateBtn.onclick=()=>{const o=objects.find(x=>x.id===selected);if(!o)return;const item=catalog.find(i=>i.name===o.name);if(!item)return;const lim=maxCount(item,+rvLevel.value);if(objects.filter(x=>x.name===o.name).length>=lim)return;const p=nextFree(o.w,o.h);if(!p){if(startupStatus){startupStatus.textContent='No legal free space is available for a duplicate in the currently open plots.';startupStatus.style.color='#ffcb6b';}return;}objects.push({...o,id:idCounter++,x:p[0],y:p[1]});selected=objects.at(-1).id;render()};
+duplicateBtn.onclick=()=>{const o=objects.find(x=>x.id===selected);if(!o)return;const item=catalog.find(i=>i.name===o.name);if(!item)return;const lim=maxCount(item,+rvLevel.value);if(objects.filter(x=>x.name===o.name).length>=lim)return;const p=nextFree(o.w,o.h);if(!p){if(startupStatus){startupStatus.textContent='No legal free space is available for a duplicate in the currently open plots.';startupStatus.style.color='#ffcb6b';}return;}objects.push({...o,id:idCounter++,x:p[0],y:p[1],workerId:null});selected=objects.at(-1).id;render()};
 
 function nextFree(w,h){for(let y=0;y<=60-h;y+=.5)for(let x=0;x<=80-w;x+=.5){const t={id:-1,x,y,w,h};if(validArea(t)&&!collide(t))return[x,y]}return null}
 function focusedPlotNumber(){
