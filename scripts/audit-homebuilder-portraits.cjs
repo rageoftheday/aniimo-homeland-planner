@@ -44,4 +44,6 @@ assert(loader.includes('manifest?.assets?.[key]'),'Manifest lookup must be exact
 assert(loader.includes('assets/homebuilder-aniimo-portraits/unassigned-aniimo.svg'),'Missing artwork must use the universal Aniimo placeholder');
 const view=fs.readFileSync('js/views.js','utf8');
 assert(view.includes('const live=assigned?[assigned]:[];'),'Unassigned map objects must have no badges');
+assert(view.includes('const portraitWorker={...record,name:label,formId:'),'Worker badges must forward ID to official portrait resolver');
+assert(!view.slice(view.indexOf('function homelandLiveWorkerBadges'),view.indexOf('function homelandObjectVisualHTML')).includes('AniimoIconAtlas?.character'),'Old atlas portraits must not render in worker badges');
 console.log('Circular portrait audit PASS: 208 valid PNGs, '+catalog.length+' built-in Aniimo entries, 2 intentional omissions (Soleon and Fennelun).');
