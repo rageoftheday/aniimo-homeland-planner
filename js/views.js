@@ -95,11 +95,20 @@ function setHomelandPlannerMode(mode,plot){
  localStorage.setItem('homelandFocusedPlot',String(homelandFocusedPlot));
  renderHomelandPlannerV2();
 }
+function homelandAssignedPortraitHTML(o){
+ if(!o?.workerId)return '';
+ const w=typeof workers!=='undefined'?workers.find(x=>String(x.id)===String(o.workerId)):null;
+ if(!w)return '';
+ const images=window.AniimoAssets?.portraitCandidates?.(w.name,w.form,w.appearance,w.sparklingHue)||[];
+ const src=w.localPortrait||images[0]||w.portrait||'';
+ const label=esc(w.name||'Assigned Aniimo');
+ return '<span class="hpv2WorkerBadge" title="Working here: '+label+'">'+(src?'<img src="'+esc(src)+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">':'<span>👤</span>')+'</span>';
+}
 function homelandMiniObject(o,p,big=false){
  const l=Math.max(0,o.x-p.x),t=Math.max(0,o.y-p.y);
  const title=homelandObjectTitle(o),lv=homelandObjectLevel(o);
  const style=`left:${l/20*100}%;top:${t/15*100}%;width:${Math.min(o.w,20)/20*100}%;height:${Math.min(o.h,15)/15*100}%`;
- const visual=homelandObjectVisualHTML(o,big);
+ const visual=homelandObjectVisualHTML(o,big)+homelandAssignedPortraitHTML(o);
  if(!big)return `<div class="hpv2Obj preview" aria-hidden="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</div>`;
  return `<button type="button" class="hpv2Obj big" data-hpv2-object="${o.id}" draggable="true" title="${esc(title)}${lv?' · Lv.'+lv:''}" style="${style}">${visual}</button>`;
 }

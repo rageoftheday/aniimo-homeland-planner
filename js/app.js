@@ -1367,16 +1367,17 @@ function renderAdvisor(){
  }
 }
 function refreshWorkerSelectors(){
- const sel=el('actualWorkerSelect');if(!sel)return;const o=objects.find(x=>x.id===selected);const old=o?.workerId||'';sel.innerHTML='<option value="">Manual / not in roster</option>';
- if(o&&STATION_RULES[o.name]){
-   const rule=STATION_RULES[o.name];for(const w of workers.filter(x=>x.active!==false)){
-     const lv=workerAbilityLevel(w,rule.ability);if(!lv)continue;const op=document.createElement('option');op.value=w.id;op.textContent=`${w.name||'Unnamed'}${w.form?' — '+w.form:''} | ${rule.ability} Lv${lv} | ${w.personality||'????'}`;sel.appendChild(op)
-   }
- }
- sel.value=String(old||'');
+ const sel=el('actualWorkerSelect');if(!sel)return;const o=objects.find(x=>x.id===selected);const old=o?.workerId||'';sel.innerHTML='<option value="">Unassigned / manual</option>';
+ if(o){const rule=STATION_RULES[o.name];for(const w of workers.filter(x=>x.active!==false||String(x.id)===String(old))){
+ const lv=rule?workerAbilityLevel(w,rule.ability):0;if(rule&&!lv&&String(w.id)!==String(old))continue;
+ const assigned=assignedObjectForWorker(w.id),busy=assigned&&assigned.id!==o.id;
+ const op=document.createElement('option');op.value=w.id;op.textContent=`${w.name||'Unnamed'}${w.form?' — '+w.form:''}${rule?' | '+rule.ability+' Lv'+lv:''}${busy?' | move from '+assigned.name:''}`;sel.appendChild(op)
+ }}sel.value=String(old||'');
 }
 function applyWorkerToObject(o,workerId){
- if(!o)return;if(!workerId){delete o.workerId;render();return}const w=workers.find(x=>String(x.id)===String(workerId)),rule=STATION_RULES[o.name];if(!w||!rule)return;o.workerId=w.id;o.workerLevel=workerAbilityLevel(w,rule.ability)||1;o.personalityMult=personalityHas(w,rule.personality)?1.2:1;render();
+ if(!o)return;if(!workerId){delete o.workerId;render();return}const w=workers.find(x=>String(x.id)===String(workerId)),rule=STATION_RULES[o.name];if(!w)return;if(rule&&!workerAbilityLevel(w,rule.ability))return;
+ for(const other of objects)if(other.id!==o.id&&String(other.workerId||'')===String(w.id))delete other.workerId;
+ o.workerId=w.id;if(rule){o.workerLevel=workerAbilityLevel(w,rule.ability)||1;o.personalityMult=personalityHas(w,rule.personality)?1.2:1}render();
 }
 
 function render(){
@@ -1712,12 +1713,24 @@ function updateProductionSummary(){
  te.textContent=Math.round(total).toLocaleString()+' Home Coin/h';se.textContent=count?`${count} station${count===1?'':'s'} assigned • gross output before ingredient costs`:'No production recipes assigned yet.';
  const cropTotal=objects.filter(o=>o.cropName).reduce((s,o)=>s+(Number(o.coinPH)||0)*environmentFactor(o),0);ge.textContent=Math.round(total+cropTotal).toLocaleString()+' HC/h';
 }
+function renderAssignmentPanel(){
+ const o=objects.find(x=>x.id===selected),panel=el('assignmentPanel'),preview=el('assignedWorkerPreview'),hint=el('assignmentHint');
+ if(!panel||!preview||!hint)return;
+ const eligible=!!o&&!['Farmland','Woodland'].includes(o.name);
+ panel.style.display=eligible?'block':'none';if(!eligible)return;
+ const rule=STATION_RULES[o.name];hint.textContent=rule?'Requires '+rule.ability+' ability. Assign an active copy from the imported roster.':'Assign an owned Aniimo to this utility. Assigning a copy elsewhere moves it here.';
+ refreshWorkerSelectors();const w=workers.find(x=>String(x.id)===String(o.workerId||''));
+ if(!w){preview.innerHTML='<span class="small">No Aniimo working here.</span>';return}
+ const candidates=window.AniimoAssets?.portraitCandidates?.(w.name,w.form,w.appearance,w.sparklingHue)||[];
+ const src=w.localPortrait||candidates[0]||w.portrait||'';
+ preview.innerHTML=(src?'<img src="'+esc(src)+'" alt="'+esc(w.name||'Aniimo')+'" onerror="this.style.display=\'none\'">':'')+'<span><b>'+esc(w.name||'Unnamed Aniimo')+'</b><small>'+esc(w.form||'Base form')+(rule?' · '+esc(rule.ability)+' Lv'+workerAbilityLevel(w,rule.ability):'')+'</small></span>';
+}
 function updateInspector(){
  const o=objects.find(x=>x.id===selected);noneSelected.style.display=o?'none':'block';editor.style.display=o?'block':'none';
  if(!o){if(el('levelPanel'))el('levelPanel').style.display='none';if(el('cropPanel'))el('cropPanel').style.display='none';if(el('recipePanel'))el('recipePanel').style.display='none';return}
  selTitle.textContent=o.name;selSize.textContent=o.w+'×'+o.h;selPos.textContent=o.x+', '+o.y;const p=getPlotInfo(o);selPlot.textContent=p.plot;selLocal.textContent=p.local;labelInput.value=o.label;reqSelect.value=o.req;
  const place=validArea(o)&&!collide(o),rs=reqSatisfied(o);reqStatus.innerHTML=`Placement: <b style="color:${place?'#62df8c':'#ff6971'}">${place?'VALID':'INVALID / COLLISION'}</b><br>Requirement: <b style="color:${rs?'#62df8c':'#ff6971'}">${o.req==='none'?'Neutral':(rs?'MET':'NOT MET')}</b><br>${climateNowText(o)}`;
- renderLevelPanel();renderCropCards();renderRecipePanel();
+ renderLevelPanel();renderCropCards();renderRecipePanel();renderAssignmentPanel();
 }
 
 labelInput.oninput=()=>{const o=objects.find(x=>x.id===selected);if(o){o.label=labelInput.value;render()}};
@@ -1756,7 +1769,7 @@ el('personalitySelect').addEventListener('change',()=>{const o=objects.find(x=>x
 el('clearRecipeBtn').addEventListener('click',()=>{const o=objects.find(x=>x.id===selected);clearRecipe(o)});
 rotateBtn.onclick=()=>{const o=objects.find(x=>x.id===selected);if(o){[o.w,o.h]=[o.h,o.w];render()}};
 deleteBtn.onclick=()=>{objects=objects.filter(x=>x.id!==selected);selected=null;render()};
-duplicateBtn.onclick=()=>{const o=objects.find(x=>x.id===selected);if(!o)return;const item=catalog.find(i=>i.name===o.name);if(!item)return;const lim=maxCount(item,+rvLevel.value);if(objects.filter(x=>x.name===o.name).length>=lim)return;const p=nextFree(o.w,o.h);if(!p){if(startupStatus){startupStatus.textContent='No legal free space is available for a duplicate in the currently open plots.';startupStatus.style.color='#ffcb6b';}return;}objects.push({...o,id:idCounter++,x:p[0],y:p[1]});selected=objects.at(-1).id;render()};
+duplicateBtn.onclick=()=>{const o=objects.find(x=>x.id===selected);if(!o)return;const item=catalog.find(i=>i.name===o.name);if(!item)return;const lim=maxCount(item,+rvLevel.value);if(objects.filter(x=>x.name===o.name).length>=lim)return;const p=nextFree(o.w,o.h);if(!p){if(startupStatus){startupStatus.textContent='No legal free space is available for a duplicate in the currently open plots.';startupStatus.style.color='#ffcb6b';}return;}objects.push({...o,id:idCounter++,x:p[0],y:p[1],workerId:null});selected=objects.at(-1).id;render()};
 
 function nextFree(w,h){for(let y=0;y<=60-h;y+=.5)for(let x=0;x<=80-w;x+=.5){const t={id:-1,x,y,w,h};if(validArea(t)&&!collide(t))return[x,y]}return null}
 function focusedPlotNumber(){

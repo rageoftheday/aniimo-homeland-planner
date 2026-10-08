@@ -129,6 +129,7 @@
 <label>Crop / tree quick pick<select id="cropSelect"></select></label>
 <div class="controls" style="padding:10px 0 0"><button id="rotateBtn">Rotate</button><button id="duplicateBtn">Duplicate</button><button class="danger" id="deleteBtn">Delete</button></div>
 <div id="reqStatus" class="status"></div>
+<div id="assignmentPanel" class="assignPanel" style="display:none"><h3>Assigned Aniimo</h3><div class="small" id="assignmentHint"></div><div id="assignedWorkerPreview" class="hpv2AssignedPreview"></div><label>Working here<select id="actualWorkerSelect"><option value="">Unassigned</option></select></label></div>
 
 <div id="levelPanel" class="levelPanel" style="display:none">
   <h3>Facility level / upgrades</h3>
@@ -151,7 +152,7 @@
 <div id="recipePanel" class="assignPanel" style="display:none">
   <h3>Production recipe</h3>
   <label>Recipe<select id="recipeSelect"></select></label>
-  <label>Assigned Aniimo<select id="actualWorkerSelect"><option value="">Manual / not in roster</option></select></label>
+  
   <div class="recipeControls">
     <label>Worker ability
       <select id="workerLevelSelect"><option value="1">Lv 1</option><option value="2">Lv 2</option><option value="3">Lv 3</option><option value="4" selected>Lv 4</option></select>
