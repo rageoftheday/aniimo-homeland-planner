@@ -74,7 +74,7 @@ jobs:
           test -s js/dom.js
           test -s js/importer.js
           test -s js/views.js
-          grep -q 'data/homeland-local-icon-bridge.js?v=4' index.html
+          grep -q 'data/homeland-local-icon-bridge.js?v=5' index.html
           test -s data/homeland-local-icon-bridge.js
           grep -Fq 'const productionArt=selectedIcon||plantedIcon' js/views.js
           grep -Fq 'hpv2LiveWorker .homelandLocalIcon' css/app.css
@@ -104,7 +104,7 @@ jobs:
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
           grep -q 'css/app.css?v=30.23.11' index.html
-          grep -q 'js/views.js?v=30.23.18' index.html
+          grep -q 'js/views.js?v=30.23.19' index.html
           grep -q 'js/home-snapshot.js?v=9' index.html
           grep -q 'js/importer.js?v=30.15.5' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
