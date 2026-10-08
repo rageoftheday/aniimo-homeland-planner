@@ -228,13 +228,11 @@ function homelandObjectVisualHTML(o,big=false){
  const lv=homelandObjectLevel(o),q=homelandLivePieceFor(o);
  const recipeName=String(o?.recipeName||'').trim();
  const plantedName=o?.cropName?homelandPlantedOutputName(o.cropName):'';
- const liveId=q?.recipe!=null?String(q.recipe):'';
- // A recipe explicitly selected in the editor is authoritative. Otherwise use the
- // live production output; the level-specific building icon is only the idle fallback.
+ // The editor's None/cleared selection must show the default building artwork,
+ // even when a stale live queue reports a previously running recipe.
  const selectedIcon=recipeName?(window.AniimoIconAtlas?.html(recipeName,40)||window.AniimoIconAtlas?.html(window.HomelandLocalIcons?.file('Items',recipeName),40)):'';
  const plantedIcon=plantedName?window.AniimoIconAtlas?.html(plantedName,40):'';
- const liveIcon=liveId?window.AniimoIconAtlas?.html(liveId,40):'';
- const productionArt=selectedIcon||plantedIcon||liveIcon||'';
+ const productionArt=selectedIcon||plantedIcon||'';
  const facilityPath=window.HomelandLocalIcons?.facility(o?.name,lv);
  const facilityArt=facilityPath?window.HomelandLocalIcons.image(facilityPath,40):'';
  const idleArt=facilityArt?'<span class="hpv2ArtHolder hpv2FacilityArt" style="position:relative">'+homelandIllustratedIconHTML(o?.name)+'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">'+facilityArt+'</span></span>':'';
