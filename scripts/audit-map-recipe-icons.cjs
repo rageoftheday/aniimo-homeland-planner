@@ -12,9 +12,12 @@ for(const r of data.recipes){
  if(id==null||!pathFor(id))failures.push('Reference recipe '+r.id+': missing output PNG for '+id);
 }
 const source=fs.readFileSync('js/app.js','utf8');
-const match=source.match(/const recipeDB=([\s\S]*?);\n(?:const |let |function )/);
-assert(match,'Interactive recipeDB declaration not found');
-const db=vm.runInNewContext('('+match[1]+')');
+const start=source.indexOf('const recipeDB=');
+assert(start>=0,'Interactive recipeDB declaration not found');
+const first=start+'const recipeDB='.length;
+const end=source.indexOf('\n};',first);
+assert(end>first,'Interactive recipeDB closing brace missing');
+const db=vm.runInNewContext('('+source.slice(first,end+2)+')');
 const norm=s=>String(s||'').toLowerCase().replace(/^quick\s+/,'').replace(/\s*[×x]\s*\d+\s*$/,'').replace(/[^a-z0-9]/g,'');
 let count=0,composite=0;
 for(const [station,rows] of Object.entries(db)){
