@@ -45,6 +45,10 @@ const sand=db['Tidewhisper Sandcastle'].filter(x=>x.reference);
 assert.equal(JSON.stringify(sand.map(x=>[String(x.recipeId),x.name,Number(x.minLevel)]).sort((a,b)=>a[0].localeCompare(b[0]))),JSON.stringify([
  ['4001049','Pearl',3],['4001069','Sea Salt',1],['4020060','Quick Sea Salt',2]
 ]));
+const QUICK_RECIPE_IDS=new Set(['4020033','4020035','4020043','4020044','4020054','4020055','4020056','4020057','4020059','4020060','4020061','4020062','4020063','4020064','4020065','4020066']);
+for(const rows of Object.values(db))for(const row of rows){
+ if(QUICK_RECIPE_IDS.has(String(row.recipeId)))assert(row.name.startsWith('Quick '),'Quick recipe mislabeled '+row.recipeId+': '+row.name);
+}
 assert.equal(db['Floral Windmill'].filter(x=>x.reference&&x.name==='Quick Scales').length,1,'Quick Scales not matched');
 const extras=Object.entries(db).flatMap(([station,rows])=>rows.filter(row=>!row.reference).map(row=>station+': '+row.name));
 assert(extras.every(x=>x.startsWith('Mine: ')), 'Unmatched legacy recipes: '+extras.join(', '));

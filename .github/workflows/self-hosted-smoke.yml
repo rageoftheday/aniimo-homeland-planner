@@ -154,7 +154,7 @@ jobs:
           grep -q 'js/importer.js' index.html
           grep -q 'js/views.js' index.html
           grep -q 'js/dom.js' index.html
-          grep -q 'js/app.js?v=30.21.16' index.html
+          grep -q 'js/app.js?v=30.21.17' index.html
           grep -q 'data-tab="aniimos"' index.html
           grep -q 'id="aniimosPane"' index.html
           grep -q 'Backup ▾' index.html
