@@ -158,7 +158,9 @@ function homelandIllustratedIconHTML(name,cssClass='hpv2IconGlyph'){
  const fallback=esc(homelandVisualIconForName(name)),id=homelandItemArtworkId(name);
  const fac=window.AniimoAssets?.facility?.(String(name||'').replace(/\\s*\\(level \\d+\\)$/i,''))||null;
  // Material CDN path confirmed for Cotton (4001004), not assumed available for every ID.
- const artwork=id?'https://www.hideoutgacha.com/images/aniimo/database/materials/item_'+id+'.webp':fac?.icon||'';
+ const facilitySlug=String(name||'').trim().toLowerCase().replace(/\\s*\\(level \\d+\\)$/,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+ const artwork=id?'https://www.hideoutgacha.com/images/aniimo/database/materials/item_'+id+'.webp':
+   fac?'https://backup.hideoutgacha.com/images/aniimo/homeland/'+facilitySlug+'.webp':'';
  return '<span class="'+cssClass+' hpv2ArtHolder"><span class="hpv2ArtFallback">'+fallback+'</span>'+
    (artwork?'<img class="hpv2ArtImg" src="'+esc(artwork)+'" alt="" loading="lazy" decoding="async" onerror="this.remove()"/>':'')+'</span>';
 }
