@@ -598,9 +598,15 @@ function populateReferenceStationRecipes(){
   if(!output||!info?.name)continue;
   const current=recipeDB[station]||(recipeDB[station]=[]);
   const level=Number(ref.minLevel)||1;
-  const sameOutput=current.filter(x=>x.outputItemId===output.item||x.name===info.name);
-  const existing=sameOutput.find(x=>Number(x.minLevel||1)===level);
-  const name=existing?.name||((sameOutput.length||current.some(x=>x.name===info.name))?info.name+' (Lv'+level+' · #'+ref.id+')':info.name);
+  // Prefer explicit legacy selections by name, so saved recipes retain stable labels.
+  // A distinct 402xxxx Quick Recipe must not become a fake "Sea Salt (Lv2)" entry.
+  const quickArt=window.HomelandLocalIcons?.quick('',ref.id)||'';
+  const wantedName=quickArt?'Quick '+info.name:info.name;
+  const sameOutput=current.filter(x=>String(x.outputItemId)===String(output.item)||x.name===info.name||x.name===wantedName);
+  const existing=current.find(x=>String(x.recipeId)===String(ref.id))||
+    current.find(x=>x.name===wantedName&&x.recipeId==null)||
+    sameOutput.find(x=>x.reference&&Number(x.minLevel)===level&&String(x.recipeId)===String(ref.id));
+  const name=existing?.name||((sameOutput.length||current.some(x=>x.name===wantedName))?wantedName+' (Lv'+level+' · #'+ref.id+')':wantedName);
   const ingredients=(ref.inputs||[]).map(x=>(getItem(x.item)?.name||'Item '+x.item)+' ×'+Number(x.qty||1)).join(' + ')||'—';
   const step=ref.steps?.find(x=>x.skill)||null;
   const facLv=facility.levels?.find(x=>Number(x.level)===level);
