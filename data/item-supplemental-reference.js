@@ -4,6 +4,7 @@
 window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE={
   updated:"2026-10-08",
   entries:{
+    "4040033":{name:"Moonray Wheat",sell:null,exchangeCurrency:true,rarity:"Epic",exchangeUses:"Season Exchange furniture and recipes; Moondew Radish Seeds and Waxing Moon Pepper Seeds cost 4 Moonray Wheat each",source:"https://wikily.gg/aniimo/items/moonray-wheat/"},
     "150002":{name:"Growth Flower",nonSellable:true,priceEvidence:"in-game user report 2026-10-08"},
     "110002":{name:"Aniipod Pro",nonSellable:true,priceEvidence:"in-game user report 2026-10-08"},
     "110001":{name:"Aniipod",nonSellable:true,priceEvidence:"in-game user report 2026-10-08"},
@@ -46,7 +47,7 @@ window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE={
     "4030003":{name:"Huge Wheat",sell:100,source:"https://wikily.gg/aniimo/homeland-furniture/huge-wheat-4030003"},
     "4030010":{name:"Huge Potato",sell:300,source:"https://wikily.gg/aniimo/homeland-furniture/huge-potato-4030010"},
     "4030014":{name:"Colorful Sugarcane",sell:10000,source:"https://wikily.gg/aniimo/homeland-furniture/colorful-sugarcane-4030014"},
-    "4030024":{name:"Huge Rice",sell:null,source:"https://wikily.gg/aniimo/homeland-furniture/huge-rice-4030024"},
+    "4030024":{name:"Huge Rice",sell:4000,priceEvidence:"user-reported basic buy/sell price 2026-10-08; confirm in-game Home Coin sell price",source:"https://wikily.gg/aniimo/homeland-furniture/huge-rice-4030024"},
     "4030025":{name:"Huge Colorful Rice",sell:12000,source:"https://wikily.gg/aniimo/homeland-furniture/huge-colorful-rice-4030025"},
     "4030028":{name:"Colorful Cotton",sell:6000,source:"https://wikily.gg/aniimo/homeland-furniture/colorful-cotton-4030028"},
     "4030052":{name:"Huge Lavender",sell:10000,source:"https://wikily.gg/aniimo/homeland-furniture/huge-lavender-4030052"},
