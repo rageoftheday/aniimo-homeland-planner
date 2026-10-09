@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "db:local": "wrangler d1 execute aniimo-feedback --local --file=./schema.sql",
-    "db:remote": "wrangler d1 execute aniimo-feedback --remote --file=./schema.sql"
+    "db:local": "wrangler d1 execute aniimo-suggestions --local --file=./schema.sql",
+    "db:remote": "wrangler d1 execute aniimo-suggestions --remote --file=./schema.sql"
   },
   "dependencies": {
     "jose": "^6.0.0"
