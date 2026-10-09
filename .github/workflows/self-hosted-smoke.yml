@@ -227,7 +227,7 @@ jobs:
           grep -Fq '.hpv2WorkerBadge .homebuilderPortraitImage' css/app.css
           grep -Fq 'const live=assigned?[assigned]:[]' js/views.js
           node --check js/homebuilder-portraits.js
-          grep -Fq 'js/homebuilder-portraits.js?v=6' index.html
+          grep -Fq 'js/homebuilder-portraits.js?v=7' index.html
           node --check js/views.js
           grep -Fq ".hpv2MapLibrary" css/app.css
           grep -Fq ">Delete<" js/views.js
