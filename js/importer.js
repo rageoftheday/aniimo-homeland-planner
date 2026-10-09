@@ -565,6 +565,14 @@ async function syncHomelandMapFromJson(source){
    const id=String(savedLinks[key]||o.livePieceId||'');
    let q=id?byPiece.get(id):null;
    if(q&&!sameName(dashboardFacilityName(q.facility),o.name)){skipped.push(o.name+': saved piece has a different facility type');continue}
+   // The already assigned imported Aniimo has a real game-piece ID: use it
+   // to resolve duplicate facilities without guessing by visual map position.
+   if(!q&&o.workerId!=null){
+    const assigned=workers.find(w=>String(w.id)===String(o.workerId));
+    const workerPiece=assigned?.aniidex?.piece;
+    const candidate=workerPiece!=null?byPiece.get(String(workerPiece)):null;
+    if(candidate&&sameName(dashboardFacilityName(candidate.facility),o.name))q=candidate;
+   }
    if(!q){
     const typeKey=String(o.name||'').toLowerCase()+'|'+Number(o.facilityLevel||o.placedLevel||0);
     if(mapCounts.get(typeKey)===1&&gameCounts.get(typeKey)===1)q=home.crops.find(x=>sameName(dashboardFacilityName(x.facility),o.name)&&Number(x.level||0)===Number(o.facilityLevel||o.placedLevel||0));
@@ -627,7 +635,15 @@ async function syncHomelandMapFromJson(source){
   // Retain only the snapshot needed by map badges; do not overwrite profile data.
   if(!aniidexImportMeta)aniidexImportMeta={uid:incomingUid,home:{home},catalog:catalogData,source:'Map-only JSON (not full profile import)'};
   else aniidexImportMeta.home={...(aniidexImportMeta.home||{}),home:{...home}};
-  window.homebuilderMapSyncStatus='Map sync ✓ '+countProduction+' production changes; '+targetWorkers.size+' Aniimo assignments; '+skipped.length+' skipped.';
+  // Remember verified piece links for future syncs; do not attach guessed IDs.
+  const linkUid=incomingUid||currentUid;
+  if(linkUid){
+   const key='homeland-live-links-v1:'+linkUid;
+   const existing=(()=>{try{return JSON.parse(localStorage.getItem(key)||'{}')||{}}catch{return {}}})();
+   for(const {o,q} of matches)existing[o.id+'|'+o.name+'|'+o.x+','+o.y]=String(q.piece);
+   try{localStorage.setItem(key,JSON.stringify(existing))}catch(e){console.warn('Could not persist verified map links:',e)}
+  }
+  window.homebuilderMapSyncStatus='Map sync ✓ '+countProduction+' production changes; '+targetWorkers.size+' Aniimo assignments; '+skipped.length+' skipped. Verified piece links remembered.';
   render();snapshotIntoCurrentProfile();
  }catch(e){
   window.homebuilderMapSyncStatus='Map sync failed: '+(e?.message||e);
