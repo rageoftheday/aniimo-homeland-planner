@@ -282,6 +282,16 @@ function openMobileJsonPicker(){el('mobileJsonImportInput')?.click();}
 function updateHeaderSyncControls(){
  const link=el('headerSyncPanelLink'),toggle=el('headerAutoSyncToggle'),interval=el('headerAutoSyncInterval'),last=el('headerSyncLast');
  const manual=mobileCompanionUnavailable();
+ // All routes share this header; create the two independent indicators once.
+ const tools=el('headerSyncPanelLink')?.parentElement;
+ if(tools&&!el('headerSyncSummary')){
+  const details=document.createElement('span');details.id='headerSyncSummary';details.setAttribute('aria-live','polite');
+  el('headerSyncPanelLink').after(details);
+ }
+ if(tools&&!el('headerCompanionState')){
+  const badge=document.createElement('span');badge.id='headerCompanionState';badge.className='headerCompanionState';badge.setAttribute('aria-live','polite');
+  el('headerSyncSummary')?.after(badge);
+ }
  document.body.classList.toggle('mobileManualSync',manual);
  const summary=aniidexImportMeta?.summary;
  const imported=!!(summary&&aniidexImportMeta?.importedAt);
