@@ -107,8 +107,8 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.23.13' index.html
-          grep -q 'js/views.js?v=30.23.27' index.html
+          grep -q 'css/app.css?v=30.23.14' index.html
+          grep -q 'js/views.js?v=30.23.28' index.html
           grep -q 'js/home-snapshot.js?v=9' index.html
           grep -q 'js/importer.js?v=30.15.5' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
@@ -167,7 +167,9 @@ jobs:
           ! grep -q 'id="saveBtn"' index.html
           ! grep -q 'id="exportBtn"' index.html
           ! grep -q 'id="importBtn"' index.html
-          grep -q 'data-tab="dashboard" class="active">Dashboard</button><button data-tab="map">Homeland Planner</button><button data-tab="snapshot">Home Snapshot</button><button data-tab="plan">Plan / Advice</button><button data-tab="roster">Imported Roster</button><button data-tab="aniimos">Aniimos</button><button data-tab="production">Recipes</button><button data-tab="database">Database</button><button data-tab="raw">Raw JSON</button>' index.html
+          grep -Fq 'href="homeland.html"' index.html
+          grep -Fq 'href="roster.html"' index.html
+          node scripts/check-planner-pages.cjs
           ! grep -q 'data-tab="import"' index.html
           ! grep -q 'id="importPane"' index.html
           grep -q 'Imported Roster / Job Advisor' index.html
