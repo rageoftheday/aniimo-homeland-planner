@@ -459,7 +459,7 @@ function renderHomelandPlannerV2(){
    });
  }
 }
-const HOMELAND_PAGE_ROUTES={dashboard:'dashboard.html',map:'homeland.html',snapshot:'snapshot.html',plan:'advisor.html',roster:'roster.html',aniimos:'aniimos.html',production:'recipes.html',database:'database.html',raw:'raw-json.html'};
+const HOMELAND_PAGE_ROUTES={dashboard:'dashboard.html',map:'homeland.html',snapshot:'snapshot.html',plan:'advisor.html',roster:'roster.html',aniimos:'aniimos.html',production:'recipes.html',database:'database.html',raw:'raw-json.html',feedback:'suggestions.html'};
 function homelandTabForLocation(){
  const page=location.pathname.split('/').pop()||'index.html';
  return Object.keys(HOMELAND_PAGE_ROUTES).find(tab=>HOMELAND_PAGE_ROUTES[tab]===page)||'dashboard';
@@ -1320,7 +1320,7 @@ function renderRawJsonTab(){
  const copy=el('rawJsonCopy');if(copy)copy.onclick=async()=>{try{await navigator.clipboard.writeText(full);copy.textContent='Copied ✓';setTimeout(()=>{if(el('rawJsonCopy'))el('rawJsonCopy').textContent='Copy JSON'},1200)}catch{copy.textContent='Copy failed'}};
  const dl=el('rawJsonDownload');if(dl)dl.onclick=()=>{const blob=new Blob([full],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Aniimo_Homeland_'+String(bundle.uid||'sync')+'_raw.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);};
 }
-function renderV30Views(){renderRightQuickStats();if(activeMainTab==='map')renderHomelandPlannerV2();else if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='snapshot')renderHomeSnapshotTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='plan')renderPlanAdviceTab();else if(activeMainTab==='database')renderDatabaseTab();else if(activeMainTab==='raw')renderRawJsonTab();window.HomebuilderPortraits?.hydrate();}
+function renderV30Views(){renderRightQuickStats();if(activeMainTab==='map')renderHomelandPlannerV2();else if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='snapshot')renderHomeSnapshotTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='plan')renderPlanAdviceTab();else if(activeMainTab==='database')renderDatabaseTab();else if(activeMainTab==='raw')renderRawJsonTab();else if(activeMainTab==='feedback')window.PlannerSuggestions?.render();window.HomebuilderPortraits?.hydrate();}
 
 function initMobilePanelNavigation(){
  const nav=document.getElementById('mobilePanelNav');
