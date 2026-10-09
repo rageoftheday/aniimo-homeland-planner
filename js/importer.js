@@ -577,6 +577,22 @@ async function syncHomelandMapFromJson(source){
     const typeKey=String(o.name||'').toLowerCase()+'|'+Number(o.facilityLevel||o.placedLevel||0);
     if(mapCounts.get(typeKey)===1&&gameCounts.get(typeKey)===1)q=home.crops.find(x=>sameName(dashboardFacilityName(x.facility),o.name)&&Number(x.level||0)===Number(o.facilityLevel||o.placedLevel||0));
    }
+   if(!q){
+    // Existing crop or recipe selection can disambiguate duplicate buildings,
+    // but ONLY when both sides have a unique, identical product at this level.
+    const expected=String(o.cropName||o.recipeName||'').replace(/^Quick /i,'').replace(/\\s*\\(Quick\\)$/i,'').trim();
+    const typeKey=String(o.name||'').toLowerCase()+'|'+Number(o.facilityLevel||o.placedLevel||0);
+    const peers=objects.filter(x=>String(x.name||'').toLowerCase()+'|'+Number(x.facilityLevel||x.placedLevel||0)===typeKey);
+    const normalize=n=>String(n||'').toLowerCase().replace(/^quick /,'').replace(/\\s*\\(quick\\)$/,'').replace(/[^a-z0-9]/g,'');
+    const matchesOutput=x=>{
+     const known=window.HomelandItemCatalog?.lookup(x.recipe,catalogData)?.name||'';
+     return known&&normalize(known)===normalize(expected);
+    };
+    if(expected&&peers.filter(x=>normalize(x.cropName||x.recipeName)===normalize(expected)).length===1){
+     const candidates=home.crops.filter(x=>!used.has(String(x.piece))&&sameName(dashboardFacilityName(x.facility),o.name)&&Number(x.level||0)===Number(o.facilityLevel||o.placedLevel||0)&&matchesOutput(x));
+     if(candidates.length===1)q=candidates[0];
+    }
+   }
    if(!q){skipped.push(o.name+': multiple candidates or no verified piece link');continue}
    if(used.has(String(q.piece))){skipped.push(o.name+': piece already matched');continue}
    used.add(String(q.piece));matches.push({o,q});
