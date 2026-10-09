@@ -671,3 +671,40 @@ header{align-items:center}
 .headerSyncPanelLink.connected{color:#9df0b4;border-color:#529f74}
 .headerSyncIntervalLabel,.headerSyncLast{font-size:11px;color:#b7d4df;white-space:nowrap}
 .headerSyncLast{font-variant-numeric:tabular-nums}
+
+/* Phone layout: one usable panel at a time, with the planner visible by default. */
+.mobilePanelNav{display:none}
+@media(max-width:700px){
+ html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
+ header{height:auto;min-height:0;padding:10px;display:block}
+ header h1{font-size:18px;margin-bottom:10px}
+ .headerActions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+ .headerSyncTools{display:contents}
+ .headerActions button,.headerActions select{min-height:36px}
+ .headerSyncLast{align-self:center}
+ .mobilePanelNav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;position:sticky;top:0;z-index:80;padding:7px;background:#0e1b25;border-bottom:1px solid #324859}
+ .mobilePanelNav button{min-width:0;padding:10px 4px;font-size:12px}
+ .mobilePanelNav button[aria-pressed="true"]{background:#315f88;border-color:#72bfe9}
+ main,body.compact-left main,body.compact-right main,body.compact-left.compact-right main{display:block!important;height:auto!important;min-height:calc(100dvh - 210px);padding:6px!important}
+ #leftPanel,#rightPanel,#workspaceWrap{display:none!important;width:100%;max-width:none;min-width:0;overflow:auto}
+ body:not(.mobile-panel-inventory):not(.mobile-panel-advisor) #workspaceWrap,
+ body.mobile-panel-workspace #workspaceWrap{display:flex!important}
+ body.mobile-panel-inventory #leftPanel{display:block!important}
+ body.mobile-panel-advisor #rightPanel{display:block!important}
+ .sideCollapsed>*{display:initial!important}
+ .sideCollapsed h2{writing-mode:horizontal-tb;transform:none;height:auto}
+ #workspaceWrap{min-height:calc(100dvh - 225px);height:calc(100dvh - 225px)}
+ #leftPanel,#rightPanel{min-height:calc(100dvh - 225px);height:auto}
+ .mainTabs{width:100%;gap:5px;overflow-x:auto;overscroll-behavior-x:contain;padding:8px;scroll-snap-type:x proximity}
+ .mainTabs a{flex:0 0 auto;padding:10px 12px;font-size:12px;scroll-snap-align:start}
+ .tabStage{min-height:0;flex:1}
+ .tabPane{padding:9px;overflow:auto}
+ #mapPane{padding:0}
+ .hpv2BuilderShell{min-width:0}
+ .hpv2FullScroll{min-height:280px;max-height:65dvh}
+ .hpv2PiecePalette{min-width:0}
+ .snapshotJump{flex-wrap:wrap}
+ .rawJsonActions input{min-width:0}
+ .moduleGrid{grid-template-columns:minmax(0,1fr) 100px}
+ .plotAccessGrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
