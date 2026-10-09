@@ -4,7 +4,7 @@
  const api=()=>String(window.PLANNER_SUGGESTIONS_API||'').replace(/\/$/,'');
  const turnstileKey=()=>String(window.PLANNER_TURNSTILE_SITE_KEY||'');
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- let rows=[],loaded=false,error='',adminMode=false,busy=false;
+ let rows=[],loaded=false,error='',adminMode=false,busy=false,notice='';
  const get=async(path,options={})=>{
    const response=await fetch(api()+path,{...options,credentials:path.startsWith('/api/admin/')?'include':'omit',headers:{'Content-Type':'application/json',...(options.headers||{})}});
    const data=await response.json().catch(()=>({}));
@@ -29,11 +29,19 @@
  }
  async function submit(event){
   event.preventDefault();const form=event.currentTarget,commentId=form.dataset.comment;
-  if(busy)return;busy=true;
+  if(busy)return;busy=true;notice='';
   const fd=new FormData(form);const widget=form.querySelector('.feedbackCaptcha, #feedbackCaptcha');const token=widget?.dataset.widgetId?window.turnstile?.getResponse?.(widget.dataset.widgetId)||'':'';
   const payload=Object.fromEntries(fd.entries());payload.turnstileToken=token;
-  try{await get(commentId?'/api/suggestions/'+commentId+'/comments':'/api/suggestions',{method:'POST',body:JSON.stringify(payload)});alert('Submitted for review. Thank you!');await refresh();}
-  catch(e){alert('Could not submit: '+e.message);}finally{busy=false;render();}
+  const messageNode=()=>form.querySelector('.feedbackMessage');
+  try{
+   await get(commentId?'/api/suggestions/'+commentId+'/comments':'/api/suggestions',{method:'POST',body:JSON.stringify(payload)});
+   notice=commentId?'Comment submitted for review.':'Suggestion submitted for review. Thank you!';
+   busy=false;
+   await refresh();
+  }catch(e){
+   const node=messageNode();if(node){node.textContent='Could not submit: '+e.message;node.classList.add('feedbackError');}
+   busy=false;
+  }
  }
  window.PlannerSuggestions={render:()=>{render();if(!loaded&&api())refresh();}};
 })();
