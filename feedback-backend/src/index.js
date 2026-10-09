@@ -84,7 +84,8 @@ export default {async fetch(req,env){
      await env.DB.prepare('INSERT INTO visitor_hits(day,hits) VALUES (?,1) ON CONFLICT(day) DO UPDATE SET hits=hits+1').bind(day).run();
      const today=await env.DB.prepare('SELECT COUNT(*) AS count FROM visitor_daily WHERE day=?').bind(day).first();
      const total=await env.DB.prepare('SELECT COUNT(*) AS count FROM visitor_daily').first();
-     return json({uniqueToday:Number(today?.count||0),uniqueVisitorDays:Number(total?.count||0)},200,cors);
+     const hits=await env.DB.prepare('SELECT COALESCE(SUM(hits),0) AS count FROM visitor_hits').first();
+     return json({uniqueToday:Number(today?.count||0),uniqueVisitorDays:Number(total?.count||0),totalPageViews:Number(hits?.count||0)},200,cors);
    }
    if(path==='/api/suggestions'&&req.method==='GET')return json(await listPublic(env),200,cors);
    // Admin endpoints always require a cryptographically verified Access JWT + explicit owner identity.
