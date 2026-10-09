@@ -30,7 +30,10 @@
     return key?'Item '+key:'Unknown item';
   }
   function itemSellValue(id){
-    return window.HomelandItemCatalog?.lookup(id,aniidexImportMeta?.catalog)?.sell??null;
+    const item=window.HomelandItemCatalog?.lookup(id,aniidexImportMeta?.catalog);
+    // Confirmed non-sellable is an effective storage value of 0 HC, not an unknown price.
+    if(item?.nonSellable===true)return 0;
+    return item?.sell??null;
   }
   function homeCoin(n){return Number(n||0).toLocaleString()+' HC'}
   function foodEnergy(id){
@@ -146,7 +149,8 @@
     const storageRows=storageEntries.sort((a,b)=>itemName(a[0]).localeCompare(itemName(b[0]))).map(([id,v])=>{
       const count=Number(v)||0,sell=itemSellValue(id),stack=sell==null?null:sell*count;
       if(sell!=null){storagePricedCodes++;storageKnownValue+=stack;}
-      return '<tr><td><b>'+icon(id,22)+esc(itemName(id))+'</b></td><td><code>'+esc(id)+'</code></td><td>'+count.toLocaleString()+'</td><td>'+(sell==null?'—':homeCoin(sell))+'</td><td>'+(stack==null?'—':'<b>'+homeCoin(stack)+'</b>')+'</td></tr>';
+      const nonSellable=window.HomelandItemCatalog?.lookup(id,aniidexImportMeta?.catalog)?.nonSellable===true;
+      return '<tr><td><b>'+icon(id,22)+esc(itemName(id))+'</b></td><td><code>'+esc(id)+'</code></td><td>'+count.toLocaleString()+'</td><td>'+(nonSellable?'Not sellable (0 HC)':sell==null?'—':homeCoin(sell))+'</td><td>'+(stack==null?'—':'<b>'+homeCoin(stack)+'</b>')+'</td></tr>';
     }).join('');
     const moduleNames={2:'Rest Module',3:'Ecological Module',4:'Kitchen Module',5:'Resource Detector',6:'Crafting Module',7:'Power Module',8:'Plant Research Module',9:'Incubation Reaction Module',10:'Signal Transmitter'};
     const moduleRows=Object.entries(pc.rv_modules||{}).sort((a,b)=>Number(a[0])-Number(b[0])).map(([id,lv])=>'<tr><td>'+esc(moduleNames[id]||('Module '+id))+'</td><td>Lv '+Number(lv||0)+'</td><td><code>'+esc(id)+'</code></td></tr>').join('');
