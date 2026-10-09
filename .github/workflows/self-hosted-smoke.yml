@@ -107,8 +107,8 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.23.18' index.html
-          grep -q 'js/views.js?v=30.23.37' index.html
+          grep -q 'css/app.css?v=30.23.19' index.html
+          grep -q 'js/views.js?v=30.23.38' index.html
           grep -q 'js/home-snapshot.js?v=11' index.html
           grep -q 'js/importer.js?v=30.15.13' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
@@ -170,6 +170,10 @@ jobs:
           grep -Fq 'href="homeland.html"' index.html
           grep -Fq 'href="roster.html"' index.html
           node scripts/check-planner-pages.cjs
+          node --check js/suggestions.js
+          node --check feedback-backend/src/index.js
+          test -s feedback-backend/schema.sql
+          grep -Fq 'data-tab="feedback" href="suggestions.html"' index.html
           grep -Fq 'id="mobilePanelNav"' index.html
           grep -Fq 'function initMobilePanelNavigation' js/views.js
           grep -Fq 'id="headerAutoSyncToggle"' index.html
