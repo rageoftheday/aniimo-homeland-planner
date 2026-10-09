@@ -537,10 +537,16 @@ el('mobileJsonImportInput')?.addEventListener('change',async event=>{
 
 // Map-only sync: a Homeland JSON must never replace the existing layout,
 // placed objects, coordinates, RV levels, saved maps, or unrelated roster entries.
-async function syncHomelandMapFromJson(file){
- if(!file)return;
+async function syncHomelandMapFromJson(source){
+ if(!source){
+  window.homebuilderMapSyncStatus='No Raw JSON loaded for this profile. Run Direct Aniidx Sync first, or choose From File…';
+  renderHomelandPlannerV2();
+  alert(window.homebuilderMapSyncStatus);
+  return;
+ }
  try{
-  const bundle=JSON.parse(await file.text());
+  // The Raw JSON tab and the optional file picker use the same safe map-only path.
+  const bundle=typeof source.text==='function'?JSON.parse(await source.text()):source;
   const home=bundle?.homeland?.home||bundle?.homeland||bundle?.home;
   if(!home||!Array.isArray(home.crops)||!Array.isArray(home.aniimo))throw Error('Select an Aniidx Homeland sync JSON containing crops and Aniimo.');
   const incomingUid=String(home.uid||bundle?.profile?.profile?.uid||bundle?.profile?.uid||'');
