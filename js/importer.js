@@ -594,7 +594,7 @@ async function syncHomelandMapFromJson(file){
   if(!confirm('Sync production and assigned Aniimos only for '+changes.length+' verified map pieces?\n\n'+countProduction+' production selection(s), '+countWorkers+' game Aniimo assignment(s).\n'+skipped.length+' ambiguous/unlinked buildings skipped.\n\nBuildings, positions, levels, layouts, and saved maps will NOT change.'))return;
   const workerByExternal=new Map(workers.filter(w=>w.externalId).map(w=>[String(w.externalId),w]));
   let nextWorkerId=Math.max(workerIdCounter,...workers.map(w=>(Number(w.id)||0)+1),1);
-  const targetWorkers=new Map(),unknown=[];
+  const targetWorkers=new Map();
   for(const c of changes){
    if(!c.aniimo)continue;
    const ext=String(c.aniimo.id);
@@ -615,10 +615,12 @@ async function syncHomelandMapFromJson(file){
    if(c.production)c.o[c.production.key]=c.production.value;
    const w=targetWorkers.get(c.o.id);
    if(w){c.o.workerId=w.id;const rule=STATION_RULES[c.o.name];if(rule){c.o.workerLevel=workerAbilityLevel(w,rule.ability)||1;c.o.personalityMult=personalityHas(w,rule.personality)?1.2:1}}
+   else if(c.o.workerId)delete c.o.workerId; // Confirmed live piece has no assigned Aniimo.
   }
   workerIdCounter=nextWorkerId;
   // Retain only the snapshot needed by map badges; do not overwrite profile data.
-  if(aniidexImportMeta)aniidexImportMeta.home={...(aniidexImportMeta.home||{}),home:{...home}};
+  if(!aniidexImportMeta)aniidexImportMeta={uid:incomingUid,home:{home},catalog:catalogData,source:'Map-only JSON (not full profile import)'};
+  else aniidexImportMeta.home={...(aniidexImportMeta.home||{}),home:{...home}};
   window.homebuilderMapSyncStatus='Map sync ✓ '+countProduction+' production changes; '+targetWorkers.size+' Aniimo assignments; '+skipped.length+' skipped.';
   render();snapshotIntoCurrentProfile();
  }catch(e){
