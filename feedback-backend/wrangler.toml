@@ -1,10 +1,10 @@
-name = "aniimo-planner-feedback"
+name = "aniimo-suggestions-api"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "aniimo-feedback"
+database_name = "aniimo-suggestions"
 database_id = "REPLACE_WITH_ACTUAL_D1_DATABASE_ID"
 
 [vars]
