@@ -1288,3 +1288,18 @@ function renderRawJsonTab(){
  const dl=el('rawJsonDownload');if(dl)dl.onclick=()=>{const blob=new Blob([full],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Aniimo_Homeland_'+String(bundle.uid||'sync')+'_raw.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);};
 }
 function renderV30Views(){renderRightQuickStats();if(activeMainTab==='map')renderHomelandPlannerV2();else if(activeMainTab==='dashboard')renderDashboardTab();else if(activeMainTab==='snapshot')renderHomeSnapshotTab();else if(activeMainTab==='production')renderProductionTab();else if(activeMainTab==='aniimos')renderAniimosTab();else if(activeMainTab==='plan')renderPlanAdviceTab();else if(activeMainTab==='database')renderDatabaseTab();else if(activeMainTab==='raw')renderRawJsonTab();window.HomebuilderPortraits?.hydrate();}
+
+function initMobilePanelNavigation(){
+ const nav=document.getElementById('mobilePanelNav');
+ if(!nav)return;
+ const show=panel=>{
+  document.body.classList.remove('mobile-panel-workspace','mobile-panel-inventory','mobile-panel-advisor');
+  document.body.classList.add('mobile-panel-'+panel);
+  nav.querySelectorAll('[data-mobile-panel]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.mobilePanel===panel)));
+  if(panel==='workspace'&&activeMainTab==='map')setTimeout(()=>{if(el('autoFit')?.checked)fitBoard()},30);
+ };
+ nav.addEventListener('click',event=>{const button=event.target.closest('[data-mobile-panel]');if(button)show(button.dataset.mobilePanel)});
+ show('workspace');
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initMobilePanelNavigation);
+else initMobilePanelNavigation();

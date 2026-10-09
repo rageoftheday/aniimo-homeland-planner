@@ -6,7 +6,7 @@
 <title>Aniimo Homeland Planner</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=1"/>
 <meta name="theme-color" content="#173447"/>
-<link rel="stylesheet" href="css/app.css?v=30.23.15"/>
+<link rel="stylesheet" href="css/app.css?v=30.23.16"/>
 </head>
 <body>
 <header>
@@ -34,6 +34,11 @@
 </div>
 </header>
 
+<nav id="mobilePanelNav" class="mobilePanelNav" aria-label="Mobile planner panels">
+<button type="button" data-mobile-panel="workspace" aria-pressed="true">Pages / Planner</button>
+<button type="button" data-mobile-panel="inventory" aria-pressed="false">Inventory</button>
+<button type="button" data-mobile-panel="advisor" aria-pressed="false">Stats / Advisor</button>
+</nav>
 <main id="appMain">
 <section id="leftPanel" class="panel">
 <h2>Inventory / Unlocks</h2>
@@ -277,7 +282,7 @@
 <script src="data/homeland-local-icon-bridge.js?v=5"></script>
 <script src="data/homeland-icon-atlas.js?v=3"></script>
 <script src="js/homebuilder-portraits.js?v=7"></script>
-<script src="js/views.js?v=30.23.28"></script>
+<script src="js/views.js?v=30.23.29"></script>
 <script src="js/home-snapshot.js?v=9"></script>
 <script src="js/app.js?v=30.21.18"></script>
 </body>
