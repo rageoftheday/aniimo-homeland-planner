@@ -23,3 +23,14 @@ CREATE TABLE IF NOT EXISTS submission_limits (
  created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS submission_limits_lookup ON submission_limits(ip_hash,created_at);
+
+-- Daily anonymized unique visitors. No raw IP address is stored.
+CREATE TABLE IF NOT EXISTS visitor_daily (
+ day TEXT NOT NULL,
+ fingerprint TEXT NOT NULL,
+ PRIMARY KEY(day, fingerprint)
+);
+CREATE TABLE IF NOT EXISTS visitor_hits (
+ day TEXT PRIMARY KEY,
+ hits INTEGER NOT NULL DEFAULT 0
+);
