@@ -262,7 +262,7 @@ function homelandObjectVisualHTML(o,big=false){
  const recipe=recipeName?(recipeDB?.[o?.name]||[]).find(r=>r.name===recipeName):null;
  const recipeId=recipe?.recipeId??recipe?.id;
  const outputId=recipe?.outputItemId??recipe?.outputId??(recipeId!=null?atlas?.outputItem(recipeId):null);
- const quick=!!recipeName&&(recipeName.toLowerCase().startsWith('quick ')||recipeName.toLowerCase().includes('(quick)')||(!!icons?.quick('',recipeId)&&String(recipeId).startsWith('402')));
+ const quick=!!recipeName&&(recipeName.toLowerCase().startsWith('quick ')||recipeName.toLowerCase().includes('(quick)'));
  const quickPath=quick?icons?.quick(recipeName,recipeId):'';
  const outputName=recipeName.replace(/^quick /i,'').split(' (Lv')[0].replace(' (Quick)','').trim();
  const selectedPath=recipeName?(quickPath||icons?.file('Items',outputId??outputName)||icons?.file('Items',outputName)||icons?.file('Items',recipeName)):'';
@@ -286,7 +286,9 @@ function homelandObjectVisualHTML(o,big=false){
  const liveIcon=verified&&liveOutputId!=null?(icons?.image(icons?.file('Items',liveOutputId)||icons?.file('Items',liveOutputName),24)||''):'';
  const liveArt=verified&&liveOutputId!=null?(icons?.image(icons?.file('Items',liveOutputId)||icons?.file('Items',liveOutputName),40)||atlas?.html(liveOutputId,40)||''):'';
  const liveLabel=verified?'Confirmed live recipe #'+esc(String(verified.recipe))+(liveName?' — '+esc(liveName):''):'';
- const liveBadge=verified?'<span class="hpv2LiveProduction" title="'+liveLabel+'">'+(liveIcon||'●')+'</span>':'';
+ // When a recipe was explicitly selected, don't overlay a different live product
+ // (for example Quick Sea Salt) on top of its regular Sea Salt icon.
+ const liveBadge=verified&&!recipeName&&!cropName?'<span class="hpv2LiveProduction" title="'+liveLabel+'">'+(liveIcon||'●')+'</span>':'';
  return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${recipeArt||plantedArt||liveArt||idleArt||homelandIllustratedIconHTML(o?.name||o?.label)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${liveBadge}${badges}</span>`;
 }
 function homelandPlotRole(n){
