@@ -8,7 +8,7 @@ for(const [tab,file,label] of routes){
  assert.equal(content,source,'Out-of-sync shared page: '+file);
  assert(source.includes('data-tab="'+tab+'" href="'+file+'"'),'Missing navigation: '+label);
 }
-assert(source.includes('js/views.js?v=30.23.34'));
+assert(source.includes('js/views.js?v=30.23.35'));
 assert(source.includes('id="mobilePanelNav"'),'Mobile panel navigation required');
 assert(source.includes('id="mobileJsonImportInput"'),'Mobile JSON picker required');
 for(const marker of ['headerSyncPanelLink','headerAutoSyncInterval','headerAutoSyncToggle','headerSyncLast'])assert(source.includes('id="'+marker+'"'),'Missing global sync header '+marker);
