@@ -10,7 +10,7 @@ for(const [tab,file,label] of routes){
 }
 assert(source.includes('js/views.js?v=30.23.38'));
 assert(source.includes('id="feedbackPane"'),'Suggestions pane must exist');
-assert(source.includes('js/suggestions.js?v=2'),'Guest suggestions script must load');
+assert(source.includes('js/suggestions.js?v=3'),'Guest suggestions script must load');
 assert(source.includes('js/suggestions-config.js?v=2'),'Suggestions config must load');
 assert(source.includes('id="mobilePanelNav"'),'Mobile panel navigation required');
 assert(source.includes('id="mobileJsonImportInput"'),'Mobile JSON picker required');

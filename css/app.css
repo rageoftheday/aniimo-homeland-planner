@@ -754,3 +754,18 @@ header{align-items:center}
 .feedbackCard form[data-comment] input[name=body]{flex:1;min-width:180px}
 .feedbackHoneypot{position:absolute!important;left:-99999px!important;opacity:0!important;width:1px!important;height:1px!important}
 @media(max-width:700px){.feedbackWrap{padding:12px}.feedbackCard{padding:12px}}
+
+/* Feedback-only UI polish: preserve all existing planner/map styling. */
+.feedbackWrap .feedbackCard form[data-comment]{display:grid;grid-template-columns:minmax(0,1fr);align-items:stretch;gap:10px;max-width:720px;padding:14px}
+.feedbackWrap .feedbackCard form[data-comment] input[name=author],
+.feedbackWrap .feedbackCard form[data-comment] input[name=body]{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+.feedbackWrap .feedbackCard form[data-comment] .feedbackCaptcha{max-width:100%;min-height:65px;overflow:hidden}
+.feedbackWrap .feedbackCard form[data-comment] button[type=submit]{justify-self:start}
+.feedbackWrap .feedbackMessage{display:block;min-height:1.3em;color:#a4edc5;font-size:12px;line-height:1.45}
+.feedbackWrap .feedbackMessage:empty{display:none}
+.feedbackWrap .feedbackMessage.feedbackError{color:#ffb3b3}
+@media(max-width:700px){
+ .feedbackWrap form input:not(.feedbackHoneypot),.feedbackWrap form textarea,.feedbackWrap form select{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+ .feedbackWrap .feedbackCard form[data-comment]{padding:10px}
+ .feedbackWrap .feedbackCaptcha,.feedbackWrap #feedbackCaptcha{max-width:100%;overflow:hidden}
+}
