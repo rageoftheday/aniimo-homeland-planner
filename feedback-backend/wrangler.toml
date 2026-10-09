@@ -5,7 +5,7 @@ compatibility_date = "2026-09-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "aniimo-suggestions"
-database_id = "REPLACE_WITH_ACTUAL_D1_DATABASE_ID"
+database_id = "3e93f8e3-d643-4946-b6e6-c3d78de58c69"
 
 [vars]
 SITE_ORIGIN = "https://rageoftheday.github.io"
