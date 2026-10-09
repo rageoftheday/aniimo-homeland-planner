@@ -574,7 +574,7 @@ async function syncHomelandMapFromJson(source){
   }
   // Where a product/recipe is already chosen, favor keeping that product.
   // Remaining pieces are distributed in stable game-piece ID order.
-  const productName=q=>window.HomelandItemCatalog?.lookup(q.recipe,catalogData)?.name||'';
+  const productName=q=>{const ref=(window.HomelandItemCatalog?.recipes()||[]).find(r=>String(r.id)===String(q.recipe));return window.HomelandItemCatalog?.lookup(ref?.outputs?.[0]?.item??q.recipe,catalogData)?.name||'';};
   const normalized=x=>String(x||'').toLowerCase().replace(/^quick /,'').replace(/\s*\(quick\)$/,'').replace(/[^a-z0-9]/g,'');
   for(const o of pending){
    const available=home.crops.filter(q=>q?.piece!=null&&!used.has(String(q.piece))&&sameType(o,q));
@@ -592,17 +592,20 @@ async function syncHomelandMapFromJson(source){
   for(const {o,q} of matches){
    const recipeId=String(q.recipe??'');
    let production=null;
-   if(recipeId){
+   if(recipeId&&recipeId!=='null'){
+    const ref=(window.HomelandItemCatalog?.recipes()||[]).find(r=>String(r.id)===recipeId);
+    const outputId=ref?.outputs?.[0]?.item??recipeId;
+    const outputName=window.HomelandItemCatalog?.lookup(outputId,catalogData)?.name||'';
+    const clean=n=>String(n||'').toLowerCase().replace(/^quick /,'').replace(/\s*\(quick\)$/,'').replace(/[^a-z0-9]/g,'');
     if(['Farmland','Woodland'].includes(o.name)){
-     const name=window.HomelandItemCatalog?.lookup(recipeId,catalogData)?.name||'';
-     const possible=crops.filter(c=>c.type===o.name&&sameName(homelandPlantedOutputName(c.name),name));
-     if(possible.length===1)production={key:'cropName',value:possible[0].name};
+     const matching=crops.filter(c=>c.type===o.name&&clean(homelandPlantedOutputName(c.name))===clean(outputName));
+     const isQuick=String(recipeId).startsWith('402');
+     const chosen=matching.find(c=>isQuick?/quick/i.test(c.name):!/quick/i.test(c.name))||matching[0];
+     if(chosen)production={key:'cropName',value:chosen.name};
     }else{
      const choices=recipeDB[o.name]||[];
-     const byId=choices.filter(c=>String(c.recipeId??c.id??'')===recipeId);
-     const name=window.HomelandItemCatalog?.lookup(recipeId,catalogData)?.name||'';
-     const byName=choices.filter(c=>name&&sameName(c.name,name));
-     const chosen=(byId.length===1?byId:byName.length===1?byName:[])[0];
+     const candidates=choices.filter(c=>clean(c.name)===clean(outputName));
+     const chosen=candidates[0];
      if(chosen)production={key:'recipeName',value:chosen.name};
     }
    }
