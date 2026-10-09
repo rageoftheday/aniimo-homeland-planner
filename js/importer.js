@@ -282,8 +282,32 @@ function openMobileJsonPicker(){el('mobileJsonImportInput')?.click();}
 function updateHeaderSyncControls(){
  const link=el('headerSyncPanelLink'),toggle=el('headerAutoSyncToggle'),interval=el('headerAutoSyncInterval'),last=el('headerSyncLast');
  const manual=mobileCompanionUnavailable();
+ // All routes share this header; create the two independent indicators once.
+ const tools=el('headerSyncPanelLink')?.parentElement;
+ if(tools&&!el('headerSyncSummary')){
+  const details=document.createElement('span');details.id='headerSyncSummary';details.setAttribute('aria-live','polite');
+  el('headerSyncPanelLink').after(details);
+ }
+ if(tools&&!el('headerCompanionState')){
+  const badge=document.createElement('span');badge.id='headerCompanionState';badge.className='headerCompanionState';badge.setAttribute('aria-live','polite');
+  el('headerSyncSummary')?.after(badge);
+ }
  document.body.classList.toggle('mobileManualSync',manual);
- if(link){link.textContent=aniidexCompanionDetected?'● Companion ready':manual?'● Manual JSON sync':'○ Sync status';link.classList.toggle('connected',aniidexCompanionDetected);link.title=importUiMessage||'Open the green Import / Sync panel';}
+ const summary=aniidexImportMeta?.summary;
+ const imported=!!(summary&&aniidexImportMeta?.importedAt);
+ const syncing=!!aniidexSyncInFlight;
+ if(link){
+  link.textContent=syncing?'↻ Direct Aniidx syncing…':imported?'✓ Aniidx sync imported':manual?'○ Manual JSON sync':'○ No Aniidx sync';
+  link.classList.toggle('connected',imported&&!syncing);
+  link.title=(imported?[summary.name||'Player','RV '+(summary.rv||'?'),(summary.aniimo||0)+' Homeland Aniimo',(summary.facilities||0)+' facility pieces',(summary.caught||0)+' caught forms'].join(' • '):'No Homeland data imported into this profile')+' — open Import / Sync details';
+ }
+ const companion=el('headerCompanionState');
+ if(companion){
+  companion.textContent=aniidexCompanionDetected?'✓ Companion connected':manual?'Companion unavailable on mobile':'○ Companion not detected';
+  companion.classList.toggle('connected',aniidexCompanionDetected);
+ }
+ const details=el('headerSyncSummary');
+ if(details)details.textContent=imported?[summary.name||'Player','RV '+(summary.rv||'?'),(summary.aniimo||0)+' Aniimo',(summary.facilities||0)+' pieces',(summary.caught||0)+' caught'].join(' · '):'No profile sync yet';
  if(toggle){toggle.textContent=manual?'Auto-sync unavailable':aniidexAutoSyncRunning?'Stop auto-sync':'Start auto-sync';toggle.disabled=manual||(aniidexSyncInFlight&&!aniidexAutoSyncRunning);toggle.setAttribute('aria-pressed',String(aniidexAutoSyncRunning));}
  if(interval)interval.value=String(aniidexAutoSyncMinutes);
  if(last)last.textContent='Last sync: '+formatAniidexSyncTime(aniidexLastSyncAt||aniidexImportMeta?.importedAt||0);
