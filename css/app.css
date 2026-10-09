@@ -720,3 +720,8 @@ header{align-items:center}
 .headerCompanionState{font-size:11px;color:#bdcddb;white-space:nowrap}
 .headerCompanionState.connected{color:#9df0b4}
 @media(max-width:700px){.headerSyncSummary{max-width:100%;white-space:normal}}
+
+/* Profile sync result is distinct from Companion extension connectivity. */
+.headerSyncPanelLink.missing{color:#ffb2b2!important;border-color:#d36770!important;background:#371e28!important}
+.headerSyncPanelLink.attention{color:#ffdb91!important;border-color:#c99b47!important;background:#382e1d!important}
+.headerSyncPanelLink.syncing{color:#a6dcff!important;border-color:#569bc8!important}
