@@ -729,3 +729,12 @@ header{align-items:center}
 /* Game-confirmed production indicator; not a guessed piece match. */
 .hpv2LiveProduction{position:absolute;left:3px;bottom:3px;z-index:3;display:flex;align-items:center;justify-content:center;width:clamp(14px,19%,28px);aspect-ratio:1;border:1px solid #7fe0ba;border-radius:50%;background:#1b483b;color:#bcffe1;overflow:hidden;pointer-events:auto;box-shadow:0 1px 5px #0008}
 .hpv2LiveProduction img{width:100%;height:100%;object-fit:contain}
+
+/* Compact, keyboard-accessible map controls help popup. */
+.hpv2MapHelpButton{border-color:#6b9ab5!important;color:#dcf3ff!important;font-weight:700}
+.hpv2MapHelpDialog{max-width:min(94vw,540px);max-height:85vh;overflow:auto;padding:20px;border:1px solid #66889d;border-radius:12px;background:#132836;color:#e8f6ff;box-shadow:0 12px 45px #000b}
+.hpv2MapHelpDialog::backdrop{background:#03111ccc}
+.hpv2MapHelpHeading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.hpv2MapHelpHeading h3{margin:0}
+.hpv2MapHelpContent{font-size:13px;line-height:1.5}
+.hpv2MapHelpContent p{margin:12px 0}

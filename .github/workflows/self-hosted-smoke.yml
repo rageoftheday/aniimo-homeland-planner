@@ -107,10 +107,10 @@ jobs:
           grep -q '<h1>Aniimo Homeland Planner</h1>' index.html
           ! grep -q '<title>Aniimo Homeland Planner v' index.html
           ! grep -q '<h1>Aniimo Homeland Planner v' index.html
-          grep -q 'css/app.css?v=30.23.17' index.html
-          grep -q 'js/views.js?v=30.23.31' index.html
+          grep -q 'css/app.css?v=30.23.18' index.html
+          grep -q 'js/views.js?v=30.23.33' index.html
           grep -q 'js/home-snapshot.js?v=10' index.html
-          grep -q 'js/importer.js?v=30.15.9' index.html
+          grep -q 'js/importer.js?v=30.15.10' index.html
           grep -q 'data/aniimo-stage-index.js?v=30.13.3' index.html
           grep -q 'data/homeland-reference-data.js' index.html
           grep -q 'js/homeland-data.js' index.html
