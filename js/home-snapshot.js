@@ -70,7 +70,7 @@
     const h=dashboardHomeSnapshot();
     if(!h.meta){root.innerHTML='<div class="v30Title">Home Snapshot</div><div class="homeSnapshotEmpty"><b>No synced Homeland snapshot yet.</b><span>Use Dashboard → Import / Sync first.</span></div>';return}
     const icon=(id,size=22)=>window.AniimoIconAtlas?.html(id,size)||'';
-    const raw=h.rawHome||{},pc=h.profileHome||{},sc=raw.comfort||{},eggs=Array.isArray(raw.eggs)?raw.eggs:[],food=Array.isArray(raw.food)?raw.food:[],queues=Array.isArray(raw.crops)?raw.crops:[],storage=raw.storage||{},visitors=Array.isArray(raw.visitors)?raw.visitors:[];
+    const raw=h.rawHome||{},pc=h.profileHome||{},sc=raw.comfort||{},eggs=Array.isArray(raw.eggs)?raw.eggs:[],food=Array.isArray(raw.food)?raw.food.filter(x=>Number(x?.count)>0&&Number(x?.item)>0):[],queues=Array.isArray(raw.crops)?raw.crops:[],storage=raw.storage||{},visitors=Array.isArray(raw.visitors)?raw.visitors:[];
     const captured=h.captured?formatAniidexSyncTime(Number(h.captured)>1e12?Number(h.captured):Number(h.captured)*1000):'Unknown';
     const mods=Object.entries(pc.rv_modules||{}).filter(([,v])=>Number(v)>0).length;
     const eggRows=eggs.map(e=>{
