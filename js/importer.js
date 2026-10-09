@@ -118,7 +118,27 @@ function applyAniidexImportedData(profileData,homeData,sourceLabel='Aniidex',cat
  const importedModules=aniidexRvModuleLevels(profileData,homeData);
  moduleLevels={...importedModules.levels};
  const normalPlots=(rawHome.plots||[]).filter(n=>n>=1&&n<=16);if(normalPlots.length)openPlots=new Set(normalPlots);
- const rawAniimo=rawHome.aniimo||[];workers=rawAniimo.map(a=>importedWorkerFromAniidex(a,catalogData));workerIdCounter=Math.max(1,...workers.map(w=>(Number(w.id)||0)+1));
+ // Preserve the planner's stable local worker IDs across re-syncs. Map objects
+ // store workerId; regenerating it on each import silently breaks assignments.
+ const previousByExternalId=new Map(workers.filter(w=>w.externalId).map(w=>[String(w.externalId),w]));
+ const usedLocalIds=new Set();
+ const rawAniimo=rawHome.aniimo||[];
+ const nextWorkers=rawAniimo.map(a=>{
+  const fresh=importedWorkerFromAniidex(a,catalogData);
+  const previous=previousByExternalId.get(String(a.id||''));
+  if(previous&&!usedLocalIds.has(String(previous.id))){fresh.id=previous.id;usedLocalIds.add(String(previous.id));}
+  else usedLocalIds.add(String(fresh.id));
+  return fresh;
+ });
+ // New imported workers get collision-free IDs without altering existing ones.
+ let nextId=Math.max(workerIdCounter,...workers.map(w=>(Number(w.id)||0)+1),1);
+ const seenIds=new Set();
+ for(const worker of nextWorkers){
+  if(seenIds.has(String(worker.id))){while(seenIds.has(String(nextId))||usedLocalIds.has(String(nextId)))nextId++;worker.id=nextId++;}
+  seenIds.add(String(worker.id));
+ }
+ workers=nextWorkers;
+ workerIdCounter=Math.max(nextId,...workers.map(w=>(Number(w.id)||0)+1),1);
  aniidexImportMeta={uid:String(rawHome.uid||profileData?.profile?.uid||profileData?.uid||''),importedAt:Date.now(),summary:sum,profile:profileData,home:homeData,catalog:catalogData,source:sourceLabel,rawMeta:rawBundle?{format:rawBundle.format||'',capturedAt:rawBundle.capturedAt||'',source:rawBundle.source||sourceLabel,warnings:Array.isArray(rawBundle.warnings)?rawBundle.warnings:[]}:null};
  const p=profileStore?.profiles?.[profileStore.current];if(p&&sum.name&&(/^Main Account$/i.test(p.name)||!p.name))p.name=sum.name;
  render();snapshotIntoCurrentProfile();renderProfileBar();
