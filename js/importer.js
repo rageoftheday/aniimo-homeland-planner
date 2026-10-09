@@ -596,7 +596,7 @@ async function syncHomelandMapFromJson(source){
     const ref=(window.HomelandItemCatalog?.recipes()||[]).find(r=>String(r.id)===recipeId);
     const outputId=ref?.outputs?.[0]?.item??recipeId;
     const outputName=window.HomelandItemCatalog?.lookup(outputId,catalogData)?.name||'';
-    const clean=n=>String(n||'').toLowerCase().replace(/^quick /,'').replace(/\\s*\\(quick\\)$/,'').replace(/[^a-z0-9]/g,'');
+    const clean=n=>String(n||'').toLowerCase().replace(/^quick /,'').replace(/\s*\(quick\)$/,'').replace(/[^a-z0-9]/g,'');
     if(['Farmland','Woodland'].includes(o.name)){
      const matching=crops.filter(c=>c.type===o.name&&clean(homelandPlantedOutputName(c.name))===clean(outputName));
      const isQuick=String(recipeId).startsWith('402');
