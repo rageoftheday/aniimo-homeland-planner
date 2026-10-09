@@ -4,7 +4,7 @@
 window.ANIIMO_ITEM_SUPPLEMENTAL_REFERENCE={
   updated:"2026-10-08",
   entries:{
-    "4040033":{name:"Moonray Wheat",sell:null,exchangeCurrency:true,rarity:"Epic",exchangeUses:"Season Exchange furniture and recipes; Moondew Radish Seeds and Waxing Moon Pepper Seeds cost 4 Moonray Wheat each",source:"https://wikily.gg/aniimo/items/moonray-wheat/"},
+    "4040033":{name:"Moonray Wheat",sell:null,nonSellable:true,priceEvidence:"in-game user report 2026-10-08: exchange currency cannot be sold for HC",exchangeCurrency:true,rarity:"Epic",exchangeUses:"Season Exchange furniture and recipes; Moondew Radish Seeds and Waxing Moon Pepper Seeds cost 4 Moonray Wheat each",source:"https://wikily.gg/aniimo/items/moonray-wheat/"},
     "150002":{name:"Growth Flower",nonSellable:true,priceEvidence:"in-game user report 2026-10-08"},
     "110002":{name:"Aniipod Pro",nonSellable:true,priceEvidence:"in-game user report 2026-10-08"},
     "110001":{name:"Aniipod",nonSellable:true,priceEvidence:"in-game user report 2026-10-08"},
