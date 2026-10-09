@@ -6,7 +6,7 @@
 <title>Aniimo Homeland Planner</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=1"/>
 <meta name="theme-color" content="#173447"/>
-<link rel="stylesheet" href="css/app.css?v=30.23.16"/>
+<link rel="stylesheet" href="css/app.css?v=30.23.17"/>
 </head>
 <body>
 <header>
@@ -14,6 +14,8 @@
 <div class="headerActions">
 <button class="primary" id="aniidexQuickSyncTopBtn" title="Refresh the current profile from Aniidx without leaving this tab">↻ Sync Now</button>
 <button id="homelandImportTopBtn">Import / Sync</button>
+<button type="button" id="mobileJsonImportBtn" class="mobileJsonImportBtn" title="Choose a Homeland sync JSON file from this device">Import JSON</button>
+<input type="file" id="mobileJsonImportInput" accept=".json,application/json" hidden>
 <div class="headerSyncTools" aria-label="Companion synchronization controls">
 <button type="button" id="headerSyncPanelLink" class="headerSyncPanelLink" title="Open green Import / Sync panel">● Sync status</button>
 <label class="headerSyncIntervalLabel">Every <select id="headerAutoSyncInterval" aria-label="Auto-sync interval"><option value="1">1 min</option><option value="2">2 min</option><option value="5" selected>5 min</option><option value="10">10 min</option></select></label>
@@ -277,7 +279,7 @@
 <script src="data/item-supplemental-reference.js?v=2"></script>
 <script src="data/official-wiki-homeland.js?v=30.16.0"></script>
 <script src="js/wiki-homeland.js?v=30.16.0"></script>
-<script src="js/importer.js?v=30.15.6"></script>
+<script src="js/importer.js?v=30.15.7"></script>
 <script src="js/homeland-item-catalog.js?v=1"></script>
 <script src="data/homeland-local-icon-bridge.js?v=5"></script>
 <script src="data/homeland-icon-atlas.js?v=3"></script>

@@ -275,10 +275,16 @@ function setAniidexCompanionMessage(message,isError=false){
  }
 }
 
+function mobileCompanionUnavailable(){
+ return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'')&&!aniidexCompanionDetected;
+}
+function openMobileJsonPicker(){el('mobileJsonImportInput')?.click();}
 function updateHeaderSyncControls(){
  const link=el('headerSyncPanelLink'),toggle=el('headerAutoSyncToggle'),interval=el('headerAutoSyncInterval'),last=el('headerSyncLast');
- if(link){link.textContent=aniidexCompanionDetected?'● Companion ready':'○ Sync status';link.classList.toggle('connected',aniidexCompanionDetected);link.title=importUiMessage||'Open the green Import / Sync panel';}
- if(toggle){toggle.textContent=aniidexAutoSyncRunning?'Stop auto-sync':'Start auto-sync';toggle.disabled=aniidexSyncInFlight&&!aniidexAutoSyncRunning;toggle.setAttribute('aria-pressed',String(aniidexAutoSyncRunning));}
+ const manual=mobileCompanionUnavailable();
+ document.body.classList.toggle('mobileManualSync',manual);
+ if(link){link.textContent=aniidexCompanionDetected?'● Companion ready':manual?'● Manual JSON sync':'○ Sync status';link.classList.toggle('connected',aniidexCompanionDetected);link.title=importUiMessage||'Open the green Import / Sync panel';}
+ if(toggle){toggle.textContent=manual?'Auto-sync unavailable':aniidexAutoSyncRunning?'Stop auto-sync':'Start auto-sync';toggle.disabled=manual||(aniidexSyncInFlight&&!aniidexAutoSyncRunning);toggle.setAttribute('aria-pressed',String(aniidexAutoSyncRunning));}
  if(interval)interval.value=String(aniidexAutoSyncMinutes);
  if(last)last.textContent='Last sync: '+formatAniidexSyncTime(aniidexLastSyncAt||aniidexImportMeta?.importedAt||0);
 }
@@ -288,6 +294,7 @@ function changeAniidexAutoSyncInterval(value){
  updateHeaderSyncControls();renderImportTab();
 }
 function toggleAniidexAutoSync(){
+ if(mobileCompanionUnavailable()){focusHomelandImporter();return;}
  if(aniidexAutoSyncRunning){stopAniidexAutoSync('Auto-sync stopped.');renderImportTab();return;}
  const uid=String(el('aniidexCompanionUid')?.value||aniidexPendingUid||aniidexImportMeta?.uid||'').trim();
  aniidexPendingUid=uid;
@@ -305,6 +312,7 @@ function updateAniidexQuickSyncTopButton(){
  updateHeaderSyncControls();
 }
 function quickAniidexSyncFromHeader(){
+ if(mobileCompanionUnavailable()){openMobileJsonPicker();return;}
  const uid=String(aniidexPendingUid||aniidexImportMeta?.uid||'').trim();
  if(!/^[1-9]\d{7,15}$/.test(uid)){
    importUiMessage='Quick Sync needs a saved Aniimo UID first. Enter/import it once in Dashboard → Import / Sync.';
@@ -410,6 +418,7 @@ async function importAniidexSyncFile(file){
   else throw new Error('This does not look like an Aniimo Homeland sync or home-import file.');
   const sum=applyAniidexImportedData(profileData,homeData,'Aniիդex sync file',catalogData,true,data);
   if(!sum)return;
+  aniidexLastSyncAt=Date.now();updateHeaderSyncControls();
   importUiMessage=`Sync file imported ✓ ${sum.name||'Player'} • RV ${sum.rv} • ${sum.aniimo} Homeland Aniimo • ${sum.facilities} facility pieces • ${sum.caught||0} caught forms`;
   renderImportTab();
  }catch(err){importUiMessage='Sync file import failed: '+(err?.message||err);if(status)status.textContent=importUiMessage;}
@@ -422,7 +431,7 @@ function renderImportTab(targetId='dashboardImport',embedded=true){
  const root=el(targetId);if(!root)return;
  const meta=aniidexImportMeta, sum=meta?.summary||{};
  const directUid=esc(String(aniidexPendingUid||meta?.uid||''));
- root.innerHTML=`<div class="dashboardSyncHead"><div><div class="dashboardSyncEyebrow">${meta?'Homeland Sync':'Start Here'}</div><h3>${meta?'Import / Update Homeland':'Import / Sync Your Homeland'}</h3><div class="small">Sync a UID directly through the optional Aniimo Homeland Companion, or use the bookmarklet / saved sync-file fallbacks. The extension uses Aniidx's normal signed-in browser session and legitimate verification flow; it never exposes cookies or Turnstile tokens to the planner.</div></div></div>
+ root.innerHTML=`${mobileCompanionUnavailable()?'<div class="mobileManualNotice"><b>Mobile manual sync</b><p>Chrome on this phone cannot use the desktop Companion extension. Choose an exported Aniimo Homeland JSON file below or use Import JSON in the top bar. The file is imported into the currently selected local profile.</p><button type="button" id="mobilePanelJsonBtn">Choose Homeland JSON</button></div>':''}<div class="dashboardSyncHead"><div><div class="dashboardSyncEyebrow">${meta?'Homeland Sync':'Start Here'}</div><h3>${meta?'Import / Update Homeland':'Import / Sync Your Homeland'}</h3><div class="small">Sync a UID directly through the optional Aniimo Homeland Companion, or use the bookmarklet / saved sync-file fallbacks. The extension uses Aniidx's normal signed-in browser session and legitimate verification flow; it never exposes cookies or Turnstile tokens to the planner.</div></div></div>
  <div class="importSummary">${meta?`<span class="importChip">Last source: ${esc(meta.source||'Aniidx')}</span><span class="importChip">${esc(sum.name||'Player')} • RV ${sum.rv||'?'}</span><span class="importChip">${sum.aniimo||0} Homeland Aniimo</span><span class="importChip">${sum.caught||0} caught forms</span>`:'<span class="importChip">No Aniidx sync imported into this profile yet</span>'}</div>
  ${importUiMessage?`<div class="${/failed|not detected|invalid|paused|attention/i.test(importUiMessage)?'rightAlert':'rightGood'}" style="margin-top:10px">${esc(importUiMessage)}</div>`:''}
  <div class="autoSyncPanel">
@@ -446,6 +455,8 @@ function renderImportTab(targetId='dashboardImport',embedded=true){
   <div id="aniidexImportStatus" class="small" style="margin:10px 0"></div>
  </div>`;
  const bm=aniidexBookmarkletCode();el('syncBookmarklet').href=bm;el('bookmarkletCode').value=bm;el('syncBookmarklet').onclick=(e)=>{e.preventDefault();importUiMessage='Opened Aniidx Homeland. Once it finishes loading, click the Aniimo Homeland Sync bookmark from your browser bookmarks bar.';window.open('https://aniidex.com/homeland/','_blank');renderImportTab()};el('openAniidexBtn').onclick=()=>window.open('https://aniidex.com/homeland/','_blank');
+ el('mobilePanelJsonBtn')?.addEventListener('click',openMobileJsonPicker);
+ updateHeaderSyncControls();
  const syncNowBtn=el('aniidexSyncNowBtn');if(syncNowBtn)syncNowBtn.onclick=()=>requestAniidexCompanionSync('manual');
  const autoInterval=el('aniidexAutoSyncInterval');if(autoInterval)autoInterval.onchange=()=>changeAniidexAutoSyncInterval(autoInterval.value);
  const autoToggle=el('aniidexAutoSyncToggle');if(autoToggle)autoToggle.onclick=toggleAniidexAutoSync;
@@ -464,3 +475,11 @@ el('headerSyncPanelLink')?.addEventListener('click',focusHomelandImporter);
 el('headerAutoSyncToggle')?.addEventListener('click',toggleAniidexAutoSync);
 el('headerAutoSyncInterval')?.addEventListener('change',event=>changeAniidexAutoSyncInterval(event.target.value));
 updateHeaderSyncControls();
+
+el('mobileJsonImportBtn')?.addEventListener('click',openMobileJsonPicker);
+el('mobileJsonImportInput')?.addEventListener('change',async event=>{
+ const input=event.currentTarget;const file=input.files?.[0];
+ if(!file)return;
+ await importAniidexSyncFile(file);
+ input.value='';
+});

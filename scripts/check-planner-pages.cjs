@@ -10,6 +10,7 @@ for(const [tab,file,label] of routes){
 }
 assert(source.includes('js/views.js?v=30.23.29'));
 assert(source.includes('id="mobilePanelNav"'),'Mobile panel navigation required');
+assert(source.includes('id="mobileJsonImportInput"'),'Mobile JSON picker required');
 for(const marker of ['headerSyncPanelLink','headerAutoSyncInterval','headerAutoSyncToggle','headerSyncLast'])assert(source.includes('id="'+marker+'"'),'Missing global sync header '+marker);
 const views=fs.readFileSync('js/views.js','utf8');
 assert(views.includes('setMainTab(homelandTabForLocation())'));
