@@ -8,7 +8,7 @@
  const slug=s=>clean(s).normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
  const path=name=>'assets/homebuilder-aniimo-portraits/'+slug(name)+'.png';
  let manifest=null;
- fetch('data/homebuilder-aniimo-portraits.json?v=4').then(r=>r.ok?r.json():null).then(m=>{manifest=m;window.HomebuilderPortraits?.hydrate(document);}).catch(()=>{});
+ fetch('data/homebuilder-aniimo-portraits.json?v=5').then(r=>r.ok?r.json():null).then(m=>{manifest=m;if(m&&typeof render==='function')render();else window.HomebuilderPortraits?.hydrate(document);}).catch(()=>{window.HomebuilderMissingPortraits=window.HomebuilderMissingPortraits||new Set();window.HomebuilderMissingPortraits.add('Portrait manifest could not load');});
  function candidates(worker){
   const species=clean(worker?.name),form=formPart(worker?.form),appearance=formPart(worker?.appearance);
   const rawId=worker?.formId??worker?.form_id??worker?.variantId??worker?.variant??worker?.form;
@@ -31,7 +31,8 @@
   }
   if(!form&&!appearance)names.push(species);
   const unique=[...new Set(names.map(slug))];
-  const found=unique.map(key=>manifest?.assets?.[key]||(!manifest?path(key):null)).filter(Boolean);
+  // No speculative image URLs before the authoritative ID/name manifest arrives.
+  const found=manifest?unique.map(key=>manifest.assets?.[key]).filter(Boolean):[];
   if(manifest&&!found.length){
    window.HomebuilderMissingPortraits=window.HomebuilderMissingPortraits||new Set();
    window.HomebuilderMissingPortraits.add((species+' — '+(form||appearance||'Base')).trim());
