@@ -63,6 +63,9 @@ assert(pathFor('4001049').endsWith('/4001049_pearl.png'));
 assert(pathFor('4020060').endsWith('/4020060_quick_recipe_sea_salt.png'));
 const views=fs.readFileSync('js/views.js','utf8');
 assert(views.includes('recipe?.outputItemId'),'Map renderer must prefer actual item ID');
-assert(views.includes('recipeArt||plantedArt||idleArt'),'None must restore building artwork');
+assert(views.includes('recipeArt||plantedArt||liveArt||idleArt'),'Selected production must control the middle icon, with idle building artwork as fallback');
+assert(views.includes("recipeName.toLowerCase().startsWith('quick ')"),'Only explicitly selected Quick recipes should use Quick artwork');
+assert(!views.includes('hpv2LiveProduction'),'Unwanted green live-production badges must not appear on map');
+assert(views.includes('${badges}</span>'),'Assigned Aniimo badges must remain on map');
 if(failures.length){console.error(failures.join('\n'));process.exitCode=1;}
 else console.log('Map recipe PNG audit passed:',data.recipes.length,'reference outputs;',count,'legacy map recipes;',composite,'composite Mine exceptions. All remaining icons found.');
