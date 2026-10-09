@@ -285,7 +285,7 @@ function homelandObjectVisualHTML(o,big=false){
  const liveOutputName=verified?window.HomelandItemCatalog?.lookup(liveOutputId,aniidexImportMeta?.catalog)?.name||liveName:'';
  const liveArt=verified&&liveOutputId!=null?(icons?.image(icons?.file('Items',liveOutputId)||icons?.file('Items',liveOutputName),40)||atlas?.html(liveOutputId,40)||''):'';
  // Show only the main production image and the separate assigned Aniimo portrait.
- return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${recipeArt||plantedArt||liveArt||idleArt||homelandIllustratedIconHTML(o?.name||o?.label)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
+ return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${recipeName||cropName?(recipeArt||plantedArt||idleArt||homelandIllustratedIconHTML(o?.name||o?.label)):(idleArt||homelandIllustratedIconHTML(o?.name||o?.label))}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
 }
 function homelandPlotRole(n){
  const rows=homelandPlotObjects(n);if(!rows.length)return 'Purchased';
