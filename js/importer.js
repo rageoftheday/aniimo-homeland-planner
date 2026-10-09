@@ -533,3 +533,103 @@ el('mobileJsonImportInput')?.addEventListener('change',async event=>{
  await importAniidexSyncFile(file);
  input.value='';
 });
+
+
+// Map-only sync: a Homeland JSON must never replace the existing layout,
+// placed objects, coordinates, RV levels, saved maps, or unrelated roster entries.
+async function syncHomelandMapFromJson(file){
+ if(!file)return;
+ try{
+  const bundle=JSON.parse(await file.text());
+  const home=bundle?.homeland?.home||bundle?.homeland||bundle?.home;
+  if(!home||!Array.isArray(home.crops)||!Array.isArray(home.aniimo))throw Error('Select an Aniidx Homeland sync JSON containing crops and Aniimo.');
+  const incomingUid=String(home.uid||bundle?.profile?.profile?.uid||bundle?.profile?.uid||'');
+  const currentUid=String(aniidexImportMeta?.uid||'');
+  if(currentUid&&incomingUid&&currentUid!==incomingUid)throw Error('UID does not match the active profile. Switch profiles before syncing this map.');
+  const catalogData=aniidexBundleCatalog(bundle);
+  const sameName=(a,b)=>String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase();
+  const byPiece=new Map(home.crops.filter(q=>q?.piece!=null).map(q=>[String(q.piece),q]));
+  const savedLinks=(()=>{try{return JSON.parse(localStorage.getItem('homeland-live-links-v1:'+(incomingUid||currentUid))||'{}')||{}}catch{return {}}})();
+  const mapCounts=new Map(),gameCounts=new Map();
+  for(const o of objects){const key=String(o.name||'').toLowerCase()+'|'+Number(o.facilityLevel||o.placedLevel||0);mapCounts.set(key,(mapCounts.get(key)||0)+1)}
+  for(const q of home.crops){const key=String(dashboardFacilityName(q.facility)||'').toLowerCase()+'|'+Number(q.level||0);gameCounts.set(key,(gameCounts.get(key)||0)+1)}
+  const matches=[],used=new Set(),skipped=[];
+  for(const o of objects){
+   const key=o.id+'|'+o.name+'|'+o.x+','+o.y;
+   const id=String(savedLinks[key]||o.livePieceId||'');
+   let q=id?byPiece.get(id):null;
+   if(q&&!sameName(dashboardFacilityName(q.facility),o.name)){skipped.push(o.name+': saved piece has a different facility type');continue}
+   if(!q){
+    const typeKey=String(o.name||'').toLowerCase()+'|'+Number(o.facilityLevel||o.placedLevel||0);
+    if(mapCounts.get(typeKey)===1&&gameCounts.get(typeKey)===1)q=home.crops.find(x=>sameName(dashboardFacilityName(x.facility),o.name)&&Number(x.level||0)===Number(o.facilityLevel||o.placedLevel||0));
+   }
+   if(!q){skipped.push(o.name+': multiple candidates or no verified piece link');continue}
+   if(used.has(String(q.piece))){skipped.push(o.name+': piece already matched');continue}
+   used.add(String(q.piece));matches.push({o,q});
+  }
+  const incomingWorkers=new Map(home.aniimo.filter(a=>a?.piece!=null&&a?.id).map(a=>[String(a.piece),a]));
+  const changes=[];
+  for(const {o,q} of matches){
+   const recipeId=String(q.recipe??'');
+   let production=null;
+   if(recipeId){
+    if(['Farmland','Woodland'].includes(o.name)){
+     const name=window.HomelandItemCatalog?.lookup(recipeId,catalogData)?.name||'';
+     const possible=crops.filter(c=>c.type===o.name&&sameName(homelandPlantedOutputName(c.name),name));
+     if(possible.length===1)production={key:'cropName',value:possible[0].name};
+    }else{
+     const choices=recipeDB[o.name]||[];
+     const byId=choices.filter(c=>String(c.recipeId??c.id??'')===recipeId);
+     const name=window.HomelandItemCatalog?.lookup(recipeId,catalogData)?.name||'';
+     const byName=choices.filter(c=>name&&sameName(c.name,name));
+     const chosen=(byId.length===1?byId:byName.length===1?byName:[])[0];
+     if(chosen)production={key:'recipeName',value:chosen.name};
+    }
+   }
+   changes.push({o,q,production,aniimo:incomingWorkers.get(String(q.piece))||null});
+  }
+  const countProduction=changes.filter(x=>x.production&&x.o[x.production.key]!==x.production.value).length;
+  const countWorkers=changes.filter(x=>x.aniimo).length;
+  if(!changes.length){window.homebuilderMapSyncStatus='No uniquely matched game pieces. Use each building’s Live facility link to identify duplicates.';render();alert(window.homebuilderMapSyncStatus);return}
+  if(!confirm('Sync production and assigned Aniimos only for '+changes.length+' verified map pieces?\n\n'+countProduction+' production selection(s), '+countWorkers+' game Aniimo assignment(s).\n'+skipped.length+' ambiguous/unlinked buildings skipped.\n\nBuildings, positions, levels, layouts, and saved maps will NOT change.'))return;
+  const workerByExternal=new Map(workers.filter(w=>w.externalId).map(w=>[String(w.externalId),w]));
+  let nextWorkerId=Math.max(workerIdCounter,...workers.map(w=>(Number(w.id)||0)+1),1);
+  const targetWorkers=new Map(),unknown=[];
+  for(const c of changes){
+   if(!c.aniimo)continue;
+   const ext=String(c.aniimo.id);
+   let w=workerByExternal.get(ext);
+   if(!w){
+    w=importedWorkerFromAniidex(c.aniimo,catalogData);
+    w.id=nextWorkerId++;
+    // Form IDs must be retained, including when a catalog lacks the form.
+    w.formId=String(c.aniimo.form||w.formId||'');
+    workers.push(w);workerByExternal.set(ext,w);
+   }
+   targetWorkers.set(c.o.id,w);
+  }
+  // Keep each assigned Aniimo on only one object.
+  const assignedIds=new Set([...targetWorkers.values()].map(w=>String(w.id)));
+  for(const o of objects)if(assignedIds.has(String(o.workerId||''))&&!targetWorkers.has(o.id))delete o.workerId;
+  for(const c of changes){
+   if(c.production)c.o[c.production.key]=c.production.value;
+   const w=targetWorkers.get(c.o.id);
+   if(w){c.o.workerId=w.id;const rule=STATION_RULES[c.o.name];if(rule){c.o.workerLevel=workerAbilityLevel(w,rule.ability)||1;c.o.personalityMult=personalityHas(w,rule.personality)?1.2:1}}
+  }
+  workerIdCounter=nextWorkerId;
+  // Retain only the snapshot needed by map badges; do not overwrite profile data.
+  if(aniidexImportMeta)aniidexImportMeta.home={...(aniidexImportMeta.home||{}),home:{...home}};
+  window.homebuilderMapSyncStatus='Map sync ✓ '+countProduction+' production changes; '+targetWorkers.size+' Aniimo assignments; '+skipped.length+' skipped.';
+  render();snapshotIntoCurrentProfile();
+ }catch(e){
+  window.homebuilderMapSyncStatus='Map sync failed: '+(e?.message||e);
+  const status=document.getElementById('hpv2MapSyncStatus');if(status)status.textContent=window.homebuilderMapSyncStatus;
+  alert(window.homebuilderMapSyncStatus);
+ }
+}
+document.addEventListener('change',event=>{
+ if(event.target?.id!=='hpv2MapSyncFile')return;
+ const file=event.target.files?.[0];
+ event.target.value='';
+ if(file)syncHomelandMapFromJson(file);
+});
