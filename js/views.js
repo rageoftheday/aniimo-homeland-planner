@@ -283,13 +283,9 @@ function homelandObjectVisualHTML(o,big=false){
  const liveRecipe=verified?(window.HomelandItemCatalog?.recipes()||[]).find(r=>String(r.id)===String(verified.recipe)):null;
  const liveOutputId=liveRecipe?.outputs?.[0]?.item??verified?.recipe;
  const liveOutputName=verified?window.HomelandItemCatalog?.lookup(liveOutputId,aniidexImportMeta?.catalog)?.name||liveName:'';
- const liveIcon=verified&&liveOutputId!=null?(icons?.image(icons?.file('Items',liveOutputId)||icons?.file('Items',liveOutputName),24)||''):'';
  const liveArt=verified&&liveOutputId!=null?(icons?.image(icons?.file('Items',liveOutputId)||icons?.file('Items',liveOutputName),40)||atlas?.html(liveOutputId,40)||''):'';
- const liveLabel=verified?'Confirmed live recipe #'+esc(String(verified.recipe))+(liveName?' — '+esc(liveName):''):'';
- // When a recipe was explicitly selected, don't overlay a different live product
- // (for example Quick Sea Salt) on top of its regular Sea Salt icon.
- const liveBadge=verified&&!recipeName&&!cropName?'<span class="hpv2LiveProduction" title="'+liveLabel+'">'+(liveIcon||'●')+'</span>':'';
- return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${recipeArt||plantedArt||liveArt||idleArt||homelandIllustratedIconHTML(o?.name||o?.label)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${liveBadge}${badges}</span>`;
+ // Show only the main production image and the separate assigned Aniimo portrait.
+ return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${recipeArt||plantedArt||liveArt||idleArt||homelandIllustratedIconHTML(o?.name||o?.label)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
 }
 function homelandPlotRole(n){
  const rows=homelandPlotObjects(n);if(!rows.length)return 'Purchased';
