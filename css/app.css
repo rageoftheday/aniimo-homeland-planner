@@ -735,3 +735,22 @@ header{align-items:center}
 .hpv2MapHelpHeading h3{margin:0}
 .hpv2MapHelpContent{font-size:13px;line-height:1.5}
 .hpv2MapHelpContent p{margin:12px 0}
+
+/* Community Suggestions, separate from the Plan/Advice recommendations. */
+.feedbackWrap{overflow:auto;height:100%;max-width:1000px;margin:auto;padding:18px 24px 50px;color:var(--text)}
+.feedbackWrap>p{line-height:1.5}
+.feedbackToolbar,.feedbackControls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:14px 0}
+.feedbackNotice{padding:12px 14px;border:1px solid #b59a54;background:#483d25;border-radius:9px;margin:14px 0}
+.feedbackWrap form{display:flex;flex-direction:column;align-items:flex-start;gap:11px;margin:16px 0;padding:15px;border:1px solid #39556e;border-radius:10px;background:#142635}
+.feedbackWrap form input:not(.feedbackHoneypot),.feedbackWrap form textarea{width:min(100%,720px)}
+.feedbackWrap form select{min-width:180px}
+.feedbackCard{margin:15px 0;padding:17px;border:1px solid #385269;border-radius:11px;background:#172935;overflow-wrap:anywhere}
+.feedbackCardTop{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.feedbackCard small{display:block;margin-top:7px;color:var(--muted)}
+.feedbackCard p{white-space:pre-wrap;line-height:1.55;margin:14px 0}
+.feedbackStatus{border:1px solid #60869a;border-radius:20px;padding:4px 10px;font-size:12px}
+.feedbackComment{border-left:3px solid #4f809b;background:#223545;margin:9px 0;padding:9px 12px}
+.feedbackCard form[data-comment]{flex-direction:row;flex-wrap:wrap;align-items:center;padding:10px;margin:10px 0}
+.feedbackCard form[data-comment] input[name=body]{flex:1;min-width:180px}
+.feedbackHoneypot{position:absolute!important;left:-99999px!important;opacity:0!important;width:1px!important;height:1px!important}
+@media(max-width:700px){.feedbackWrap{padding:12px}.feedbackCard{padding:12px}}
