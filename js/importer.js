@@ -121,21 +121,23 @@ function applyAniidexImportedData(profileData,homeData,sourceLabel='Aniidex',cat
  // Preserve the planner's stable local worker IDs across re-syncs. Map objects
  // store workerId; regenerating it on each import silently breaks assignments.
  const previousByExternalId=new Map(workers.filter(w=>w.externalId).map(w=>[String(w.externalId),w]));
- const usedLocalIds=new Set();
  const rawAniimo=rawHome.aniimo||[];
- const nextWorkers=rawAniimo.map(a=>{
-  const fresh=importedWorkerFromAniidex(a,catalogData);
-  const previous=previousByExternalId.get(String(a.id||''));
-  if(previous&&!usedLocalIds.has(String(previous.id))){fresh.id=previous.id;usedLocalIds.add(String(previous.id));}
-  else usedLocalIds.add(String(fresh.id));
-  return fresh;
- });
- // New imported workers get collision-free IDs without altering existing ones.
+ const nextWorkers=rawAniimo.map(a=>importedWorkerFromAniidex(a,catalogData));
+ const claimedIds=new Set();
+ // Reserve existing imported identities before assigning IDs to newcomers.
+ for(let i=0;i<rawAniimo.length;i++){
+  const previous=previousByExternalId.get(String(rawAniimo[i].id||''));
+  if(previous&&!claimedIds.has(String(previous.id))){
+   nextWorkers[i].id=previous.id;
+   claimedIds.add(String(previous.id));
+  }else nextWorkers[i].id=null;
+ }
  let nextId=Math.max(workerIdCounter,...workers.map(w=>(Number(w.id)||0)+1),1);
- const seenIds=new Set();
  for(const worker of nextWorkers){
-  if(seenIds.has(String(worker.id))){while(seenIds.has(String(nextId))||usedLocalIds.has(String(nextId)))nextId++;worker.id=nextId++;}
-  seenIds.add(String(worker.id));
+  if(worker.id!=null)continue;
+  while(claimedIds.has(String(nextId)))nextId++;
+  worker.id=nextId++;
+  claimedIds.add(String(worker.id));
  }
  workers=nextWorkers;
  workerIdCounter=Math.max(nextId,...workers.map(w=>(Number(w.id)||0)+1),1);
