@@ -578,7 +578,7 @@ async function syncHomelandMapFromJson(source){
   const normalized=x=>String(x||'').toLowerCase().replace(/^quick /,'').replace(/\s*\(quick\)$/,'').replace(/[^a-z0-9]/g,'');
   for(const o of pending){
    const available=home.crops.filter(q=>q?.piece!=null&&!used.has(String(q.piece))&&sameType(o,q));
-   if(!available.length){skipped.push(o.name+': no remaining game piece of this type');continue;}
+   if(!available.length){skipped.push(o.name+': no unused game piece of this type (existing planned product preserved)');continue;}
    const preferredLevel=available.filter(q=>Number(q.level||0)===Number(o.facilityLevel||o.placedLevel||0));
    const pool=preferredLevel.length?preferredLevel:available;
    const expected=normalized(o.cropName||o.recipeName);
