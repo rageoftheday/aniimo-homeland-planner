@@ -255,6 +255,7 @@ function stopAniidexAutoSync(reason=''){
  aniidexAutoSyncRunning=false;
  clearAniidexAutoSyncTimer();
  if(reason)importUiMessage=reason;
+ updateHeaderSyncControls();
 }
 function failAniidexAutoSync(message){
  aniidexSyncInFlight=false;updateAniidexQuickSyncTopButton();
@@ -274,11 +275,34 @@ function setAniidexCompanionMessage(message,isError=false){
  }
 }
 
+function updateHeaderSyncControls(){
+ const link=el('headerSyncPanelLink'),toggle=el('headerAutoSyncToggle'),interval=el('headerAutoSyncInterval'),last=el('headerSyncLast');
+ if(link){link.textContent=aniidexCompanionDetected?'● Companion ready':'○ Sync status';link.classList.toggle('connected',aniidexCompanionDetected);link.title=importUiMessage||'Open the green Import / Sync panel';}
+ if(toggle){toggle.textContent=aniidexAutoSyncRunning?'Stop auto-sync':'Start auto-sync';toggle.disabled=aniidexSyncInFlight&&!aniidexAutoSyncRunning;toggle.setAttribute('aria-pressed',String(aniidexAutoSyncRunning));}
+ if(interval)interval.value=String(aniidexAutoSyncMinutes);
+ if(last)last.textContent='Last sync: '+formatAniidexSyncTime(aniidexLastSyncAt||aniidexImportMeta?.importedAt||0);
+}
+function changeAniidexAutoSyncInterval(value){
+ aniidexAutoSyncMinutes=[1,2,5,10].includes(Number(value))?Number(value):5;
+ if(aniidexAutoSyncRunning)scheduleAniidexAutoSync();
+ updateHeaderSyncControls();renderImportTab();
+}
+function toggleAniidexAutoSync(){
+ if(aniidexAutoSyncRunning){stopAniidexAutoSync('Auto-sync stopped.');renderImportTab();return;}
+ const uid=String(el('aniidexCompanionUid')?.value||aniidexPendingUid||aniidexImportMeta?.uid||'').trim();
+ aniidexPendingUid=uid;
+ if(!/^[1-9]\\d{7,15}$/.test(uid)){setAniidexCompanionMessage('Enter a valid numeric Aniimo UID before starting auto-sync.',true);focusHomelandImporter();return;}
+ aniidexAutoSyncRunning=true;aniidexAutoSyncRecovery=false;
+ importUiMessage='Auto-sync started — refreshing every '+aniidexAutoSyncMinutes+' minute(s).';
+ updateHeaderSyncControls();renderImportTab();requestAniidexCompanionSync('auto');
+}
+
 function updateAniidexQuickSyncTopButton(){
  const btn=el('aniidexQuickSyncTopBtn');if(!btn)return;
  btn.disabled=!!aniidexSyncInFlight;
  btn.textContent=aniidexSyncInFlight?'↻ Syncing…':'↻ Sync Now';
  btn.title=importUiMessage||'Refresh the current profile from Aniidx without leaving this tab';
+ updateHeaderSyncControls();
 }
 function quickAniidexSyncFromHeader(){
  const uid=String(aniidexPendingUid||aniidexImportMeta?.uid||'').trim();
@@ -322,6 +346,7 @@ window.addEventListener('message',event=>{
  if(msg.type==='ANIIMO_COMPANION_READY'){
    aniidexCompanionDetected=true;
    clearTimeout(aniidexCompanionTimer);
+   updateHeaderSyncControls();
    const badge=el('aniidexCompanionState');
    if(badge){badge.textContent='Companion detected ✓';badge.className='okText';}
    return;
@@ -329,12 +354,14 @@ window.addEventListener('message',event=>{
  if(msg.type==='ANIIMO_SYNC_STATUS'){
    aniidexCompanionDetected=true;
    clearTimeout(aniidexCompanionTimer);
+   updateHeaderSyncControls();
    setAniidexCompanionMessage(msg.message||'Connecting to Aniidx…',!!msg.error);
    return;
  }
  if(msg.type==='ANIIMO_SYNC_RESULT'){
    aniidexCompanionDetected=true;
    clearTimeout(aniidexCompanionTimer);
+   updateHeaderSyncControls();
    aniidexSyncInFlight=false;updateAniidexQuickSyncTopButton();
    const btn=el('aniidexCompanionBtn');if(btn)btn.disabled=false;
    const syncNow=el('aniidexSyncNowBtn');if(syncNow)syncNow.disabled=false;
@@ -420,15 +447,8 @@ function renderImportTab(targetId='dashboardImport',embedded=true){
  </div>`;
  const bm=aniidexBookmarkletCode();el('syncBookmarklet').href=bm;el('bookmarkletCode').value=bm;el('syncBookmarklet').onclick=(e)=>{e.preventDefault();importUiMessage='Opened Aniidx Homeland. Once it finishes loading, click the Aniimo Homeland Sync bookmark from your browser bookmarks bar.';window.open('https://aniidex.com/homeland/','_blank');renderImportTab()};el('openAniidexBtn').onclick=()=>window.open('https://aniidex.com/homeland/','_blank');
  const syncNowBtn=el('aniidexSyncNowBtn');if(syncNowBtn)syncNowBtn.onclick=()=>requestAniidexCompanionSync('manual');
- const autoInterval=el('aniidexAutoSyncInterval');if(autoInterval)autoInterval.onchange=()=>{aniidexAutoSyncMinutes=Math.max(1,Number(autoInterval.value)||5);if(aniidexAutoSyncRunning)scheduleAniidexAutoSync();renderImportTab();};
- const autoToggle=el('aniidexAutoSyncToggle');if(autoToggle)autoToggle.onclick=()=>{
-   if(aniidexAutoSyncRunning){stopAniidexAutoSync('Auto-sync stopped.');renderImportTab();return;}
-   const uid=String(el('aniidexCompanionUid')?.value||aniidexPendingUid||aniidexImportMeta?.uid||'').trim();
-   aniidexPendingUid=uid;
-   if(!/^[1-9]\d{7,15}$/.test(uid)){setAniidexCompanionMessage('Enter a valid numeric Aniimo UID before starting auto-sync.',true);return;}
-   aniidexAutoSyncRunning=true;aniidexAutoSyncRecovery=false;importUiMessage=`Auto-sync started — refreshing every ${aniidexAutoSyncMinutes} minute${aniidexAutoSyncMinutes===1?'':'s'}.`;
-   renderImportTab();requestAniidexCompanionSync('auto');
- };
+ const autoInterval=el('aniidexAutoSyncInterval');if(autoInterval)autoInterval.onchange=()=>changeAniidexAutoSyncInterval(autoInterval.value);
+ const autoToggle=el('aniidexAutoSyncToggle');if(autoToggle)autoToggle.onclick=toggleAniidexAutoSync;
  const recoveryBtn=el('aniidexRecoveryOpenBtn');if(recoveryBtn)recoveryBtn.onclick=openAniidexSyncPage;
  el('aniidexCompanionBtn').onclick=()=>requestAniidexCompanionSync('manual');
  el('aniidexCompanionUid').addEventListener('input',e=>{aniidexPendingUid=String(e.target.value||'').trim();});
@@ -438,3 +458,9 @@ function renderImportTab(targetId='dashboardImport',embedded=true){
  el('aniidexSyncFile').onchange=e=>importAniidexSyncFile(e.target.files?.[0]);
  window.postMessage({channel:'aniimo-homeland-planner',type:'ANIIMO_COMPANION_PING'},location.origin);
 }
+
+// Shared-header companion controls are available from every route.
+el('headerSyncPanelLink')?.addEventListener('click',focusHomelandImporter);
+el('headerAutoSyncToggle')?.addEventListener('click',toggleAniidexAutoSync);
+el('headerAutoSyncInterval')?.addEventListener('change',event=>changeAniidexAutoSyncInterval(event.target.value));
+updateHeaderSyncControls();
