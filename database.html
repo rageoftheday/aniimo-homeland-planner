@@ -6,7 +6,7 @@
 <title>Aniimo Homeland Planner</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=1"/>
 <meta name="theme-color" content="#173447"/>
-<link rel="stylesheet" href="css/app.css?v=30.23.14"/>
+<link rel="stylesheet" href="css/app.css?v=30.23.15"/>
 </head>
 <body>
 <header>
@@ -14,6 +14,13 @@
 <div class="headerActions">
 <button class="primary" id="aniidexQuickSyncTopBtn" title="Refresh the current profile from Aniidx without leaving this tab">↻ Sync Now</button>
 <button id="homelandImportTopBtn">Import / Sync</button>
+<div class="headerSyncTools" aria-label="Companion synchronization controls">
+<button type="button" id="headerSyncPanelLink" class="headerSyncPanelLink" title="Open green Import / Sync panel">● Sync status</button>
+<label class="headerSyncIntervalLabel">Every <select id="headerAutoSyncInterval" aria-label="Auto-sync interval"><option value="1">1 min</option><option value="2">2 min</option><option value="5" selected>5 min</option><option value="10">10 min</option></select></label>
+<button type="button" id="headerAutoSyncToggle">Start auto-sync</button>
+<span id="headerSyncLast" class="headerSyncLast" aria-live="polite">Last sync: Never</span>
+</div>
+
 <details class="headerMenu"><summary>Backup ▾</summary><div class="headerMenuPanel">
 <button id="saveJsonFileBtn">Save Backup File</button>
 <button id="loadJsonFileBtn">Load Backup File</button>
@@ -265,7 +272,7 @@
 <script src="data/item-supplemental-reference.js?v=2"></script>
 <script src="data/official-wiki-homeland.js?v=30.16.0"></script>
 <script src="js/wiki-homeland.js?v=30.16.0"></script>
-<script src="js/importer.js?v=30.15.5"></script>
+<script src="js/importer.js?v=30.15.6"></script>
 <script src="js/homeland-item-catalog.js?v=1"></script>
 <script src="data/homeland-local-icon-bridge.js?v=5"></script>
 <script src="data/homeland-icon-atlas.js?v=3"></script>
