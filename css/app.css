@@ -708,3 +708,9 @@ header{align-items:center}
  .moduleGrid{grid-template-columns:minmax(0,1fr) 100px}
  .plotAccessGrid{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
+
+/* Native JSON import and extension-unavailable guidance for phone browsers. */
+.mobileJsonImportBtn{display:none}
+.mobileManualNotice{padding:12px;margin-bottom:12px;border:1px solid #4d9970;background:#142a26;border-radius:10px;color:#d7f7e3}
+.mobileManualNotice p{font-size:12px;line-height:1.5;margin:6px 0 10px}
+@media(max-width:700px){.mobileJsonImportBtn{display:inline-block}.mobileManualSync #headerAutoSyncToggle,.mobileManualSync .headerSyncIntervalLabel{display:none}.mobileManualSync #aniidexAutoSyncToggle,.mobileManualSync #aniidexAutoSyncInterval{display:none}}
