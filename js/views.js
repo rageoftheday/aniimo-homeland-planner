@@ -280,7 +280,10 @@ function homelandObjectVisualHTML(o,big=false){
  const item=verified?window.HomelandItemCatalog?.lookup(verified.recipe,aniidexImportMeta?.catalog):null;
  const liveName=String(item?.name||'').trim();
  const liveIcon=verified&&liveName?(icons?.image(icons?.file('Items',verified.recipe)||icons?.file('Items',liveName),24)||''):'';
- const liveArt=verified&&verified.recipe!=null?(icons?.image(icons?.file('Items',verified.recipe)||icons?.file('Items',liveName),40)||atlas?.html(verified.recipe,40)||''):'';
+ const liveRecipe=verified?(window.HomelandItemCatalog?.recipes()||[]).find(r=>String(r.id)===String(verified.recipe)):null;
+ const liveOutputId=liveRecipe?.outputs?.[0]?.item??verified?.recipe;
+ const liveOutputName=verified?window.HomelandItemCatalog?.lookup(liveOutputId,aniidexImportMeta?.catalog)?.name||liveName:'';
+ const liveArt=verified&&liveOutputId!=null?(icons?.image(icons?.file('Items',liveOutputId)||icons?.file('Items',liveOutputName),40)||atlas?.html(liveOutputId,40)||''):'';
  const liveLabel=verified?'Confirmed live recipe #'+esc(String(verified.recipe))+(liveName?' — '+esc(liveName):''):'';
  const liveBadge=verified?'<span class="hpv2LiveProduction" title="'+liveLabel+'">'+(liveIcon||'●')+'</span>':'';
  return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${liveArt||recipeArt||plantedArt||idleArt||homelandIllustratedIconHTML(o?.name||o?.label)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${liveBadge}${badges}</span>`;
