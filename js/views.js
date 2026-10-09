@@ -217,6 +217,12 @@ function homelandVerifiedProductionFor(o){
  const uid=String(aniidexImportMeta?.uid||raw.uid||'');
  let id=o.livePieceId;
  if(uid){try{const links=JSON.parse(localStorage.getItem('homeland-live-links-v1:'+uid)||'{}');id=links[o.id+'|'+o.name+'|'+o.x+','+o.y]||id;}catch(e){}}
+ if(id==null||id===''){
+  // An explicitly assigned imported Aniimo also carries its actual game piece.
+  // This is trustworthy only if the current game snapshot confirms its facility.
+  const worker=typeof workers!=='undefined'&&o.workerId!=null?workers.find(w=>String(w.id)===String(o.workerId)):null;
+  id=worker?.aniidex?.piece;
+ }
  if(id==null||id==='')return null;
  return queues.find(q=>String(q.piece)===String(id)&&String(dashboardFacilityName(q.facility)).toLowerCase()===String(o.name||'').toLowerCase())||null;
 }
