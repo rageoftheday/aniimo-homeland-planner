@@ -297,8 +297,12 @@ function updateHeaderSyncControls(){
  const imported=!!(summary&&aniidexImportMeta?.importedAt);
  const syncing=!!aniidexSyncInFlight;
  if(link){
-  link.textContent=syncing?'↻ Direct Aniidx syncing…':imported?'✓ Aniidx sync imported':manual?'○ Manual JSON sync':'○ No Aniidx sync';
-  link.classList.toggle('connected',imported&&!syncing);
+  const attention=!!aniidexAutoSyncRecovery||/failed|error|paused|needs attention|timed out/i.test(importUiMessage||'');
+  link.textContent=syncing?'↻ Syncing…':attention?'⚠ Sync needs attention':imported?'✓ Sync complete':'● No sync found';
+  link.classList.toggle('connected',imported&&!syncing&&!attention);
+  link.classList.toggle('missing',!imported&&!syncing&&!attention);
+  link.classList.toggle('attention',!syncing&&attention);
+  link.classList.toggle('syncing',syncing);
   link.title=(imported?[summary.name||'Player','RV '+(summary.rv||'?'),(summary.aniimo||0)+' Homeland Aniimo',(summary.facilities||0)+' facility pieces',(summary.caught||0)+' caught forms'].join(' • '):'No Homeland data imported into this profile')+' — open Import / Sync details';
  }
  const companion=el('headerCompanionState');
