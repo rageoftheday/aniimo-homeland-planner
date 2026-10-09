@@ -2,7 +2,7 @@ import {createRemoteJWKSet,jwtVerify} from 'jose';
 
 // Required Worker secrets/vars: TURNSTILE_SECRET, ACCESS_TEAM_DOMAIN,
 // ACCESS_AUD, ADMIN_EMAIL, HASH_SALT, SITE_ORIGIN; D1 binding DB.
-const json=(obj,status=200,origin='')=>new Response(JSON.stringify(obj),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Vary':'Origin',...(origin?{'Access-Control-Allow-Origin':origin}:{})}});
+const json=(obj,status=200,origin='')=>new Response(JSON.stringify(obj),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Vary':'Origin',...(origin?{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Credentials':'true'}:{})}});
 const fail=(message,status=400,origin='')=>json({error:message},status,origin);
 const text=(value,max)=>String(value??'').trim().slice(0,max);
 const isValid=(s,min,max)=>s.length>=min&&s.length<=max;
@@ -46,6 +46,17 @@ async function listAdmin(env){
  const {results:comments}=await env.DB.prepare('SELECT * FROM comments ORDER BY id ASC LIMIT 700').all();
  return {suggestions:rows.map(x=>({...x,comments:comments.filter(c=>c.suggestion_id===x.id)}))};
 }
+function adminHtml(){
+ // Serve this ONLY after the verified Cloudflare Access JWT gate below.
+ return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Aniimo Feedback Admin</title><style>body{font:15px system-ui;background:#101c27;color:#e5f4ff;max-width:960px;margin:28px auto;padding:0 16px}article{background:#192b39;padding:18px;border:1px solid #456178;border-radius:12px;margin:14px 0}button,select{padding:8px;margin:4px;background:#29465b;border:1px solid #6c90a4;color:white;border-radius:6px;cursor:pointer}button.danger{background:#813943}p{white-space:pre-wrap}small{color:#bacdd9} .comment{background:#263b4c;padding:9px;margin:7px 0}</style></head><body><h1>Aniimo Suggestions — Admin</h1><p>Cloudflare Access authenticated. Review pending submissions and moderate published items.</p><button id="reload">Reload</button><p id="status" role="status"></p><div id="list"></div><script>
+const list=document.getElementById('list'),status=document.getElementById('status');
+const make=(t,txt)=>{let n=document.createElement(t);n.textContent=txt;return n};
+const request=async(path,method='GET',data)=>{let r=await fetch(path,{method,headers:{'Content-Type':'application/json'},body:data?JSON.stringify(data):undefined});let j=await r.json();if(!r.ok)throw Error(j.error||r.status);return j};
+async function action(path,method,data){try{await request(path,method,data);await reload()}catch(e){status.textContent=e.message}}
+async function reload(){try{status.textContent='Loading…';let data=await request('/api/admin/suggestions');list.replaceChildren();for(let x of data.suggestions){let article=make('article','');article.append(make('h3',x.title+' (#'+x.id+')'),make('small',x.author+' | '+x.category+' | '+x.created_at),make('p',x.body));let select=make('select','');for(let v of ['Pending','New','Under Review','Planned','In Progress','Completed','Declined']){let o=make('option',v);o.value=v;o.selected=x.status===v;select.append(o)}select.addEventListener('change',()=>action('/api/admin/suggestions/'+x.id,'PATCH',{status:select.value}));article.append(select);let lock=make('button',x.locked?'Unlock':'Lock');lock.onclick=()=>action('/api/admin/suggestions/'+x.id,'PATCH',{locked:!x.locked});article.append(lock);let del=make('button','Delete suggestion');del.className='danger';del.onclick=()=>{if(confirm('Delete suggestion and ALL its comments?'))action('/api/admin/suggestions/'+x.id,'DELETE')};article.append(del);for(let c of x.comments){let div=make('div',c.author+': '+c.body+(c.approved?' (approved)':' (pending)'));div.className='comment';let approve=make('button',c.approved?'Hide':'Approve');approve.onclick=()=>action('/api/admin/comments/'+c.id,'PATCH',{approved:!c.approved});let remove=make('button','Delete');remove.className='danger';remove.onclick=()=>{if(confirm('Delete this comment?'))action('/api/admin/comments/'+c.id,'DELETE')};div.append(approve,remove);article.append(div)}list.append(article)}status.textContent=data.suggestions.length+' suggestions loaded.'}catch(e){status.textContent='Error: '+e.message}}
+document.getElementById('reload').onclick=reload;reload();
+<\/script></body></html>`;
+}
 export default {async fetch(req,env){
  const url=new URL(req.url);
  const allowed=env.SITE_ORIGIN||'';
@@ -53,7 +64,7 @@ export default {async fetch(req,env){
  const cors=origin===allowed?origin:'';
  if(req.method==='OPTIONS'){
    if(!cors)return fail('Forbidden origin',403);
-   return new Response(null,{status:204,headers:{'Access-Control-Allow-Origin':cors,'Access-Control-Allow-Headers':'Content-Type','Access-Control-Allow-Methods':'GET, POST, PATCH, DELETE, OPTIONS','Vary':'Origin'}});
+   return new Response(null,{status:204,headers:{'Access-Control-Allow-Origin':cors,'Access-Control-Allow-Credentials':'true','Access-Control-Allow-Headers':'Content-Type','Access-Control-Allow-Methods':'GET, POST, PATCH, DELETE, OPTIONS','Vary':'Origin'}});
  }
  if(!env.DB||!env.SITE_ORIGIN||!env.HASH_SALT)return fail('Service not configured',503,cors);
  if(origin&&origin!==allowed)return fail('Forbidden origin',403);
@@ -61,8 +72,9 @@ export default {async fetch(req,env){
  try{
    if(path==='/api/suggestions'&&req.method==='GET')return json(await listPublic(env),200,cors);
    // Admin endpoints always require a cryptographically verified Access JWT + explicit owner identity.
-   if(path.startsWith('/api/admin/')){
+   if(path==='/admin'||path.startsWith('/api/admin/')){
      if(!await adminAuthorized(req,env))return fail('Admin sign-in required',401,cors);
+     if(path==='/admin'&&req.method==='GET')return new Response(adminHtml(),{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Content-Security-Policy':"default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}});
      if(path==='/api/admin/suggestions'&&req.method==='GET')return json(await listAdmin(env),200,cors);
      const suggestion=path.match(/^\/api\/admin\/suggestions\/(\d+)$/);
      const comment=path.match(/^\/api\/admin\/comments\/(\d+)$/);
