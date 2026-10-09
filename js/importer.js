@@ -559,19 +559,33 @@ async function syncHomelandMapFromJson(source){
   const mapCounts=new Map(),gameCounts=new Map();
   for(const o of objects){const key=String(o.name||'').toLowerCase()+'|'+Number(o.facilityLevel||o.placedLevel||0);mapCounts.set(key,(mapCounts.get(key)||0)+1)}
   for(const q of home.crops){const key=String(dashboardFacilityName(q.facility)||'').toLowerCase()+'|'+Number(q.level||0);gameCounts.set(key,(gameCounts.get(key)||0)+1)}
-  const matches=[],used=new Set(),skipped=[];
+  // The visual map does not store game coordinates. Assign each real game piece
+  // to exactly one placed facility of the SAME type, preserving known links first.
+  const matches=[],used=new Set(),skipped=[],pending=[];
+  const sameType=(o,q)=>sameName(dashboardFacilityName(q.facility),o.name);
+  const reserve=(o,q)=>{if(!q||used.has(String(q.piece))||!sameType(o,q))return false;used.add(String(q.piece));matches.push({o,q});return true;};
   for(const o of objects){
    const key=o.id+'|'+o.name+'|'+o.x+','+o.y;
    const id=String(savedLinks[key]||o.livePieceId||'');
-   let q=id?byPiece.get(id):null;
-   if(q&&!sameName(dashboardFacilityName(q.facility),o.name)){skipped.push(o.name+': saved piece has a different facility type');continue}
-   if(!q){
-    const typeKey=String(o.name||'').toLowerCase()+'|'+Number(o.facilityLevel||o.placedLevel||0);
-    if(mapCounts.get(typeKey)===1&&gameCounts.get(typeKey)===1)q=home.crops.find(x=>sameName(dashboardFacilityName(x.facility),o.name)&&Number(x.level||0)===Number(o.facilityLevel||o.placedLevel||0));
-   }
-   if(!q){skipped.push(o.name+': multiple candidates or no verified piece link');continue}
-   if(used.has(String(q.piece))){skipped.push(o.name+': piece already matched');continue}
-   used.add(String(q.piece));matches.push({o,q});
+   if(id&&reserve(o,byPiece.get(id)))continue;
+   const assigned=o.workerId!=null?workers.find(w=>String(w.id)===String(o.workerId)):null;
+   if(assigned?.aniidex?.piece!=null&&reserve(o,byPiece.get(String(assigned.aniidex.piece))))continue;
+   pending.push(o);
+  }
+  // Where a product/recipe is already chosen, favor keeping that product.
+  // Remaining pieces are distributed in stable game-piece ID order.
+  const productName=q=>window.HomelandItemCatalog?.lookup(q.recipe,catalogData)?.name||'';
+  const normalized=x=>String(x||'').toLowerCase().replace(/^quick /,'').replace(/\s*\(quick\)$/,'').replace(/[^a-z0-9]/g,'');
+  for(const o of pending){
+   const available=home.crops.filter(q=>q?.piece!=null&&!used.has(String(q.piece))&&sameType(o,q));
+   if(!available.length){skipped.push(o.name+': no unused game piece of this type (existing planned product preserved)');continue;}
+   const preferredLevel=available.filter(q=>Number(q.level||0)===Number(o.facilityLevel||o.placedLevel||0));
+   const pool=preferredLevel.length?preferredLevel:available;
+   const expected=normalized(o.cropName||o.recipeName);
+   const sameOutput=expected?pool.filter(q=>normalized(productName(q))===expected):[];
+   const candidates=sameOutput.length?sameOutput:pool;
+   candidates.sort((a,b)=>String(a.piece).localeCompare(String(b.piece),undefined,{numeric:true}));
+   reserve(o,candidates[0]);
   }
   const incomingWorkers=new Map(home.aniimo.filter(a=>a?.piece!=null&&a?.id).map(a=>[String(a.piece),a]));
   const changes=[];
@@ -597,7 +611,7 @@ async function syncHomelandMapFromJson(source){
   const countProduction=changes.filter(x=>x.production&&x.o[x.production.key]!==x.production.value).length;
   const countWorkers=changes.filter(x=>x.aniimo).length;
   if(!changes.length){window.homebuilderMapSyncStatus='No uniquely matched game pieces. Use each building’s Live facility link to identify duplicates.';render();alert(window.homebuilderMapSyncStatus);return}
-  if(!confirm('Sync production and assigned Aniimos only for '+changes.length+' verified map pieces?\n\n'+countProduction+' production selection(s), '+countWorkers+' game Aniimo assignment(s).\n'+skipped.length+' ambiguous/unlinked buildings skipped.\n\nBuildings, positions, levels, layouts, and saved maps will NOT change.'))return;
+  if(!confirm('Sync production and assigned Aniimos for '+changes.length+' map buildings?\n\n'+countProduction+' production selection(s), '+countWorkers+' game Aniimo assignment(s).\n'+skipped.length+' buildings have no remaining game piece of the same type.\n\nDuplicate facilities are assigned one-to-one; their positions do not need to match the game.\nBuildings, positions, levels, layouts, and saved maps will NOT change.'))return;
   const workerByExternal=new Map(workers.filter(w=>w.externalId).map(w=>[String(w.externalId),w]));
   let nextWorkerId=Math.max(workerIdCounter,...workers.map(w=>(Number(w.id)||0)+1),1);
   const targetWorkers=new Map();
@@ -627,7 +641,15 @@ async function syncHomelandMapFromJson(source){
   // Retain only the snapshot needed by map badges; do not overwrite profile data.
   if(!aniidexImportMeta)aniidexImportMeta={uid:incomingUid,home:{home},catalog:catalogData,source:'Map-only JSON (not full profile import)'};
   else aniidexImportMeta.home={...(aniidexImportMeta.home||{}),home:{...home}};
-  window.homebuilderMapSyncStatus='Map sync ✓ '+countProduction+' production changes; '+targetWorkers.size+' Aniimo assignments; '+skipped.length+' skipped.';
+  // Remember verified piece links for future syncs; do not attach guessed IDs.
+  const linkUid=incomingUid||currentUid;
+  if(linkUid){
+   const key='homeland-live-links-v1:'+linkUid;
+   const existing=(()=>{try{return JSON.parse(localStorage.getItem(key)||'{}')||{}}catch{return {}}})();
+   for(const {o,q} of matches)existing[o.id+'|'+o.name+'|'+o.x+','+o.y]=String(q.piece);
+   try{localStorage.setItem(key,JSON.stringify(existing))}catch(e){console.warn('Could not persist verified map links:',e)}
+  }
+  window.homebuilderMapSyncStatus='Map sync ✓ '+countProduction+' production changes; '+targetWorkers.size+' Aniimo assignments; '+skipped.length+' skipped. One-to-one piece links remembered.';
   render();snapshotIntoCurrentProfile();
  }catch(e){
   window.homebuilderMapSyncStatus='Map sync failed: '+(e?.message||e);
