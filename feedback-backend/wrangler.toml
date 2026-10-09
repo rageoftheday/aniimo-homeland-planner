@@ -1,15 +1,12 @@
-name = "aniimo-planner-feedback"
+name = "aniimo-suggestions-api"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
 
+# Preserve runtime variables already configured in the Cloudflare dashboard.
+# Sensitive values must never be committed to this repository.
+keep_vars = true
+
 [[d1_databases]]
 binding = "DB"
-database_name = "aniimo-feedback"
-database_id = "REPLACE_WITH_ACTUAL_D1_DATABASE_ID"
-
-[vars]
-SITE_ORIGIN = "https://rageoftheday.github.io"
-TURNSTILE_HOSTNAME = "rageoftheday.github.io"
-ACCESS_TEAM_DOMAIN = "REPLACE_WITH_TEAM.cloudflareaccess.com"
-ACCESS_AUD = "REPLACE_WITH_ACCESS_APPLICATION_AUDIENCE"
-ADMIN_EMAIL = "REPLACE_WITH_YOUR_EMAIL"
+database_name = "aniimo-suggestions"
+database_id = "3e93f8e3-d643-4946-b6e6-c3d78de58c69"

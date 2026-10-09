@@ -67,9 +67,25 @@ export default {async fetch(req,env){
    return new Response(null,{status:204,headers:{'Access-Control-Allow-Origin':cors,'Access-Control-Allow-Credentials':'true','Access-Control-Allow-Headers':'Content-Type','Access-Control-Allow-Methods':'GET, POST, PATCH, DELETE, OPTIONS','Vary':'Origin'}});
  }
  if(!env.DB||!env.SITE_ORIGIN||!env.HASH_SALT)return fail('Service not configured',503,cors);
- if(origin&&origin!==allowed)return fail('Forbidden origin',403);
+ // The public planner is cross-origin; the authenticated admin console is served from this Worker.
+ const isAdminRoute=url.pathname==='/admin'||url.pathname.startsWith('/api/admin/');
+ if(origin&&origin!==allowed&&!(isAdminRoute&&origin===url.origin))return fail('Forbidden origin',403);
+ // Mutating admin requests must originate from our own admin console, preventing cross-site form requests.
+ if(url.pathname.startsWith('/api/admin/')&&['PATCH','POST','DELETE'].includes(req.method)&&origin!==url.origin)return fail('Admin origin required',403);
  const path=url.pathname;
  try{
+   if(path==='/api/visitors'&&req.method==='POST'){
+     if(!cors)return fail('Origin required',403,cors);
+     const day=new Date().toISOString().slice(0,10);
+     const ip=req.headers.get('CF-Connecting-IP')||'unknown';
+     // Salt rotates by calendar day. A visitor cannot be linked across days.
+     const fingerprint=await sha(day+':'+ip+':'+env.HASH_SALT);
+     await env.DB.prepare('INSERT OR IGNORE INTO visitor_daily(day,fingerprint) VALUES (?,?)').bind(day,fingerprint).run();
+     await env.DB.prepare('INSERT INTO visitor_hits(day,hits) VALUES (?,1) ON CONFLICT(day) DO UPDATE SET hits=hits+1').bind(day).run();
+     const today=await env.DB.prepare('SELECT COUNT(*) AS count FROM visitor_daily WHERE day=?').bind(day).first();
+     const total=await env.DB.prepare('SELECT COUNT(*) AS count FROM visitor_daily').first();
+     return json({uniqueToday:Number(today?.count||0),uniqueVisitorDays:Number(total?.count||0)},200,cors);
+   }
    if(path==='/api/suggestions'&&req.method==='GET')return json(await listPublic(env),200,cors);
    // Admin endpoints always require a cryptographically verified Access JWT + explicit owner identity.
    if(path==='/admin'||path.startsWith('/api/admin/')){
