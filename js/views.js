@@ -426,7 +426,13 @@ function renderHomelandPlannerV2(){
    });
  }
 }
+const HOMELAND_PAGE_ROUTES={dashboard:'dashboard.html',map:'homeland.html',snapshot:'snapshot.html',plan:'advisor.html',roster:'roster.html',aniimos:'aniimos.html',production:'recipes.html',database:'database.html',raw:'raw-json.html'};
+function homelandTabForLocation(){
+ const page=location.pathname.split('/').pop()||'index.html';
+ return Object.keys(HOMELAND_PAGE_ROUTES).find(tab=>HOMELAND_PAGE_ROUTES[tab]===page)||'dashboard';
+}
 function setMainTab(tab){
+ if(!HOMELAND_PAGE_ROUTES[tab])tab='dashboard';
  activeMainTab=tab;document.querySelectorAll('#mainTabs [data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));document.querySelectorAll('.tabPane').forEach(p=>p.classList.toggle('active',p.id===tab+'Pane'));
  if(tab==='map')setTimeout(()=>{if(el('autoFit')?.checked)fitBoard()},30);
  renderV30Views();
@@ -454,8 +460,15 @@ function initV30Layout(){
  const lg=document.querySelector('#workspaceWrap > .legend');if(lg)map.appendChild(lg);
  const boxes=[...document.querySelectorAll('#rightPanel .rosterBox')];if(boxes[0])el('rosterPane').appendChild(boxes[0]);if(boxes[1])el('planAdvisorHost').appendChild(boxes[1]);
  document.querySelectorAll('#planPane [data-plan-section]').forEach(b=>b.addEventListener('click',()=>setPlanAdviceSection(b.dataset.planSection)));
- document.querySelectorAll('#mainTabs [data-tab]').forEach(b=>b.addEventListener('click',()=>setMainTab(b.dataset.tab)));
- setMainTab('dashboard');
+ document.querySelectorAll('#mainTabs a[data-tab]').forEach(link=>link.addEventListener('click',event=>{
+   // Allow browser open-in-new-tab, copy-link, and external navigation behavior.
+   if(event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+   event.preventDefault();
+   if(activeMainTab!==link.dataset.tab)history.pushState({homelandPage:link.dataset.tab},'',link.getAttribute('href'));
+   setMainTab(link.dataset.tab);
+ }));
+ window.addEventListener('popstate',()=>setMainTab(homelandTabForLocation()));
+ setMainTab(homelandTabForLocation());
 }
 function abilityCoverage(){const out={};for(const a of HOME_ABILITIES)out[a]=0;for(const w of workers.filter(w=>w.active!==false))for(const a of (w.abilities||[]))if(a.type)out[a.type]=(out[a.type]||0)+(Number(a.level)||0);return out}
 function familyCoverage(){const out={};for(const [id,f] of Object.entries(WORKER_FAMILIES))out[id]=workers.filter(w=>w.active!==false&&familyForWorker(w)===id).length;return out}
