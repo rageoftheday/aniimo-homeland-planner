@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Aniimo Homeland Planner</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=1"/>
+<meta name="theme-color" content="#173447"/>
+<link rel="stylesheet" href="css/app.css?v=30.23.14"/>
+</head>
+<body>
+<header>
+<div><h1>Aniimo Homeland Planner</h1></div>
+<div class="headerActions">
+<button class="primary" id="aniidexQuickSyncTopBtn" title="Refresh the current profile from Aniidx without leaving this tab">↻ Sync Now</button>
+<button id="homelandImportTopBtn">Import / Sync</button>
+<details class="headerMenu"><summary>Backup ▾</summary><div class="headerMenuPanel">
+<button id="saveJsonFileBtn">Save Backup File</button>
+<button id="loadJsonFileBtn">Load Backup File</button>
+<button id="loadBtn">Legacy Local Recovery</button>
+</div></details>
+<details class="headerMenu"><summary>Tools ▾</summary><div class="headerMenuPanel">
+<button id="downloadHtmlBtn">Download Customized HTML</button>
+<button class="danger" id="clearBtn">Clear / Reset Layout</button>
+</div></details>
+<input id="jsonFileInput" type="file" accept=".json,application/json" style="display:none">
+</div>
+</header>
+
+<main id="appMain">
+<section id="leftPanel" class="panel">
+<h2>Inventory / Unlocks</h2>
+<div class="config">
+<label>RV Level
+<select id="rvLevel"></select>
+</label>
+<label><input type="checkbox" id="futureToggle"> Show future locked items</label>
+<label><input type="checkbox" id="usableOnly" checked> Hide unusable items from pickers</label>
+<div class="small" id="rvNote"></div>
+<div id="startupStatus" class="small" style="margin-top:4px;color:#8fe3a7">Planner ready.</div>
+<div class="moduleBox">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <b style="font-size:11px">RV Module Levels</b>
+    <button id="modulesToRvMaxBtn" style="padding:4px 6px;font-size:10px">Set to RV Max</button>
+  </div>
+  <div class="small" style="margin:4px 0 6px">These are separate from RV level. Recipes marked Quick/Premium/Advanced can require a module upgrade.</div>
+  <div id="moduleGrid" class="moduleGrid"></div>
+</div>
+</div>
+<div class="plotAccess">
+<div class="plotAccessHead">
+  <div><b style="font-size:12px">Open production plots</b><div class="small">Check the individual plots that are open in your game, or use All / None.</div></div>
+  <div class="controls"><button id="allPlotsBtn">All</button><button id="noPlotsBtn">None</button></div>
+</div>
+<div id="plotAccessGrid" class="plotAccessGrid"></div>
+</div>
+<div class="controls" style="padding:8px"><button id="addAllBtn">Place All Available</button><button id="starterBtn" disabled>Climate Starter 🔒 RV7</button></div>
+<div class="small" style="padding:0 10px 7px">Each row shows <b>Placed / Max</b>. Place All Available fills legal space with currently unlocked items. Climate Starter only adds unlocked climate devices and never clears your layout.</div>
+<div id="catalog"></div>
+</section>
+
+<section id="workspaceWrap" class="panel workspaceShell">
+<div id="mainTabs" class="mainTabs" aria-label="Planner pages">
+  <a data-tab="dashboard" href="dashboard.html" class="active">Dashboard</a>
+  <a data-tab="map" href="homeland.html">Homeland Planner</a>
+  <a data-tab="snapshot" href="snapshot.html">Home Snapshot</a>
+  <a data-tab="plan" href="advisor.html">Plan / Advice</a>
+  <a data-tab="roster" href="roster.html">Imported Roster</a>
+  <a data-tab="aniimos" href="aniimos.html">Aniimos</a>
+  <a data-tab="production" href="recipes.html">Recipes</a>
+  <a data-tab="database" href="database.html">Database</a>
+  <a data-tab="raw" href="raw-json.html">Raw JSON</a>
+</div>
+<div id="tabStage" class="tabStage">
+  <div id="dashboardPane" class="tabPane active"></div>
+  <div id="mapPane" class="tabPane"><div id="mapViewport" class="mapViewport"></div></div>
+  <div id="snapshotPane" class="tabPane"></div>
+  <div id="productionPane" class="tabPane"></div>
+  <div id="aniimosPane" class="tabPane"></div>
+  <div id="rosterPane" class="tabPane"></div>
+  <div id="planPane" class="tabPane">
+    <div class="planAdviceHead">
+      <div class="v30Title">Plan / Advice</div>
+      <div class="v30Sub">What to fix now, which Aniimo fit your jobs, and what your next Homeland progression unlocks look like.</div>
+    </div>
+    <div class="planAdviceSubnav">
+      <button type="button" data-plan-section="suggestions" class="active">Recommendations</button>
+      <button type="button" data-plan-section="advisor">Worker Advisor</button>
+      <button type="button" data-plan-section="progression">Progression</button>
+    </div>
+    <div id="planSuggestions" class="planAdviceSection active"></div>
+    <div id="planAdvisorHost" class="planAdviceSection"></div>
+    <div id="planProgression" class="planAdviceSection"></div>
+  </div>
+  <div id="databasePane" class="tabPane"></div>
+  <div id="rawPane" class="tabPane"></div>
+</div>
+<div class="toolbar">
+<span class="small">Snap:</span><select id="snapSel"><option value=".5">0.5 square</option><option value="1">1 square</option></select>
+<label class="small"><input type="checkbox" id="showCoords" checked> C/R labels</label>
+<label class="small"><input type="checkbox" id="showLocked" checked> locked board areas</label>
+<label class="small"><input type="checkbox" id="autoFit" checked> auto-fit</label>
+<button id="zoomOutBtn" title="Zoom out">−</button>
+<label class="small" style="display:flex;align-items:center;gap:5px">Board zoom
+<input id="zoomSlider" type="range" min="25" max="400" step="5" value="100" style="width:120px">
+<span id="zoomLabel">100%</span></label>
+<button id="zoomInBtn" title="Zoom in">+</button>
+<button id="fitBtn">Fit Board</button><button id="actualBtn">100% Board</button><button id="centerBtn">Center</button><span class="small" style="margin-left:8px">
+<span style="color:#62df8c">■ 100%</span>
+<span style="color:#ffcb6b;margin-left:5px">■ 80/50%</span>
+<span style="color:#ff6971;margin-left:5px">■ 0%</span>
+</span>
+<button id="toggleLeftBtn" title="Collapse inventory panel">◀ Inventory</button>
+<button id="toggleRightBtn" title="Collapse details panel">Details ▶</button>
+</div>
+<div id="boardOuter"><div id="workspace"><div class="globalGrid"></div></div></div>
+<div class="legend"><span><i class="dot" style="background:#c45b2d"></i>Heat +2</span> &nbsp; <span><i class="dot" style="background:#3e84b8"></i>Cool -1</span> &nbsp; <span><i class="dot" style="background:#d1a51b"></i>Sun</span></div>
+</section>
+
+<section id="rightPanel" class="panel">
+<h2>Stats / Advisor</h2>
+<div id="rightQuickStats" class="quickStats"></div>
+<div class="inspector">
+<div id="noneSelected" class="small">Click a placed object.</div>
+<div id="editor" style="display:none">
+<strong id="selTitle"></strong>
+<div class="kv">
+<div>Size<br><b id="selSize"></b></div><div>Global X,Y<br><b id="selPos"></b></div>
+<div>Plot<br><b id="selPlot"></b></div><div>Local C,R<br><b id="selLocal"></b></div>
+</div>
+<label>Label / crop / note<input id="labelInput"></label>
+<label>Requirement<select id="reqSelect">
+<option value="none">Neutral</option><option value="heat2">🔥 Heat +2</option><option value="warm1">🌡 Warm +1 (Heat+Cool)</option>
+<option value="cool1">❄ Cool -1</option><option value="freeze2">🧊 Freeze -2</option><option value="sun">☀ Sunlight</option>
+<option value="sun_heat2">☀ + 🔥 Sun + Heat +2</option><option value="sun_warm1">☀ + 🌡 Sun + Warm +1</option><option value="sun_cool1">☀ + ❄ Sun + Cool -1</option>
+</select></label>
+<label id="cropQuickPickLabel">Crop / tree quick pick<select id="cropSelect"></select></label>
+<div class="controls" style="padding:10px 0 0"><button id="rotateBtn">Rotate</button><button id="duplicateBtn">Duplicate</button><button class="danger" id="deleteBtn">Delete</button></div>
+<div id="reqStatus" class="status"></div>
+<div id="assignmentPanel" class="assignPanel" style="display:none"><h3>Assigned Aniimo</h3><div class="small" id="assignmentHint"></div><div id="assignedWorkerPreview" class="hpv2AssignedPreview"></div><label>Working here<select id="actualWorkerSelect"><option value="">Unassigned</option></select></label></div>
+
+<div id="levelPanel" class="levelPanel" style="display:none">
+  <h3>Facility level / upgrades</h3>
+  <div class="small" style="margin-bottom:7px">New facilities can be placed directly at any unlocked level for that level's listed cost. Upgrade costs only apply when raising an existing copy.</div>
+  <div class="levelGrid">
+    <label>Current level<select id="currentLevelSelect"></select></label>
+    <label>Target level<select id="targetLevelSelect"></select></label>
+  </div>
+  <div id="levelInfo" class="levelInfo"></div>
+</div>
+
+<div id="cropPanel" class="assignPanel" style="display:none">
+  <h3>Plant / Tree assignment</h3>
+  <div class="small">Choose a crop/tree for this selected land plot.</div>
+  <div id="cropCards" class="cropGrid" style="margin-top:7px"></div>
+  <div id="cropInfo" class="assignInfo">No crop/tree assigned.</div>
+  <div class="controls" style="margin-top:7px"><button id="clearCropBtn">Clear crop</button></div>
+</div>
+
+<div id="recipePanel" class="assignPanel" style="display:none">
+  <h3>Production recipe</h3>
+  <label>Recipe<select id="recipeSelect"></select></label>
+  
+  <div class="recipeControls">
+    <label>Worker ability
+      <select id="workerLevelSelect"><option value="1">Lv 1</option><option value="2">Lv 2</option><option value="3">Lv 3</option><option value="4" selected>Lv 4</option></select>
+    </label>
+    <label>Personality
+      <select id="personalitySelect"><option value="1">No bonus</option><option value="1.2">Matching (+20%)</option></select>
+    </label>
+  </div>
+  <div id="recipeInfo" class="assignInfo">No recipe assigned.</div>
+  <div class="controls" style="margin-top:7px"><button id="clearRecipeBtn">Clear recipe</button></div>
+</div>
+</div>
+
+<div class="summaryBox">
+  <div class="small"><b>Production assumptions</b></div>
+  <label class="small" style="display:flex;gap:6px;align-items:center;margin-top:6px">
+    <input type="checkbox" id="wateredTwice" checked> Assume Farmland/Woodland are watered twice (growth time ×0.75)
+  </label>
+  <div class="small" style="margin-top:4px">Climate plots need at least 0.25 square of overlap on both axes inside the matching 9×9 influence area for 100% speed. Heat covers Warmth +1/+2, Cooling covers Cold −1/−2, and Sunlamp covers Light. Without the preferred climate, Warm/Cool recipes run at 80%, Scorching/Freeze at 50%, and Light recipes stop at 0%. Influence areas may overlap; physical devices may not.</div>
+</div>
+<div class="summaryBox">
+  <div class="small">Assigned crop/tree effective raw sell value</div>
+  <div id="totalCropValue" class="summaryBig">0 Home Coin/h</div>
+  <div id="cropSummaryText" class="small">No crops assigned yet.</div>
+  <div style="border-top:1px solid #263a4b;margin:9px 0 7px"></div>
+  <div class="small">Assigned production recipes — theoretical gross output</div>
+  <div id="totalRecipeValue" class="summaryBig">0 Home Coin/h</div>
+  <div id="recipeSummaryText" class="small">No production recipes assigned yet.</div>
+  <div style="border-top:1px solid #263a4b;margin:9px 0 7px"></div>
+  <div class="totalRow"><span><b>Combined raw + theoretical gross</b></span><b id="grandTotalValue" class="money">0 HC/h</b></div>
+<div style="border-top:1px solid #263a4b;margin:9px 0 7px"></div>
+<div class="small">Batch upgrade plan</div>
+<div id="batchUpgradeTotal" class="batchTotal">0 Home Coin</div>
+<div id="batchUpgradeText" class="small">No facility upgrades planned.</div>
+</div>
+<div class="supplyBox">
+  <div><b>Supply / Demand Audit</b></div>
+  <div id="supplyHeadline" class="small" style="margin-top:4px">No production assigned.</div>
+  <div id="supplyGrid" class="supplyGrid"></div>
+  <div id="stationAudit" class="small" style="margin-top:9px"></div>
+</div>
+<div class="supplyBox">
+  <div><b>Placement Audit</b></div>
+  <div id="placementAudit" class="small" style="margin-top:5px"></div>
+</div>
+
+<div class="rosterBox">
+  <div class="rosterHead"><div><b>Imported Roster / Job Advisor</b><div class="small">Each imported owned copy is separate. Catalog values are a starting point; your actual in-game copy always wins.</div></div><div id="rosterCount" class="small"></div></div>
+  <div class="profileBar">
+    <div class="profileRow"><label>Profile<select id="profileSelect"></select></label><label>Type<select id="profileType"><option>Main</option><option>Casual</option><option>Beginner</option><option>Balanced</option><option>Max Coins</option><option>All Crops</option><option>RV Upgrade</option><option>Custom</option></select></label><span id="profileSaveState" class="saveState">Saved locally ✓</span></div>
+    <div class="profileButtons"><button id="newProfileBtn">+ New</button><button id="duplicateProfileBtn">Duplicate</button><button id="renameProfileBtn">Rename</button><button id="deleteProfileBtn" class="danger">Delete</button></div>
+    <div class="rosterImportShortcut"><div><b>Import / Sync</b><div class="small">Update this profile from Aniidx or a saved sync file from the Dashboard.</div></div><button onclick="focusHomelandImporter()">Open Dashboard Sync</button></div>
+  <div class="personalityLegend">
+    <div><b>E/I</b><br>Energetic / Instinctive</div><div><b>S/N</b><br>Practical / Nimble</div><div><b>T/F</b><br>Tenacious / Faithful</div><div><b>J/P</b><br>Judicious / Playful</div>
+  </div>
+  <div class="catalogPicker">
+    <div class="rosterHead"><div><b>Add from Aniimo catalog</b><div class="small">Official Wiki forms and Homeland abilities are loaded first. Search by name, browse forms, filter by ability + minimum level, or pick a known family.</div></div><button id="addCustomWorkerBtn">+ Custom / Unknown</button></div>
+    <div class="catalogTabs"><button data-cmode="all" class="active">All Aniimos</button><button data-cmode="name">Type Name</button><button data-cmode="ability">By Ability</button><button data-cmode="family">By Family</button></div>
+    <div class="catalogFilters"><input id="aniimoSearch" placeholder="Type name... e.g. Glacy, Fulmantis"><select id="abilityFilter"><option value="">Any ability</option></select><select id="levelFilter"><option value="1">Lv1+</option><option value="2">Lv2+</option><option value="3">Lv3+</option><option value="4">Lv4</option></select><select id="familyFilter"><option value="">Any family</option></select></div>
+    <div id="catalogHint" class="catalogHint">Click a form to add a new individual copy. Official Wiki abilities prefill automatically and remain editable for your actual copy.</div>
+    <div id="catalogResults" class="catalogResults"></div>
+  </div>
+  <div class="rosterTools"><button id="addWorkerBtn">+ Blank Aniimo</button><button id="addFiveWorkersBtn">+ 5 Blank</button><button id="clearRosterBtn">Clear Roster</button></div>
+  <div id="rosterList" class="rosterList"></div>
+</div>
+<div class="rosterBox">
+  <div class="rosterHead"><div><b>Advisor</b><div class="small">Current jobs use your owned Aniimo, personality match, family locks, and reassignment cost. The rank guide below shows every loaded Aniimo option by Home Ability.</div></div><button id="refreshAdvisorBtn">Refresh</button></div>
+  <div id="advisorHeadline" class="small" style="margin-top:6px"></div>
+  <div class="sectionTitle">Synced Homeland workers</div>
+  <div id="advisorLiveWorkers" class="advisorWorkerGroups"></div>
+  <div class="sectionTitle">Planner recommendations</div>
+  <div id="advisorList" class="advisorList"></div>
+  <div class="sectionTitle">Aniimo rank guide by Home Ability</div>
+  <div class="small advisorRankNote"><b>Rank 1–4</b> = that exact in-game Home Ability level. <b>Rank 5</b> is a planner tier for Prismana/best-in-slot forms that reach Lv4 — it does not mean the game has a Lv5 skill.</div>
+  <div id="advisorRankMatrix" class="advisorRankMatrix"></div>
+</div>
+<h3 style="font-size:12px;margin-top:18px">Unlock filtering</h3>
+<div class="small">The RV selector controls item availability and automatic placement caps. Items with unknown footprints show editable Width × Height boxes and cannot be placed until both are entered. Dimensions use 0.5-square increments. Farmland, Woodland, Mines, and other entries with RV cap data recalculate when RV changes. An item marked <b>AUTO RV#</b> is using that cap; editing Max Placeable changes it to <b>MANUAL</b>. Press <b>Auto</b> to restore the RV value. Plot access is controlled separately with Plot 1–16 checkboxes.</div>
+<h3 style="font-size:12px;margin-top:18px">Plant availability</h3>
+<div class="small">The site index contains more seed/material names than the normal Farmland/Woodland formula lists. This picker now follows the actual facility formulas by level. Special/event/index-only plants are not treated as normal growable formulas unless the current facility page lists them.</div>
+<h3 style="font-size:12px;margin-top:18px">Production values</h3>
+<div class="small">Crop/tree values are raw per-plot Home Coin/hour. The Supply / Demand Audit below now caps assigned processing by available upstream ingredients. It uses current crop formula quantities/work times plus the assigned Mine/Well and processor recipes. Recipe chains not yet present in the planner database are flagged instead of being guessed.</div>
+<div class="small" style="margin-top:5px">v30 worker rules use independently implemented game facts: station Home Ability, preferred personality letter, and known family-only recipe eligibility. Family locks currently include Susuta, Shelly, Nimbi, Iris, Dewy, Celestis and Flutternym evolution families. The v29 offline catalog is intentionally editable: verified presets autofill abilities, while not-yet-verified names remain blank rather than being guessed.</div>
+<h3 style="font-size:12px;margin-top:18px">Backups</h3>
+<div class="small">Profiles autosave in this browser. Use the <b>Backup</b> menu at the top for a portable backup file or legacy local recovery.</div>
+</div>
+</section>
+</main>
+
+<script src="js/dom.js?v=30.12.4"></script>
+<script src="data/homeland-reference-data.js?v=30.12.4"></script>
+<script src="data/aniimo-species.js?v=30.12.4"></script>
+<script src="data/aniimo-stage-index.js?v=30.13.3"></script>
+<script src="data/asset-manifest.js?v=30.12.4"></script>
+<script src="js/assets.js?v=30.12.4"></script>
+<script src="js/homeland-data.js?v=30.12.4"></script>
+<script src="data/embedded-aniidex-catalog.js?v=30.12.4"></script>
+<script src="data/egg-reference.js?v=1"></script>
+<script src="data/food-energy-reference.js?v=1"></script>
+<script src="data/questlog-items.js?v=1"></script>
+<script src="data/thgl-items.js?v=1"></script>
+<script src="data/item-supplemental-reference.js?v=2"></script>
+<script src="data/official-wiki-homeland.js?v=30.16.0"></script>
+<script src="js/wiki-homeland.js?v=30.16.0"></script>
+<script src="js/importer.js?v=30.15.5"></script>
+<script src="js/homeland-item-catalog.js?v=1"></script>
+<script src="data/homeland-local-icon-bridge.js?v=5"></script>
+<script src="data/homeland-icon-atlas.js?v=3"></script>
+<script src="js/homebuilder-portraits.js?v=7"></script>
+<script src="js/views.js?v=30.23.28"></script>
+<script src="js/home-snapshot.js?v=9"></script>
+<script src="js/app.js?v=30.21.18"></script>
+</body>
+</html>
