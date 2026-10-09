@@ -714,3 +714,9 @@ header{align-items:center}
 .mobileManualNotice{padding:12px;margin-bottom:12px;border:1px solid #4d9970;background:#142a26;border-radius:10px;color:#d7f7e3}
 .mobileManualNotice p{font-size:12px;line-height:1.5;margin:6px 0 10px}
 @media(max-width:700px){.mobileJsonImportBtn{display:inline-block}.mobileManualSync #headerAutoSyncToggle,.mobileManualSync .headerSyncIntervalLabel{display:none}.mobileManualSync #aniidexAutoSyncToggle,.mobileManualSync #aniidexAutoSyncInterval{display:none}}
+
+/* Distinguish imported Homeland data from browser Companion availability. */
+.headerSyncSummary{font-size:11px;color:#b7d4df;max-width:310px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.headerCompanionState{font-size:11px;color:#bdcddb;white-space:nowrap}
+.headerCompanionState.connected{color:#9df0b4}
+@media(max-width:700px){.headerSyncSummary{max-width:100%;white-space:normal}}
