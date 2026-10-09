@@ -726,9 +726,6 @@ header{align-items:center}
 .headerSyncPanelLink.attention{color:#ffdb91!important;border-color:#c99b47!important;background:#382e1d!important}
 .headerSyncPanelLink.syncing{color:#a6dcff!important;border-color:#569bc8!important}
 
-/* Game-confirmed production indicator; not a guessed piece match. */
-.hpv2LiveProduction{position:absolute;left:3px;bottom:3px;z-index:3;display:flex;align-items:center;justify-content:center;width:clamp(14px,19%,28px);aspect-ratio:1;border:1px solid #7fe0ba;border-radius:50%;background:#1b483b;color:#bcffe1;overflow:hidden;pointer-events:auto;box-shadow:0 1px 5px #0008}
-.hpv2LiveProduction img{width:100%;height:100%;object-fit:contain}
 
 /* Compact, keyboard-accessible map controls help popup. */
 .hpv2MapHelpButton{border-color:#6b9ab5!important;color:#dcf3ff!important;font-weight:700}
