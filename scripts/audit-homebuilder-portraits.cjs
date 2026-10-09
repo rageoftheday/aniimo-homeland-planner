@@ -40,7 +40,7 @@ for(const [id,info] of Object.entries(formLabels)){
 }
 assert.equal(manifest.byFormId['1032301'],manifest.assets['thunderstorm-thornblade'],'Thunderstorm Thornblade must use 1032301');
 const loader=fs.readFileSync('js/homebuilder-portraits.js','utf8');
-assert(loader.includes('manifest?.assets?.[key]'),'Manifest lookup must be exact');
+assert(loader.includes('manifest.assets?.[key]'),'Manifest lookup must be exact');
 assert(loader.includes('assets/homebuilder-aniimo-portraits/unassigned-aniimo.svg'),'Missing artwork must use the universal Aniimo placeholder');
 const view=fs.readFileSync('js/views.js','utf8');
 assert(view.includes('const live=assigned?[assigned]:[];'),'Unassigned map objects must have no badges');
