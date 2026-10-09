@@ -118,7 +118,29 @@ function applyAniidexImportedData(profileData,homeData,sourceLabel='Aniidex',cat
  const importedModules=aniidexRvModuleLevels(profileData,homeData);
  moduleLevels={...importedModules.levels};
  const normalPlots=(rawHome.plots||[]).filter(n=>n>=1&&n<=16);if(normalPlots.length)openPlots=new Set(normalPlots);
- const rawAniimo=rawHome.aniimo||[];workers=rawAniimo.map(a=>importedWorkerFromAniidex(a,catalogData));workerIdCounter=Math.max(1,...workers.map(w=>(Number(w.id)||0)+1));
+ // Preserve the planner's stable local worker IDs across re-syncs. Map objects
+ // store workerId; regenerating it on each import silently breaks assignments.
+ const previousByExternalId=new Map(workers.filter(w=>w.externalId).map(w=>[String(w.externalId),w]));
+ const rawAniimo=rawHome.aniimo||[];
+ const nextWorkers=rawAniimo.map(a=>importedWorkerFromAniidex(a,catalogData));
+ const claimedIds=new Set();
+ // Reserve existing imported identities before assigning IDs to newcomers.
+ for(let i=0;i<rawAniimo.length;i++){
+  const previous=previousByExternalId.get(String(rawAniimo[i].id||''));
+  if(previous&&!claimedIds.has(String(previous.id))){
+   nextWorkers[i].id=previous.id;
+   claimedIds.add(String(previous.id));
+  }else nextWorkers[i].id=null;
+ }
+ let nextId=Math.max(workerIdCounter,...workers.map(w=>(Number(w.id)||0)+1),1);
+ for(const worker of nextWorkers){
+  if(worker.id!=null)continue;
+  while(claimedIds.has(String(nextId)))nextId++;
+  worker.id=nextId++;
+  claimedIds.add(String(worker.id));
+ }
+ workers=nextWorkers;
+ workerIdCounter=Math.max(nextId,...workers.map(w=>(Number(w.id)||0)+1),1);
  aniidexImportMeta={uid:String(rawHome.uid||profileData?.profile?.uid||profileData?.uid||''),importedAt:Date.now(),summary:sum,profile:profileData,home:homeData,catalog:catalogData,source:sourceLabel,rawMeta:rawBundle?{format:rawBundle.format||'',capturedAt:rawBundle.capturedAt||'',source:rawBundle.source||sourceLabel,warnings:Array.isArray(rawBundle.warnings)?rawBundle.warnings:[]}:null};
  const p=profileStore?.profiles?.[profileStore.current];if(p&&sum.name&&(/^Main Account$/i.test(p.name)||!p.name))p.name=sum.name;
  render();snapshotIntoCurrentProfile();renderProfileBar();

@@ -207,6 +207,25 @@ function homelandLivePieceFor(o){
  const expected=String(o.cropName||o.recipeName||'').toLowerCase().replace(/\s*\(quick\)$/,'');
  return pool.find(q=>!used.has(q.piece)&&expected&&matchOutput(q)===expected)||pool.find(q=>!used.has(q.piece))||null;
 }
+// Only an explicit game-piece link can certify the current live output.
+// The general live-piece resolver also estimates matches among identical facilities;
+// estimated matches must never be advertised as confirmed game production.
+function homelandVerifiedProductionFor(o){
+ const raw=aniidexImportMeta?.home?.home||aniidexImportMeta?.home||{};
+ const queues=Array.isArray(raw.crops)?raw.crops:[];
+ if(!o||!queues.length)return null;
+ const uid=String(aniidexImportMeta?.uid||raw.uid||'');
+ let id=o.livePieceId;
+ if(uid){try{const links=JSON.parse(localStorage.getItem('homeland-live-links-v1:'+uid)||'{}');id=links[o.id+'|'+o.name+'|'+o.x+','+o.y]||id;}catch(e){}}
+ if(id==null||id===''){
+  // An explicitly assigned imported Aniimo also carries its actual game piece.
+  // This is trustworthy only if the current game snapshot confirms its facility.
+  const worker=typeof workers!=='undefined'&&o.workerId!=null?workers.find(w=>String(w.id)===String(o.workerId)):null;
+  id=worker?.aniidex?.piece;
+ }
+ if(id==null||id==='')return null;
+ return queues.find(q=>String(q.piece)===String(id)&&String(dashboardFacilityName(q.facility)).toLowerCase()===String(o.name||'').toLowerCase())||null;
+}
 function homelandLiveWorkersFor(o,q){
  if(!q||['Farmland','Woodland','Mine'].includes(o?.name))return [];
  const raw=aniidexImportMeta?.home?.home||aniidexImportMeta?.home||{};
@@ -257,7 +276,13 @@ function homelandObjectVisualHTML(o,big=false){
  const facilityArt=facilityPath?icons.image(facilityPath,40):'';
  const idleArt=facilityArt?'<span class="hpv2ArtHolder hpv2FacilityArt" style="position:relative">'+homelandIllustratedIconHTML(o?.name)+'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">'+facilityArt+'</span></span>':'';
  const badges=homelandLiveWorkerBadges(o,q);
- return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${recipeArt||plantedArt||idleArt||homelandIllustratedIconHTML(o?.name||o?.label)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${badges}</span>`;
+ const verified=homelandVerifiedProductionFor(o);
+ const item=verified?window.HomelandItemCatalog?.lookup(verified.recipe,aniidexImportMeta?.catalog):null;
+ const liveName=String(item?.name||'').trim();
+ const liveIcon=verified&&liveName?(icons?.image(icons?.file('Items',verified.recipe)||icons?.file('Items',liveName),24)||''):'';
+ const liveLabel=verified?'Confirmed live recipe #'+esc(String(verified.recipe))+(liveName?' — '+esc(liveName):''):'';
+ const liveBadge=verified?'<span class="hpv2LiveProduction" title="'+liveLabel+'">'+(liveIcon||'●')+'</span>':'';
+ return `<span class="hpv2Visual${big?' big':''}"><span class="hpv2IconCircle" aria-hidden="true">${recipeArt||plantedArt||idleArt||homelandIllustratedIconHTML(o?.name||o?.label)}</span>${lv?`<span class="hpv2LevelText">Lv.${lv}</span>`:''}${liveBadge}${badges}</span>`;
 }
 function homelandPlotRole(n){
  const rows=homelandPlotObjects(n);if(!rows.length)return 'Purchased';
