@@ -1527,15 +1527,55 @@ function renderLevelPanel(){
 }
 function updateBatchUpgradeSummary(){
  const totalEl=el('batchUpgradeTotal'),textEl=el('batchUpgradeText');if(!totalEl||!textEl)return;
- let total=0,count=0;
- for(const o of objects){
-   if(!stationHasLevels(o))continue;
-   const cur=Number(o.facilityLevel||1),tgt=Number(o.targetLevel||cur);
-   if(tgt>cur){total+=cumulativeUpgradeCost(o.name,cur,tgt);count++}
+ const rv=Number(rvLevel.value)||1;
+ const currency=n=>Number(n||0).toLocaleString()+' HC';
+ let planned=0,plannedCount=0,unplacedTotal=0,upgradeTotal=0,missingCostCount=0;
+ const unplacedRows=[],upgradeRows=[],unpricedNames=[];
+ for(const item of catalog){
+  if(rv<Number(item.rv||1))continue;
+  const limit=maxCount(item,rv);
+  const placed=objects.filter(o=>o.name===item.name);
+  const remaining=Math.max(0,limit-placed.length);
+  const maximum=maxFacilityLevel(item.name,rv);
+  if(remaining){
+   const finalLevel=levelData(item.name,maximum);
+   if(maximum>0&&finalLevel){
+    const perCopy=directPlacementCost(item.name,maximum);
+    const cost=perCopy*remaining;
+    unplacedTotal+=cost;
+    unplacedRows.push({name:item.name,count:remaining,level:maximum,perCopy,cost});
+   }else{
+    missingCostCount+=remaining;
+    unpricedNames.push(item.name+' ×'+remaining);
+   }
+  }
+  for(const o of placed){
+   const current=Math.max(1,Number(o.facilityLevel)||1);
+   const target=Math.max(current,Number(o.targetLevel)||current);
+   if(target>current){planned+=cumulativeUpgradeCost(item.name,current,target);plannedCount++}
+   if(maximum>current){
+    const cost=cumulativeUpgradeCost(item.name,current,maximum);
+    upgradeTotal+=cost;
+    upgradeRows.push({name:item.name,from:current,to:maximum,cost});
+   }
+  }
  }
- totalEl.textContent=total.toLocaleString()+' Home Coin';
- textEl.textContent=count?`${count} placed facilit${count===1?'y':'ies'} have target upgrades planned.`:'No facility upgrades planned.';
+ const parent=textEl.parentElement;
+ let detail=parent.querySelector('#batchUpgradeBreakdown');
+ if(!detail){detail=document.createElement('div');detail.id='batchUpgradeBreakdown';textEl.after(detail);}
+ const line=(label,value)=>'<div style="display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #375169;padding:5px 0"><span>'+label+'</span><b style="white-space:nowrap">'+currency(value)+'</b></div>';
+ const unplacedHtml=unplacedRows.length?unplacedRows.map(x=>line(esc(x.name)+' ×'+x.count+' · place at Lv '+x.level+' ('+currency(x.perCopy)+' each)',x.cost)).join(''):'<p class="small">All costed facilities available at this RV have been placed.</p>';
+ const upgradeHtml=upgradeRows.length?upgradeRows.map(x=>line(esc(x.name)+' · Lv '+x.from+' → Lv '+x.to,x.cost)).join(''):'<p class="small">All placed facilities with level data are at their RV maximum.</p>';
+ const combined=unplacedTotal+upgradeTotal;
+ detail.innerHTML='<div style="margin-top:12px"><b>Not placed yet — '+unplacedRows.reduce((n,x)=>n+x.count,0)+' facilities</b><div class="small">Direct placement at the maximum level unlocked by RV '+rv+'.</div>'+unplacedHtml+'<div style="margin-top:6px"><b>Not placed subtotal: '+currency(unplacedTotal)+'</b></div></div>'+
+ '<div style="margin-top:15px"><b>Needs upgrading — '+upgradeRows.length+' facilities</b><div class="small">Current placed level to the maximum unlocked by RV '+rv+'.</div>'+upgradeHtml+'<div style="margin-top:6px"><b>Upgrade subtotal: '+currency(upgradeTotal)+'</b></div></div>'+
+ '<div style="margin-top:16px;padding:12px;border:1px solid #64849c;border-radius:9px"><b>Total to place and upgrade to RV '+rv+' maximum: '+currency(combined)+'</b></div>'+
+ (missingCostCount?'<p class="small" role="note">Not included in the cost total: '+missingCostCount+' unplaced item(s) without facility-level price data ('+esc(unpricedNames.join(', '))+'). Their actual costs are unknown, so the total is incomplete.</p>':'')+
+ '<p class="small">Existing manual target upgrade plan (shown above): '+currency(planned)+' for '+plannedCount+' placed facilities. This is included in the upgrade-to-max calculation, not added twice.</p>';
+ totalEl.textContent=currency(planned);
+ textEl.textContent=plannedCount?plannedCount+' placed facilities have manual target upgrades planned.':'No manually planned facility upgrades. RV '+rv+' max-level costs are detailed below.';
 }
+
 function renderCropCards(){
  const o=objects.find(x=>x.id===selected),panel=el('cropPanel'),root=el('cropCards'),info=el('cropInfo');
  if(!panel||!root||!info)return;
