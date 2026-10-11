@@ -638,11 +638,11 @@ async function syncHomelandMapFromJson(source){
   const countWorkers=changes.filter(x=>x.aniimo).length;
   if(!changes.length){window.homebuilderMapSyncStatus='No uniquely matched game pieces. Use each building’s Live facility link to identify duplicates.';render();alert(window.homebuilderMapSyncStatus);return}
   const levelPreview=syncLevels
-   ? '\\n\\nActual levels: '+levelChanges.length+' change(s), '+ambiguousLevels.length+' mixed-level duplicate(s) skipped.'
-     +(levelChanges.length?'\\n\\nLevel changes (map → game):\\n'+levelChanges.slice(0,60).map(c=>c.o.name+' #'+c.o.id+': Lv '+c.old+' → Lv '+c.level+(c.verified?' [piece '+c.piece+']':' [uniform type]')).join('\\n'):'')
-     +(ambiguousLevels.length?'\\n\\nSkipped until linked:\\n'+ambiguousLevels.slice(0,20).join('\\n'):'')
-   : '\\n\\nFacility level sync is OFF.';
-  if(!confirm('Sync matched game data for '+changes.length+' map buildings?\\n\\n'+countProduction+' production selection(s), '+countWorkers+' Aniimo assignment(s); '+skipped.length+' unmatched.'+levelPreview+'\\n\\nPositions, sizes, planned targets and saved layouts will not change.\\n\\nApply?'))return;
+   ? '\n\nActual levels: '+levelChanges.length+' change(s), '+ambiguousLevels.length+' mixed-level duplicate(s) skipped.'
+     +(levelChanges.length?'\n\nLevel changes (map → game):\n'+levelChanges.slice(0,60).map(c=>c.o.name+' #'+c.o.id+': Lv '+c.old+' → Lv '+c.level+(c.verified?' [piece '+c.piece+']':' [uniform type]')).join('\n'):'')
+     +(ambiguousLevels.length?'\n\nSkipped until linked:\n'+ambiguousLevels.slice(0,20).join('\n'):'')
+   : '\n\nFacility level sync is OFF.';
+  if(!confirm('Sync matched game data for '+changes.length+' map buildings?\n\n'+countProduction+' production selection(s), '+countWorkers+' Aniimo assignment(s); '+skipped.length+' unmatched.'+levelPreview+'\n\nPositions, sizes, planned targets and saved layouts will not change.\n\nApply?'))return;
   const workerByExternal=new Map(workers.filter(w=>w.externalId).map(w=>[String(w.externalId),w]));
   let nextWorkerId=Math.max(workerIdCounter,...workers.map(w=>(Number(w.id)||0)+1),1);
   const targetWorkers=new Map();
