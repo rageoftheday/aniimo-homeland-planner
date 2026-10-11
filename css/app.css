@@ -769,3 +769,7 @@ header{align-items:center}
  .feedbackWrap .feedbackCard form[data-comment]{padding:10px}
  .feedbackWrap .feedbackCaptcha,.feedbackWrap #feedbackCaptcha{max-width:100%;overflow:hidden}
 }
+
+/* Full Map Editor reads the same plot unlock state as the left-hand checkboxes. */
+.hpv2FullPlotLabel.hpv2PlotUnlocked{background:rgba(136,202,103,.07);color:#173e21}
+.hpv2FullPlotLabel.hpv2PlotLocked{background:rgba(15,29,38,.69);color:#f6e4b9;border-color:rgba(15,29,38,.93);text-shadow:0 1px 3px #000;box-shadow:inset 0 0 0 1px rgba(255,228,170,.18)}
