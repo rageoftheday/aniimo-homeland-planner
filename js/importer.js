@@ -562,12 +562,13 @@ async function syncHomelandMapFromJson(source){
   // The visual map does not store game coordinates. Assign each real game piece
   // to exactly one placed facility of the SAME type, preserving known links first.
   const matches=[],used=new Set(),skipped=[],pending=[];
+  const verifiedPieceIds=new Map();
   const sameType=(o,q)=>sameName(dashboardFacilityName(q.facility),o.name);
   const reserve=(o,q)=>{if(!q||used.has(String(q.piece))||!sameType(o,q))return false;used.add(String(q.piece));matches.push({o,q});return true;};
   for(const o of objects){
    const key=o.id+'|'+o.name+'|'+o.x+','+o.y;
    const id=String(savedLinks[key]||o.livePieceId||'');
-   if(id&&reserve(o,byPiece.get(id)))continue;
+   if(id&&reserve(o,byPiece.get(id))){if(String(o.livePieceId||'')===id)verifiedPieceIds.set(o.id,id);continue;}
    const assigned=o.workerId!=null?workers.find(w=>String(w.id)===String(o.workerId)):null;
    if(assigned?.aniidex?.piece!=null&&reserve(o,byPiece.get(String(assigned.aniidex.piece))))continue;
    pending.push(o);
@@ -611,10 +612,37 @@ async function syncHomelandMapFromJson(source){
    }
    changes.push({o,q,production,aniimo:incomingWorkers.get(String(q.piece))||null});
   }
+  // Exact live piece IDs are authoritative; uniform-level facility types are
+  // safe without links. Mixed-level duplicates require individual identity.
+  const syncLevels=window.homebuilderSyncLevelsEnabled===true;
+  const typeLevels=new Map();
+  for(const q of home.crops){
+   const type=String(dashboardFacilityName(q.facility)||'').trim().toLowerCase(),lv=Number(q.level);
+   if(!type||!Number.isInteger(lv)||lv<1)continue;
+   if(!typeLevels.has(type))typeLevels.set(type,new Set());
+   typeLevels.get(type).add(lv);
+  }
+  const levelChanges=[],ambiguousLevels=[];
+  if(syncLevels)for(const {o,q} of matches){
+   const level=Number(q.level),type=String(o.name||'').trim().toLowerCase();
+   if(!Number.isInteger(level)||level<1)continue;
+   const verified=verifiedPieceIds.has(o.id);
+   if(!verified&&typeLevels.get(type)?.size!==1){
+    ambiguousLevels.push(o.name+' #'+o.id+' (link exact game piece)');continue;
+   }
+   const old=Number(o.facilityLevel??o.placedLevel??1);
+   if(old!==level||Number(o.placedLevel??old)!==level)
+    levelChanges.push({o,level,old,piece:String(q.piece),verified});
+  }
   const countProduction=changes.filter(x=>x.production&&x.o[x.production.key]!==x.production.value).length;
   const countWorkers=changes.filter(x=>x.aniimo).length;
   if(!changes.length){window.homebuilderMapSyncStatus='No uniquely matched game pieces. Use each building’s Live facility link to identify duplicates.';render();alert(window.homebuilderMapSyncStatus);return}
-  if(!confirm('Sync production and assigned Aniimos for '+changes.length+' map buildings?\n\n'+countProduction+' production selection(s), '+countWorkers+' game Aniimo assignment(s).\n'+skipped.length+' buildings have no remaining game piece of the same type.\n\nDuplicate facilities are assigned one-to-one; their positions do not need to match the game.\nBuildings, positions, levels, layouts, and saved maps will NOT change.'))return;
+  const levelPreview=syncLevels
+   ? '\n\nActual levels: '+levelChanges.length+' change(s), '+ambiguousLevels.length+' mixed-level duplicate(s) skipped.'
+     +(levelChanges.length?'\n\nLevel changes (map → game):\n'+levelChanges.slice(0,60).map(c=>c.o.name+' #'+c.o.id+': Lv '+c.old+' → Lv '+c.level+(c.verified?' [piece '+c.piece+']':' [uniform type]')).join('\n'):'')
+     +(ambiguousLevels.length?'\n\nSkipped until linked:\n'+ambiguousLevels.slice(0,20).join('\n'):'')
+   : '\n\nFacility level sync is OFF.';
+  if(!confirm('Sync matched game data for '+changes.length+' map buildings?\n\n'+countProduction+' production selection(s), '+countWorkers+' Aniimo assignment(s); '+skipped.length+' unmatched.'+levelPreview+'\n\nPositions, sizes, planned targets and saved layouts will not change.\n\nApply?'))return;
   const workerByExternal=new Map(workers.filter(w=>w.externalId).map(w=>[String(w.externalId),w]));
   let nextWorkerId=Math.max(workerIdCounter,...workers.map(w=>(Number(w.id)||0)+1),1);
   const targetWorkers=new Map();
@@ -634,6 +662,7 @@ async function syncHomelandMapFromJson(source){
   // Keep each assigned Aniimo on only one object.
   const assignedIds=new Set([...targetWorkers.values()].map(w=>String(w.id)));
   for(const o of objects)if(assignedIds.has(String(o.workerId||''))&&!targetWorkers.has(o.id))delete o.workerId;
+  for(const change of levelChanges){change.o.facilityLevel=change.level;change.o.placedLevel=change.level;}
   for(const c of changes){
    if(c.production)c.o[c.production.key]=c.production.value;
    const w=targetWorkers.get(c.o.id);
@@ -652,7 +681,7 @@ async function syncHomelandMapFromJson(source){
    for(const {o,q} of matches)existing[o.id+'|'+o.name+'|'+o.x+','+o.y]=String(q.piece);
    try{localStorage.setItem(key,JSON.stringify(existing))}catch(e){console.warn('Could not persist verified map links:',e)}
   }
-  window.homebuilderMapSyncStatus='Map sync ✓ '+countProduction+' production changes; '+targetWorkers.size+' Aniimo assignments; '+skipped.length+' skipped. One-to-one piece links remembered.';
+  window.homebuilderMapSyncStatus='Map sync ✓ '+countProduction+' production changes; '+targetWorkers.size+' Aniimo assignments; '+levelChanges.length+' actual levels corrected; '+ambiguousLevels.length+' mixed-level duplicates skipped; '+skipped.length+' unmatched. One-to-one piece links remembered.';
   render();snapshotIntoCurrentProfile();
  }catch(e){
   window.homebuilderMapSyncStatus='Map sync failed: '+(e?.message||e);
