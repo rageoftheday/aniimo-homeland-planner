@@ -568,7 +568,7 @@ async function syncHomelandMapFromJson(source){
   for(const o of objects){
    const key=o.id+'|'+o.name+'|'+o.x+','+o.y;
    const id=String(savedLinks[key]||o.livePieceId||'');
-   if(id&&reserve(o,byPiece.get(id))){verifiedPieceIds.set(o.id,id);continue;}
+   if(id&&reserve(o,byPiece.get(id))){if(String(o.livePieceId||'')===id)verifiedPieceIds.set(o.id,id);continue;}
    const assigned=o.workerId!=null?workers.find(w=>String(w.id)===String(o.workerId)):null;
    if(assigned?.aniidex?.piece!=null&&reserve(o,byPiece.get(String(assigned.aniidex.piece))))continue;
    pending.push(o);
