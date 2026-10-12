@@ -187,7 +187,7 @@ function homelandLivePieceFor(o){
  if(!queues.length||!o)return null;
  const uid=String(aniidexImportMeta?.profile?.profile?.uid||aniidexImportMeta?.profile?.uid||raw.uid||'');
  let linkedId=o.livePieceId;
- if(uid){try{const stored=JSON.parse(localStorage.getItem('homeland-live-links-v1:'+uid)||'{}');linkedId=stored[o.id+'|'+o.name+'|'+o.x+','+o.y]||linkedId;}catch(e){}}
+ if(uid){try{const stored=JSON.parse(localStorage.getItem('homeland-confirmed-links-v2:'+uid)||'{}');linkedId=stored[o.id+'|'+o.name+'|'+o.x+','+o.y]||linkedId;}catch(e){}}
  if(linkedId){const linked=queues.find(q=>String(q.piece)===String(linkedId)&&String(dashboardFacilityName(q.facility)).toLowerCase()===String(o.name||'').toLowerCase());if(linked)return linked;}
  const name=String(o.name||'').toLowerCase();
  const sameType=objects.filter(x=>String(x.name||'').toLowerCase()===name).sort((a,b)=>Number(a.id)-Number(b.id));
@@ -216,7 +216,7 @@ function homelandVerifiedProductionFor(o){
  if(!o||!queues.length)return null;
  const uid=String(aniidexImportMeta?.uid||raw.uid||'');
  let id=o.livePieceId;
- if(uid){try{const links=JSON.parse(localStorage.getItem('homeland-live-links-v1:'+uid)||'{}');id=links[o.id+'|'+o.name+'|'+o.x+','+o.y]||id;}catch(e){}}
+ if(uid){try{const links=JSON.parse(localStorage.getItem('homeland-confirmed-links-v2:'+uid)||'{}');id=links[o.id+'|'+o.name+'|'+o.x+','+o.y]||id;}catch(e){}}
  if(id==null||id===''){
   // An explicitly assigned imported Aniimo also carries its actual game piece.
   // This is trustworthy only if the current game snapshot confirms its facility.

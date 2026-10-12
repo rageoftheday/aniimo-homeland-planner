@@ -555,7 +555,7 @@ async function syncHomelandMapFromJson(source){
   const catalogData=aniidexBundleCatalog(bundle);
   const sameName=(a,b)=>String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase();
   const byPiece=new Map(home.crops.filter(q=>q?.piece!=null).map(q=>[String(q.piece),q]));
-  const savedLinks=(()=>{try{return JSON.parse(localStorage.getItem('homeland-live-links-v1:'+(incomingUid||currentUid))||'{}')||{}}catch{return {}}})();
+  const savedLinks=(()=>{try{return JSON.parse(localStorage.getItem('homeland-confirmed-links-v2:'+(incomingUid||currentUid))||'{}')||{}}catch{return {}}})();
   const mapCounts=new Map(),gameCounts=new Map();
   for(const o of objects){const key=String(o.name||'').toLowerCase()+'|'+Number(o.facilityLevel||o.placedLevel||0);mapCounts.set(key,(mapCounts.get(key)||0)+1)}
   for(const q of home.crops){const key=String(dashboardFacilityName(q.facility)||'').toLowerCase()+'|'+Number(q.level||0);gameCounts.set(key,(gameCounts.get(key)||0)+1)}
@@ -568,7 +568,7 @@ async function syncHomelandMapFromJson(source){
   for(const o of objects){
    const key=o.id+'|'+o.name+'|'+o.x+','+o.y;
    const id=String(savedLinks[key]||o.livePieceId||'');
-   if(id&&reserve(o,byPiece.get(id))){if(String(o.livePieceId||'')===id)verifiedPieceIds.set(o.id,id);continue;}
+   if(id&&reserve(o,byPiece.get(id))){verifiedPieceIds.set(o.id,id);continue;}
    const assigned=o.workerId!=null?workers.find(w=>String(w.id)===String(o.workerId)):null;
    if(assigned?.aniidex?.piece!=null&&reserve(o,byPiece.get(String(assigned.aniidex.piece))))continue;
    pending.push(o);
@@ -612,35 +612,58 @@ async function syncHomelandMapFromJson(source){
    }
    changes.push({o,q,production,aniimo:incomingWorkers.get(String(q.piece))||null});
   }
-  // Exact live piece IDs are authoritative; uniform-level facility types are
-  // safe without links. Mixed-level duplicates require individual identity.
+  // Level sync is an INVENTORY reconciliation, not a physical-piece identity match.
+  // A copy's position has no bearing on which level it receives. Preserve as many
+  // existing levels as possible, then distribute the remaining multiset of levels.
+  // Only reconcile types whose placed count equals the live owned count; otherwise
+  // leave the type untouched instead of guessing which pieces are missing.
   const syncLevels=window.homebuilderSyncLevelsEnabled===true;
-  const typeLevels=new Map();
-  for(const q of home.crops){
-   const type=String(dashboardFacilityName(q.facility)||'').trim().toLowerCase(),lv=Number(q.level);
-   if(!type||!Number.isInteger(lv)||lv<1)continue;
-   if(!typeLevels.has(type))typeLevels.set(type,new Set());
-   typeLevels.get(type).add(lv);
-  }
   const levelChanges=[],ambiguousLevels=[];
-  if(syncLevels)for(const {o,q} of matches){
-   const level=Number(q.level),type=String(o.name||'').trim().toLowerCase();
-   if(!Number.isInteger(level)||level<1)continue;
-   const verified=verifiedPieceIds.has(o.id);
-   if(!verified&&typeLevels.get(type)?.size!==1){
-    ambiguousLevels.push(o.name+' #'+o.id+' (link exact game piece)');continue;
+  if(syncLevels){
+   const byType=new Map(),liveByType=new Map();
+   const typeName=name=>String(name||'').trim().toLowerCase();
+   for(const o of objects){
+    const k=typeName(o.name);if(!byType.has(k))byType.set(k,[]);byType.get(k).push(o);
    }
-   const old=Number(o.facilityLevel??o.placedLevel??1);
-   if(old!==level||Number(o.placedLevel??old)!==level)
-    levelChanges.push({o,level,old,piece:String(q.piece),verified});
+   for(const q of home.crops){
+    const k=typeName(dashboardFacilityName(q.facility)),lv=Number(q.level);
+    if(!k||!Number.isInteger(lv)||lv<1)continue;
+    if(!liveByType.has(k))liveByType.set(k,[]);
+    liveByType.get(k).push({level:lv,piece:String(q.piece||'')});
+   }
+   for(const [type,placed] of byType){
+    const live=liveByType.get(type)||[];
+    if(!live.length)continue;
+    if(placed.length!==live.length){
+     ambiguousLevels.push(placed[0].name+': '+placed.length+' placed vs '+live.length+' game pieces; level changes skipped');
+     continue;
+    }
+    const remaining=new Map();
+    for(const {level} of live)remaining.set(level,(remaining.get(level)||0)+1);
+    const ordered=[...placed].sort((a,b)=>Number(a.id)-Number(b.id));
+    const keep=new Set();
+    for(const o of ordered){
+     const lv=Number(o.facilityLevel??o.placedLevel??1),count=remaining.get(lv)||0;
+     if(count>0){keep.add(o);remaining.set(lv,count-1)}
+    }
+    const leftover=[...remaining.entries()].flatMap(([lv,count])=>Array(count).fill(lv)).sort((a,b)=>a-b);
+    let next=0;
+    for(const o of ordered){
+     const old=Number(o.facilityLevel??o.placedLevel??1);
+     const level=keep.has(o)?old:leftover[next++];
+     if(!Number.isInteger(level))continue;
+     if(old!==level||Number(o.placedLevel??old)!==level)
+      levelChanges.push({o,level,old,verified:false,piece:'',inventory:true});
+    }
+   }
   }
   const countProduction=changes.filter(x=>x.production&&x.o[x.production.key]!==x.production.value).length;
   const countWorkers=changes.filter(x=>x.aniimo).length;
   if(!changes.length){window.homebuilderMapSyncStatus='No uniquely matched game pieces. Use each building’s Live facility link to identify duplicates.';render();alert(window.homebuilderMapSyncStatus);return}
   const levelPreview=syncLevels
-   ? '\n\nActual levels: '+levelChanges.length+' change(s), '+ambiguousLevels.length+' mixed-level duplicate(s) skipped.'
+   ? '\n\nActual levels: '+levelChanges.length+' change(s), '+ambiguousLevels.length+' facility type(s) skipped because counts differ.'
      +(levelChanges.length?'\n\nLevel changes (map → game):\n'+levelChanges.slice(0,60).map(c=>c.o.name+' #'+c.o.id+': Lv '+c.old+' → Lv '+c.level+(c.verified?' [piece '+c.piece+']':' [uniform type]')).join('\n'):'')
-     +(ambiguousLevels.length?'\n\nSkipped until linked:\n'+ambiguousLevels.slice(0,20).join('\n'):'')
+     +(ambiguousLevels.length?'\n\nSkipped because placed and owned counts differ:\n'+ambiguousLevels.slice(0,20).join('\n'):'')
    : '\n\nFacility level sync is OFF.';
   if(!confirm('Sync matched game data for '+changes.length+' map buildings?\n\n'+countProduction+' production selection(s), '+countWorkers+' Aniimo assignment(s); '+skipped.length+' unmatched.'+levelPreview+'\n\nPositions, sizes, planned targets and saved layouts will not change.\n\nApply?'))return;
   const workerByExternal=new Map(workers.filter(w=>w.externalId).map(w=>[String(w.externalId),w]));
@@ -676,12 +699,13 @@ async function syncHomelandMapFromJson(source){
   // Remember verified piece links for future syncs; do not attach guessed IDs.
   const linkUid=incomingUid||currentUid;
   if(linkUid){
-   const key='homeland-live-links-v1:'+linkUid;
+   const key='homeland-confirmed-links-v2:'+linkUid;
    const existing=(()=>{try{return JSON.parse(localStorage.getItem(key)||'{}')||{}}catch{return {}}})();
-   for(const {o,q} of matches)existing[o.id+'|'+o.name+'|'+o.x+','+o.y]=String(q.piece);
+   // Only links explicitly chosen in the review dialog or on the object are authoritative.
+   for(const {o,q} of matches)if(verifiedPieceIds.has(o.id))existing[o.id+'|'+o.name+'|'+o.x+','+o.y]=String(q.piece);
    try{localStorage.setItem(key,JSON.stringify(existing))}catch(e){console.warn('Could not persist verified map links:',e)}
   }
-  window.homebuilderMapSyncStatus='Map sync ✓ '+countProduction+' production changes; '+targetWorkers.size+' Aniimo assignments; '+levelChanges.length+' actual levels corrected; '+ambiguousLevels.length+' mixed-level duplicates skipped; '+skipped.length+' unmatched. One-to-one piece links remembered.';
+  window.homebuilderMapSyncStatus='Map sync ✓ '+countProduction+' production changes; '+targetWorkers.size+' Aniimo assignments; '+levelChanges.length+' actual levels corrected; '+ambiguousLevels.length+' types with mismatched counts skipped; '+skipped.length+' unmatched. Only confirmed piece links remembered.';
   render();snapshotIntoCurrentProfile();
  }catch(e){
   window.homebuilderMapSyncStatus='Map sync failed: '+(e?.message||e);
