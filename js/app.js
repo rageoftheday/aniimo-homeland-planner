@@ -1823,6 +1823,55 @@ function updatePlacementAudit(){
  }
  box.innerHTML=msg;
 }
+
+/** Sell prices transcribed from user-provided Homeland inventory table (2026-10-12).
+ * These are sell-per-unit prices, NOT stock values or guaranteed income.
+ * null means explicitly non-sellable; absent means unknown, not zero.
+ * Keep IDs to avoid silently confusing similarly named game items.
+ */
+const HOME_COIN_SELL_PRICES={
+ 'Apple':{id:4001033,hc:39},'Aromathyst':{id:4001046,hc:56},
+ 'Bamboo':{id:4001017,hc:13},'Cherry Blossom':{id:4001034,hc:44},
+ 'Chestnut':{id:4001041,hc:100},'Clay':{id:4001057,hc:22},
+ 'Copper Ore':{id:4001054,hc:160},'Cotton':{id:4001004,hc:44},
+ 'Ginseng':{id:4001016,hc:280},'Grapes':{id:4001010,hc:93},
+ 'Lavender':{id:4001007,hc:69},'Maple Syrup':{id:4001030,hc:35},
+ 'Milled Rice':{id:4001063,hc:240},'Moondew Radish':{id:4001066,hc:74},
+ 'Palm Bark':{id:4001031,hc:120},'Plain Fresh Water':{id:4001071,hc:46},
+ 'Potato':{id:4001002,hc:8},'Premium Wheat':{id:4020079,hc:52},
+ 'Rice':{id:4001003,hc:10},'Rock':{id:4001053,hc:7},
+ 'Rose':{id:4001014,hc:39},'Sea Salt':{id:4001069,hc:16},
+ 'Shell':{id:4001051,hc:76},'Soybean':{id:4001009,hc:11},
+ 'Star':{id:4001047,hc:390},'Strawberry':{id:4001005,hc:61},
+ 'Sugarcane':{id:4001001,hc:81},'Walnut':{id:4001040,hc:120},
+ 'Waxing Moon Pepper':{id:4001067,hc:74},'Well Water':{id:4001070,hc:12},
+ 'Wheat':{id:4001000,hc:1},'Wheatmeal':{id:4010032,hc:70},
+ 'Wool':{id:4001044,hc:140},'Cotton Fabric':{id:4010042,hc:610},
+ 'Cotton Thread':{id:4010039,hc:410},'Woolen Yarn':{id:4010040,hc:760},
+ 'Tofu':{id:4010035,hc:230},'Rock Candy':{id:4010046,hc:1180},
+ 'Salted Cherry Blossom':{id:4010135,hc:780},'Soy Sauce':{id:4010012,hc:650},
+ 'Cider Vinegar':{id:4010009,hc:510},'Dried Strawberries':{id:4010068,hc:690},
+ 'Dried Cherry Blossom':{id:4010133,hc:410},'Lavender Powder':{id:4010145,hc:650},
+ 'Rose Concentrate':{id:4010165,hc:770},'Rose Shortbread':{id:4010166,hc:1310},
+ 'Apple Juice':{id:4010096,hc:1000},'Grape Jam':{id:4010097,hc:1120},
+ 'Coarse-Sifted Ore':{id:4010174,hc:null},
+ 'Standard Planks':{id:4010170,hc:null},
+ 'Sintered Ore Brick':{id:4010175,hc:null},
+ 'Wood Block':{id:4001064,hc:null},
+ 'Mineral Sand':{id:4001065,hc:null}
+};
+function homeCoinSurplusValuation(a){
+ let hc=0,priced=0,unpriced=[],nonsellable=[];
+ for(const [name,rate] of Object.entries(a.available)){
+  if(rate<=0.00001)continue;
+  const entry=HOME_COIN_SELL_PRICES[name];
+  if(!entry){unpriced.push({name,rate});continue}
+  if(entry.hc===null){nonsellable.push({name,rate});continue}
+  hc+=rate*entry.hc;priced++;
+ }
+ return {hc,priced,unpriced,nonsellable};
+}
+
 function updateSupplyAudit(){
  const grid=el('supplyGrid'),head=el('supplyHeadline'),stations=el('stationAudit');
  if(!grid||!head||!stations)return;
@@ -1839,12 +1888,18 @@ function updateSupplyAudit(){
  }
  grid.innerHTML=rows;
 
+ const saleValue=homeCoinSurplusValuation(a);
  const sustainableGross=a.stationRows.reduce((s,r)=>s+r.gross,0);
  const starved=a.stationRows.filter(r=>r.util<.999);
  const planks=a.available['Standard Planks']||0;
  const bricks=a.available['Sintered Ore Brick']||0;
+ const valuationHtml='Sellable leftover output: <b class="money">'+Math.round(saleValue.hc).toLocaleString()+
+  ' HC/h</b> • '+saleValue.priced+' priced product(s)'+
+  (saleValue.unpriced.length?' • '+saleValue.unpriced.length+' unpriced (excluded)':'')+
+  ' • excludes non-sellable materials, stock in storage, and already consumed ingredients.<br>'+
+  (saleValue.unpriced.length?'<span class="supplyWarn">Price missing for: '+saleValue.unpriced.map(x=>esc(x.name)).join(', ')+'</span><br>':'');
  head.innerHTML=`Sustainable assigned processing: <b class="money">${Math.round(sustainableGross).toLocaleString()} HC/h</b> • ${starved.length} supply-limited station${starved.length===1?'':'s'}.<br>`+
-   `Upgrade materials: <b>${planks.toFixed(1)} Standard Planks/h</b> • <b>${bricks.toFixed(1)} Sintered Ore Brick/h</b>`;
+   `Upgrade materials: <b>${planks.toFixed(1)} Standard Planks/h</b> • <b>${bricks.toFixed(1)} Sintered Ore Brick/h</b><br>`+valuationHtml;
 
  stations.innerHTML=a.stationRows.map(r=>{
    const pct=Math.round(r.util*100),cls=pct>=100?'supplyGood':(pct>=50?'supplyWarn':'supplyBad');
