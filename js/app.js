@@ -1823,7 +1823,6 @@ function updatePlacementAudit(){
  }
  box.innerHTML=msg;
 }
-
 /** Sell prices transcribed from user-provided Homeland inventory table (2026-10-12).
  * These are sell-per-unit prices, NOT stock values or guaranteed income.
  * null means explicitly non-sellable; absent means unknown, not zero.
@@ -1901,10 +1900,19 @@ function updateSupplyAudit(){
  head.innerHTML=`Sustainable assigned processing: <b class="money">${Math.round(sustainableGross).toLocaleString()} HC/h</b> • ${starved.length} supply-limited station${starved.length===1?'':'s'}.<br>`+
    `Upgrade materials: <b>${planks.toFixed(1)} Standard Planks/h</b> • <b>${bricks.toFixed(1)} Sintered Ore Brick/h</b><br>`+valuationHtml;
 
+ // Stock already owned (the inventory price list) is intentionally separate
+ // from sustainable per-hour production. Showing it as an hourly source would
+ // overstate renewable throughput and net earnings.
+ head.innerHTML += '<br><span class="small">Production flow only: existing storage stock is excluded. Gross sell value is not net profit. Materials without an in-game sell price are not coin income.</span>';
  stations.innerHTML=a.stationRows.map(r=>{
    const pct=Math.round(r.util*100),cls=pct>=100?'supplyGood':(pct>=50?'supplyWarn':'supplyBad');
    return `<div style="margin:6px 0"><b>${r.name}</b> — ${r.recipe}: <span class="${cls}">${pct}% supplied</span> (${r.sustainable.toFixed(2)}/${r.potential.toFixed(2)} batches/h)<div class="utilBar ${cls}"><div class="utilFill" style="width:${Math.min(100,pct)}%"></div></div></div>`;
- }).join('') + (a.pending.length?`<div class="supplyWarn">Could not resolve ${a.pending.length} assigned recipe(s) because an upstream product is missing from the current planner recipe database.</div>`:'');
+ }).join('') + (a.pending.length?'<div class="supplyWarn">Unresolved assigned recipes (not counted as sustainable production): '+a.pending.map(o=>{
+   const r=(recipeDB[o.name]||[]).find(x=>x.name===o.recipeName);
+   const req=r?parseIngredients(r.ingredients):[];
+   const missing=req.filter(q=>(a.available[q.item]||0)<q.qty*0.001).map(q=>q.item);
+   return esc(o.name+' — '+(o.recipeName||'?')+(missing.length?' (unavailable inputs: '+missing.join(', ')+')':' (check recipe mapping)'));
+  }).join('; ')+'</div>':'');
 }
 function updateProductionSummary(){
  const te=el('totalRecipeValue'),se=el('recipeSummaryText'),ge=el('grandTotalValue');if(!te||!se||!ge)return;
