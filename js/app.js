@@ -1096,7 +1096,7 @@ function makeObj(o){
  e.className='obj '+o.cls+(selected===o.id?' selected':'');e.style.left=o.x*U+'px';e.style.top=o.y*U+'px';e.style.width=o.w*U+'px';e.style.height=o.h*U+'px';
  const crop=o.cropName?crops.find(c=>c.name===o.cropName):null;
  if(crop&&(o.name==='Farmland'||o.name==='Woodland')){
-   const pct=climateSpeedPercent(o);
+   const pct=climateSpeedPercent({...o,req:crop.req});
    const eff=Math.round(plantedCropHourlyValue(o)??0);
    const speedLine=o.req!=='none'?`\n${pct}% speed${pct<100?` • ~${eff.toLocaleString()} HC/h effective`:''}`:'';
    e.innerHTML=`<span class="objText">${crop.display||crop.name}\n${crop.coinPH.toLocaleString()} HC/h\n${reqLabels[crop.req]}${speedLine}</span>`;
