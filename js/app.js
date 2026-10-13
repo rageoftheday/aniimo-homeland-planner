@@ -1097,7 +1097,7 @@ function makeObj(o){
  const crop=o.cropName?crops.find(c=>c.name===o.cropName):null;
  if(crop&&(o.name==='Farmland'||o.name==='Woodland')){
    const pct=climateSpeedPercent(o);
-   const eff=Math.round(crop.coinPH*pct/100);
+   const eff=Math.round(plantedCropHourlyValue(o)??0);
    const speedLine=o.req!=='none'?`\n${pct}% speed${pct<100?` • ~${eff.toLocaleString()} HC/h effective`:''}`:'';
    e.innerHTML=`<span class="objText">${crop.display||crop.name}\n${crop.coinPH.toLocaleString()} HC/h\n${reqLabels[crop.req]}${speedLine}</span>`;
  }
@@ -1615,16 +1615,38 @@ function renderCropCards(){
      `Climate: <b>${reqLabels[c.req]}</b><br>`+
      `${climateNowText(o)}<br>`+
      `Operating speed: <b style="color:${climateSpeedPercent(o)>=100?'#62df8c':climateSpeedPercent(o)>0?'#ffcb6b':'#ff6971'}">${climateSpeedLabel(o)}</b><br>`+
-     `Effective raw value: <b>${Math.round((c.coinPH||0)*climateSpeedPercent(o)/100).toLocaleString()} HC/h</b>`;
+     `Effective raw value: <b>${Math.round(plantedCropHourlyValue(o)??0).toLocaleString()} HC/h</b>`;
  }else{
    info.innerHTML=`No crop/tree assigned. This ${o.name} is currently Facility Lv ${facLv}.`;
  }
 }
-function updateCropSummary(){
- const a=objects.filter(o=>o.cropName),total=a.reduce((s,o)=>s+(Number(o.coinPH)||0),0),met=a.filter(reqSatisfied).length;
- if(el('totalCropValue'))el('totalCropValue').textContent=total.toLocaleString()+' Home Coin/h';
- if(el('cropSummaryText'))el('cropSummaryText').textContent=a.length?`${a.length} assigned • ${met} climate-valid • ${a.length-met} climate-invalid`:'No crops assigned yet.';
+// Recompute value from the canonical crop catalog. Imported/saved map objects
+// commonly contain cropName but not the old cached coinPH field.
+function plantedCropData(o){
+ if(!o?.cropName||!['Farmland','Woodland'].includes(o.name))return null;
+ return crops.find(c=>c.type===o.name&&c.name===o.cropName)||null;
 }
+function plantedCropHourlyValue(o){
+ const c=plantedCropData(o);
+ if(!c||!Number.isFinite(Number(c.coinPH)))return null;
+ // Use the catalog climate requirement even for older imported maps where
+ // o.req was not serialized. Compute rather than mutate map placement data.
+ const climateObject={...o,req:c.req};
+ const waterFactor=(window.wateredTwice&&wateredTwice.checked)?4/3:1;
+ return Number(c.coinPH)*environmentFactor(climateObject)*waterFactor;
+}
+function updateCropSummary(){
+ const assigned=objects.filter(o=>o.cropName&&['Farmland','Woodland'].includes(o.name));
+ const priced=assigned.map(o=>({o,c:plantedCropData(o),value:plantedCropHourlyValue(o)}));
+ const total=priced.reduce((sum,x)=>sum+(x.value??0),0);
+ const unknown=priced.filter(x=>x.value===null).length;
+ const met=priced.filter(x=>x.c&&reqSatisfied({...x.o,req:x.c.req})).length;
+ if(el('totalCropValue'))el('totalCropValue').textContent=Math.round(total).toLocaleString()+' Home Coin/h'+(unknown?' (partial)':'');
+ if(el('cropSummaryText'))el('cropSummaryText').textContent=assigned.length?
+  `${assigned.length} assigned • ${met} climate-valid • ${assigned.length-met-unknown} climate-invalid${unknown?' • '+unknown+' missing crop value(s); excluded from total':''} • estimated raw sell value, not wallet income`:
+  'No crops assigned yet.';
+}
+
 function stationHasRecipes(o){return !!(o&&recipeDB[o.name]&&recipeDB[o.name].length)}
 function renderRecipePanel(){
  const o=objects.find(x=>x.id===selected),panel=el('recipePanel'),sel=el('recipeSelect'),worker=el('workerLevelSelect'),pers=el('personalitySelect'),info=el('recipeInfo');
@@ -1833,7 +1855,10 @@ function updateProductionSummary(){
  const te=el('totalRecipeValue'),se=el('recipeSummaryText'),ge=el('grandTotalValue');if(!te||!se||!ge)return;
  let total=0,count=0;for(const o of objects){if(!o.recipeName||!recipeDB[o.name])continue;const r=recipeDB[o.name].find(x=>x.name===o.recipeName);if(!r)continue;total+=recipeCalc(r,o.workerLevel||4,o.personalityMult||1).gross;count++}
  te.textContent=Math.round(total).toLocaleString()+' Home Coin/h';se.textContent=count?`${count} station${count===1?'':'s'} assigned • gross output before ingredient costs`:'No production recipes assigned yet.';
- const cropTotal=objects.filter(o=>o.cropName).reduce((s,o)=>s+(Number(o.coinPH)||0)*environmentFactor(o),0);ge.textContent=Math.round(total+cropTotal).toLocaleString()+' HC/h';
+ const cropTotal=objects.reduce((sum,o)=>sum+(plantedCropHourlyValue(o)??0),0);
+ const missing=objects.filter(o=>o.cropName&&['Farmland','Woodland'].includes(o.name)&&plantedCropHourlyValue(o)===null).length;
+ ge.textContent=Math.round(total+cropTotal).toLocaleString()+' HC/h'+(missing?' (partial)':'');
+ ge.title='Theoretical gross production + estimated raw crop sell value, before ingredient costs. Not net profit or actual coin income.';
 }
 function renderAssignmentPanel(){
  const o=objects.find(x=>x.id===selected),panel=el('assignmentPanel'),preview=el('assignedWorkerPreview'),hint=el('assignmentHint');
