@@ -16,7 +16,8 @@ const $=id=>document.getElementById(id);
 let screenshots=[],idx=0,objects=[],base={},nextId=1,added=[];
 let calibrations=[];const boundsIds=['vx','vy','vw','vh'];
 let pointMode=null,pointMarks={};
-let sampleMode=false,sample=null,candidates=[],scanImageIndex=-1;
+let sampleMode=false,sample=null,candidates=[],scanImageIndex=-1,scanGeneration=0,scanBusy=false;
+function cancelScan(){scanGeneration++;scanBusy=false;$('scanSample').disabled=false;}
 const patchSize=16;
 function readImagePixels(){
  const img=$('photo');if(!img.naturalWidth)throw Error('Load screenshot first');
@@ -80,28 +81,33 @@ function reviewVisualCandidates(){
 }
 $('reviewCandidate').onclick=reviewVisualCandidates;
 $('pickSample').onclick=()=>{if(!screenshots.length)return $('scanStatus').textContent='Load a screenshot first.';sampleMode=true;$('scanStatus').textContent='Click the center of a clear icon in the screenshot.'};
-$('clearCandidates').onclick=()=>{candidates=[];scanImageIndex=-1;drawCandidates();reviewVisualCandidates();$('scanStatus').textContent='Candidates cleared.'};
+$('clearCandidates').onclick=()=>{cancelScan();candidates=[];scanImageIndex=-1;drawCandidates();reviewVisualCandidates();$('scanStatus').textContent='Candidates cleared.'};
 $('scanSample').onclick=async()=>{
  try{
+  if(scanBusy)throw Error('A scan is already running.');
   if(!sample||sample.frame!==idx)throw Error('Choose a sample from the current screenshot.');
+  scanBusy=true;$('scanSample').disabled=true;const generation=++scanGeneration,frameAtStart=idx;
   const data=readImagePixels(),w=sample.w,h=sample.h,step=Math.max(6,Math.floor(Math.min(w,h)/3)),threshold=Number($('similarity').value);
   $('scanStatus').textContent='Scanning the screenshot locally…';
   // Yield once so the browser paints the progress text.
   await new Promise(resolve=>setTimeout(resolve,0));
   const hits=[];
   for(let y=Math.ceil(h/2);y<data.height-h/2;y+=step){
+   if(generation!==scanGeneration||frameAtStart!==idx)return;
    for(let x=Math.ceil(w/2);x<data.width-w/2;x+=step){
     const p=pixelPatch(data,x,y,w,h);if(!p)continue;
     const score=patchSimilarity(sample.patch,p);
     if(score>=threshold)hits.push({x,y,score});
    }
-   if(y%(step*24)<step)await new Promise(resolve=>setTimeout(resolve,0));
+   if(y%(step*24)<step){$('scanStatus').textContent='Scanning locally: '+Math.round(100*y/data.height)+'%';await new Promise(resolve=>setTimeout(resolve,0))}
   }
+  if(generation!==scanGeneration||frameAtStart!==idx)return;
   hits.sort((a,b)=>b.score-a.score);const selected=[];
   for(const h of hits){if(selected.every(v=>Math.hypot(h.x-v.x,h.y-v.y)>Math.min(w,h)*.75))selected.push(h);if(selected.length>=100)break}
   candidates=selected.map(h=>({x:h.x/data.width,y:h.y/data.height,score:h.score}));scanImageIndex=idx;drawCandidates();reviewVisualCandidates();
   $('scanStatus').textContent=candidates.length+' visual candidates; not validated as facilities. Click only verified buildings to add map objects.';
  }catch(err){$('scanStatus').textContent='Scan unavailable: '+err.message}
+ finally{if(!scanBusy||scanGeneration===generation){scanBusy=false;$('scanSample').disabled=false}}
 };
 
 function setPointMode(v){pointMode=v;$('calibrationState').textContent=v?'Click map point '+v+' on the screenshot.':'Select point A or point B to calibrate.'}
@@ -128,7 +134,7 @@ for(const id of boundsIds)$(id).addEventListener('change',saveCalibration);
 const finite=n=>n!==null&&n!==undefined&&String(n).trim()!==''&&Number.isFinite(Number(n));
 function status(s,good=false){$('status').textContent=s;$('status').className=good?'ok':'warning'}
 function number(id){return Number($(id).value)}
-function frame(){if(!screenshots.length)return;pointMode=null;pointMarks={};setPointMode(null);restoreCalibration();const url=screenshots[idx].url;$('photo').src=url;$('frame').value=idx+1;$('loaded').textContent=(idx+1)+' / '+screenshots.length+': '+screenshots[idx].name;draw()}
+function frame(){if(!screenshots.length)return;cancelScan();pointMode=null;pointMarks={};setPointMode(null);restoreCalibration();const url=screenshots[idx].url;$('photo').src=url;$('frame').value=idx+1;$('loaded').textContent=(idx+1)+' / '+screenshots.length+': '+screenshots[idx].name;draw()}
 function draw(){const p=$('pins');p.replaceChildren();for(const o of added.filter(o=>o._frame===idx)){const mark=document.createElement('span');mark.className='pin';mark.textContent=o.id;mark.style.left=(o._fx*100)+'%';mark.style.top=(o._fy*100)+'%';p.append(mark)}drawCandidates()}
 function render(){const tbody=$('rows');tbody.replaceChildren();objects.forEach(o=>{const tr=document.createElement('tr');[o.id,o.name,o.x+', '+o.y,o.w+' × '+o.h,o.facilityLevel||'—'].forEach(x=>{const td=document.createElement('td');td.textContent=x;tr.append(td)});const td=document.createElement('td');if(added.some(v=>v.id===o.id)){const b=document.createElement('button');b.textContent='Remove';b.onclick=()=>{objects=objects.filter(v=>v!==o);added=added.filter(v=>v!==o);render();draw()};td.append(b)}tr.append(td);tbody.append(tr)});status(objects.length+' map objects • '+added.length+' manually annotated',true)}
 $('type').replaceChildren(...FACILITIES.map(name=>{const o=document.createElement('option');o.value=o.textContent=name;return o}));
@@ -138,7 +144,7 @@ $('prev').onclick=()=>{if(screenshots.length){saveCalibration();idx=(idx+screens
 $('next').onclick=()=>{if(screenshots.length){saveCalibration();idx=(idx+1)%screenshots.length;frame()}};
 $('frame').onchange=()=>{saveCalibration();idx=Math.max(0,Math.min(screenshots.length-1,number('frame')-1));frame()};
 $('mapfile').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;const d=JSON.parse(await f.text());const map=d.format==='aniimo-homeland-map-library-v1'?d.maps?.[d.current]||Object.values(d.maps||{})[0]:d;if(!map||!Array.isArray(map.objects))throw Error('Not a Homeland map JSON');if(map.objects.length>1000)throw Error('Map contains more than 1000 objects.');if(!confirm('Replace the working session with '+map.objects.length+' objects? Your file on disk stays unchanged.'))return;const ids=new Set();for(const o of map.objects){if(!FACILITIES.includes(o.name)||!finite(o.x)||!finite(o.y)||!finite(o.w)||!finite(o.h)||Number(o.w)<=0||Number(o.h)<=0||Number(o.x)<0||Number(o.y)<0||Number(o.x)+Number(o.w)>80||Number(o.y)+Number(o.h)>60||ids.has(String(o.id)))throw Error('Invalid master map objects');ids.add(String(o.id))}base=structuredClone(map);objects=structuredClone(map.objects);added=[];nextId=Math.max(0,...objects.map(o=>Number(o.id)||0))+1;$('mapname').value=map.name||'Screenshot Reviewed Map';render();draw()}catch(err){status('Map import failed: '+err.message)}};
-$('stage').onclick=e=>{const img=$('photo');if(!screenshots.length||!img.naturalWidth)return status('Load a screenshot first.');const rect=img.getBoundingClientRect(),fx=(e.clientX-rect.left)/rect.width,fy=(e.clientY-rect.top)/rect.height;if(fx<0||fx>1||fy<0||fy>1)return;if(pointMode){const key=pointMode;pointMode=null;markPoint(key,fx,fy);return}if(sampleMode){sampleMode=false;try{const data=readImagePixels(),w=number('sampleW'),h=number('sampleH');if(!Number.isInteger(w)||!Number.isInteger(h)||w<8||h<8||w>128||h>128)throw Error('Sample dimensions must be 8–128 pixels.');const patch=pixelPatch(data,Math.round(fx*data.width),Math.round(fy*data.height),w,h);if(!patch)throw Error('Sample too close to screenshot edge.');sample={patch,w,h,frame:idx};$('scanStatus').textContent='Sample captured. Click Scan current screenshot.'}catch(err){$('scanStatus').textContent=err.message}return}const [vx,vy,vw,vh,w,h,lv]=['vx','vy','vw','vh','w','h','lv'].map(number);if([vx,vy,vw,vh,w,h,lv].some(x=>!Number.isFinite(x))||vw<=0||vh<=0||w<=0||h<=0||!Number.isInteger(lv)||lv<1||lv>10)return status('Invalid viewport, size, or level.');const snap=number('snap'),x=Math.round((vx+fx*vw)/snap)*snap,y=Math.round((vy+fy*vh)/snap)*snap;if(x<0||y<0||x+w>80.00001||y+h>60.00001)return status('Selected object would extend outside the 80 × 60 map. Correct viewport or selection.');const name=$('type').value;const duplicate=objects.find(o=>o.name===name&&Math.abs(o.x-x)<.26&&Math.abs(o.y-y)<.26);if(duplicate)return status('Possible duplicate: '+name+' already exists near ('+duplicate.x+', '+duplicate.y+'). Nothing was added.');const o={id:nextId++,name,x,y,w,h,label:name,req:'none',facilityLevel:lv,placedLevel:lv,targetLevel:lv};Object.defineProperties(o,{_frame:{value:idx,writable:true,configurable:true},_fx:{value:fx,writable:true,configurable:true},_fy:{value:fy,writable:true,configurable:true}});objects.push(o);added.push(o);render();draw()};
+$('stage').onclick=e=>{const img=$('photo');if(!screenshots.length||!img.naturalWidth)return status('Load a screenshot first.');const rect=img.getBoundingClientRect(),fx=(e.clientX-rect.left)/rect.width,fy=(e.clientY-rect.top)/rect.height;if(fx<0||fx>1||fy<0||fy>1)return;if(pointMode){const key=pointMode;pointMode=null;markPoint(key,fx,fy);return}if(sampleMode){sampleMode=false;try{const data=readImagePixels(),w=number('sampleW'),h=number('sampleH');if(!Number.isInteger(w)||!Number.isInteger(h)||w<8||h<8||w>128||h>128)throw Error('Sample dimensions must be 8–128 pixels.');const patch=pixelPatch(data,Math.round(fx*data.width),Math.round(fy*data.height),w,h);if(!patch)throw Error('Sample too close to screenshot edge.');cancelScan();sample={patch,w,h,frame:idx};$('scanStatus').textContent='Sample captured. Click Scan current screenshot.'}catch(err){$('scanStatus').textContent=err.message}return}const [vx,vy,vw,vh,w,h,lv]=['vx','vy','vw','vh','w','h','lv'].map(number);if([vx,vy,vw,vh,w,h,lv].some(x=>!Number.isFinite(x))||vw<=0||vh<=0||w<=0||h<=0||!Number.isInteger(lv)||lv<1||lv>10)return status('Invalid viewport, size, or level.');const snap=number('snap'),x=Math.round((vx+fx*vw)/snap)*snap,y=Math.round((vy+fy*vh)/snap)*snap;if(x<0||y<0||x+w>80.00001||y+h>60.00001)return status('Selected object would extend outside the 80 × 60 map. Correct viewport or selection.');const name=$('type').value;const duplicate=objects.find(o=>o.name===name&&Math.abs(o.x-x)<.26&&Math.abs(o.y-y)<.26);if(duplicate)return status('Possible duplicate: '+name+' already exists near ('+duplicate.x+', '+duplicate.y+'). Nothing was added.');const o={id:nextId++,name,x,y,w,h,label:name,req:'none',facilityLevel:lv,placedLevel:lv,targetLevel:lv};Object.defineProperties(o,{_frame:{value:idx,writable:true,configurable:true},_fx:{value:fx,writable:true,configurable:true},_fy:{value:fy,writable:true,configurable:true}});objects.push(o);added.push(o);render();draw()};
 $('undo').onclick=()=>{const o=added.pop();if(o)objects=objects.filter(v=>v!==o);render();draw()};
 $('clear').onclick=()=>{if(confirm('Remove all new annotations from this session?')){const remove=new Set(added);objects=objects.filter(o=>!remove.has(o));added=[];render();draw()}};
 $('save').onclick=()=>{if(!objects.length)return status('No map objects yet.');
