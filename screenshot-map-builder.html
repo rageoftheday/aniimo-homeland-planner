@@ -83,10 +83,11 @@ $('reviewCandidate').onclick=reviewVisualCandidates;
 $('pickSample').onclick=()=>{if(!screenshots.length)return $('scanStatus').textContent='Load a screenshot first.';sampleMode=true;$('scanStatus').textContent='Click the center of a clear icon in the screenshot.'};
 $('clearCandidates').onclick=()=>{cancelScan();candidates=[];scanImageIndex=-1;drawCandidates();reviewVisualCandidates();$('scanStatus').textContent='Candidates cleared.'};
 $('scanSample').onclick=async()=>{
+ let generation=null;
  try{
   if(scanBusy)throw Error('A scan is already running.');
   if(!sample||sample.frame!==idx)throw Error('Choose a sample from the current screenshot.');
-  scanBusy=true;$('scanSample').disabled=true;const generation=++scanGeneration,frameAtStart=idx;
+  scanBusy=true;$('scanSample').disabled=true;generation=++scanGeneration;const frameAtStart=idx;
   const data=readImagePixels(),w=sample.w,h=sample.h,step=Math.max(6,Math.floor(Math.min(w,h)/3)),threshold=Number($('similarity').value);
   $('scanStatus').textContent='Scanning the screenshot locally…';
   // Yield once so the browser paints the progress text.
@@ -107,7 +108,7 @@ $('scanSample').onclick=async()=>{
   candidates=selected.map(h=>({x:h.x/data.width,y:h.y/data.height,score:h.score}));scanImageIndex=idx;drawCandidates();reviewVisualCandidates();
   $('scanStatus').textContent=candidates.length+' visual candidates; not validated as facilities. Click only verified buildings to add map objects.';
  }catch(err){$('scanStatus').textContent='Scan unavailable: '+err.message}
- finally{if(!scanBusy||scanGeneration===generation){scanBusy=false;$('scanSample').disabled=false}}
+ finally{if(generation===null||scanGeneration===generation){scanBusy=false;$('scanSample').disabled=false}}
 };
 
 function setPointMode(v){pointMode=v;$('calibrationState').textContent=v?'Click map point '+v+' on the screenshot.':'Select point A or point B to calibrate.'}
