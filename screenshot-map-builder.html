@@ -210,4 +210,18 @@ $('save').onclick=()=>{if(!objects.length)return status('No map objects yet.');
  }
  const name=$('mapname').value.trim()||'Screenshot Reviewed Map';const map={...base,id:'screenshot-'+Date.now(),name,savedAt:Date.now(),objects:objects.map(o=>({...o})),idCounter:nextId};map.format='aniimo-homeland-map-v1';const blob=new Blob([JSON.stringify(map,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Aniimo_Screenshot_Reviewed_Map.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);status('Exported a NEW map file. Validate it using the planner Import Map feature.',true)};
 render();
+if(new URLSearchParams(location.search).has('selftest')){
+ const results=[],check=(name,ok)=>results.push({name,pass:!!ok});
+ const a=Float32Array.from({length:256},(_,i)=>(i*43)%251),b=Float32Array.from(a),flat=new Float32Array(256).fill(128),negative=Float32Array.from(a,v=>255-v);
+ check('Identical texture',patchSimilarity(a,b)>.99);
+ check('Inverted texture rejected',patchSimilarity(a,negative)<0);
+ check('Flat texture rejected',patchSimilarity(a,flat)===-1);
+ const demo={pixels:new Uint8ClampedArray(64*64*4).fill(180),width:64,height:64};
+ check('Patch inside image',pixelPatch(demo,32,32,16,16)?.length===256);
+ check('Patch outside image rejected',pixelPatch(demo,1,1,16,16)===null);
+ const panel=document.createElement('section');panel.className='panel';
+ const title=document.createElement('h2');title.textContent='Browser diagnostics';panel.append(title);
+ for(const result of results){const line=document.createElement('p');line.className=result.pass?'ok':'warning';line.textContent=(result.pass?'PASS: ':'FAIL: ')+result.name;panel.append(line)}
+ document.body.prepend(panel);
+}
 </script></body></html>
