@@ -20,7 +20,7 @@ let sampleMode=false,sample=null,candidates=[],scanImageIndex=-1,scanGeneration=
 function cancelScan(){scanGeneration++;scanBusy=false;$('scanSample').disabled=false;}
 const patchSize=16;
 function readImagePixels(){
- const img=$('photo');if(!img.naturalWidth)throw Error('Load screenshot first');
+ const img=$('photo');if(!img.complete||!img.naturalWidth||!screenshots[idx]||img.src!==screenshots[idx].url)throw Error('Current screenshot has not finished loading');
  const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
  const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);
  return {pixels:ctx.getImageData(0,0,c.width,c.height).data,width:c.width,height:c.height};
@@ -132,15 +132,15 @@ $('resetPoints').onclick=()=>{pointMode=null;pointMarks={};setPointMode(null)};
 function saveCalibration(){if(screenshots[idx])calibrations[idx]=Object.fromEntries(boundsIds.map(id=>[id,$(id).value]));}
 function restoreCalibration(){const c=calibrations[idx];if(c)for(const id of boundsIds)$(id).value=c[id];}
 for(const id of boundsIds)$(id).addEventListener('change',saveCalibration);
-const finite=n=>n!==null&&n!==undefined&&String(n).trim()!==''&&Number.isFinite(Number(n));
+const finite=n=>typeof n!=='boolean'&&n!==null&&n!==undefined&&String(n).trim()!==''&&Number.isFinite(Number(n));
 function status(s,good=false){$('status').textContent=s;$('status').className=good?'ok':'warning'}
 function number(id){return Number($(id).value)}
-function frame(){if(!screenshots.length)return;cancelScan();pointMode=null;pointMarks={};setPointMode(null);restoreCalibration();const url=screenshots[idx].url;$('photo').src=url;$('frame').value=idx+1;$('loaded').textContent=(idx+1)+' / '+screenshots.length+': '+screenshots[idx].name;draw()}
+function frame(){if(!screenshots.length)return;cancelScan();$('scanStatus').textContent='Select a sample from this screenshot to scan.';$('candidateReview').replaceChildren();pointMode=null;pointMarks={};setPointMode(null);restoreCalibration();const url=screenshots[idx].url;$('photo').src=url;$('frame').value=idx+1;$('loaded').textContent=(idx+1)+' / '+screenshots.length+': '+screenshots[idx].name;draw()}
 function draw(){const p=$('pins');p.replaceChildren();for(const o of added.filter(o=>o._frame===idx)){const mark=document.createElement('span');mark.className='pin';mark.textContent=o.id;mark.style.left=(o._fx*100)+'%';mark.style.top=(o._fy*100)+'%';p.append(mark)}drawCandidates()}
 function render(){const tbody=$('rows');tbody.replaceChildren();objects.forEach(o=>{const tr=document.createElement('tr');[o.id,o.name,o.x+', '+o.y,o.w+' × '+o.h,o.facilityLevel||'—'].forEach(x=>{const td=document.createElement('td');td.textContent=x;tr.append(td)});const td=document.createElement('td');if(added.some(v=>v.id===o.id)){const b=document.createElement('button');b.textContent='Remove';b.onclick=()=>{objects=objects.filter(v=>v!==o);added=added.filter(v=>v!==o);render();draw()};td.append(b)}tr.append(td);tbody.append(tr)});status(objects.length+' map objects • '+added.length+' manually annotated',true)}
 $('type').replaceChildren(...FACILITIES.map(name=>{const o=document.createElement('option');o.value=o.textContent=name;return o}));
 $('type').onchange=()=>{const d=DIMS[$('type').value];if(d){$('w').value=d[0];$('h').value=d[1]}};
-$('images').onchange=e=>{screenshots.forEach(x=>URL.revokeObjectURL(x.url));screenshots=[...e.target.files].filter(f=>f.type.startsWith('image/')).map(f=>({name:f.name,url:URL.createObjectURL(f)}));idx=0;calibrations=screenshots.map(()=>({vx:$('vx').value,vy:$('vy').value,vw:$('vw').value,vh:$('vh').value}));frame();if(!screenshots.length){$('photo').removeAttribute('src');$('loaded').textContent='No screenshots selected.'}};
+$('images').onchange=e=>{cancelScan();sample=null;candidates=[];scanImageIndex=-1;$('candidateReview').replaceChildren();$('scanStatus').textContent='Choose a new sample for these screenshots.';if(added.length&&!confirm('Changing screenshots will clear '+added.length+' newly annotated items from this session. Continue?'))return;added=[];objects=base?.objects?structuredClone(base.objects):[];render();screenshots.forEach(x=>URL.revokeObjectURL(x.url));screenshots=[...e.target.files].filter(f=>f.type.startsWith('image/')).map(f=>({name:f.name,url:URL.createObjectURL(f)}));idx=0;calibrations=screenshots.map(()=>({vx:$('vx').value,vy:$('vy').value,vw:$('vw').value,vh:$('vh').value}));frame();if(!screenshots.length){$('photo').removeAttribute('src');$('loaded').textContent='No screenshots selected.'}};
 $('prev').onclick=()=>{if(screenshots.length){saveCalibration();idx=(idx+screenshots.length-1)%screenshots.length;frame()}};
 $('next').onclick=()=>{if(screenshots.length){saveCalibration();idx=(idx+1)%screenshots.length;frame()}};
 $('frame').onchange=()=>{saveCalibration();idx=Math.max(0,Math.min(screenshots.length-1,number('frame')-1));frame()};
